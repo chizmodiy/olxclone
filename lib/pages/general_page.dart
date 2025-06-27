@@ -23,7 +23,7 @@ class _GeneralPageState extends State<GeneralPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('General Page'),
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: Text('Selected Page: ${_selectedIndex == 0 ? "Головна" : _selectedIndex == 1 ? "Обране" : _selectedIndex == 2 ? "Проглянуті" : "Чат"}'),
@@ -88,6 +88,8 @@ class _GeneralPageState extends State<GeneralPage> {
 
     return InkWell(
       onTap: () => _onItemTapped(index),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
         child: Column(
@@ -122,6 +124,8 @@ class _GeneralPageState extends State<GeneralPage> {
 
     return InkWell(
       onTap: () => _onItemTapped(index),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
         child: Column(
