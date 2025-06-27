@@ -16,4 +16,6 @@ class AppColors {
   static const Color color10 = Color(0xFF232325);
   static const Color color11 = Color(0xFF18181A);
   static const Color color12 = Color(0xFF131313);
+  static const Color zinc50 = Color(0xFFFAFAFA); // Added Zinc-50
+  static const Color zinc200 = Color(0xFFE4E4E7); // Added Zinc-200
 } 
