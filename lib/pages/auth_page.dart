@@ -29,6 +29,7 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
         automaticallyImplyLeading: false,
       ),
@@ -221,10 +222,12 @@ class _AuthPageState extends State<AuthPage> {
         ),
         TextButton(
           onPressed: _toggleAuthMode,
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
+          style: ButtonStyle( // Using ButtonStyle for more control over states
+            padding: MaterialStateProperty.all(EdgeInsets.zero),
+            minimumSize: MaterialStateProperty.all(Size.zero),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            splashFactory: NoSplash.splashFactory, // Remove splash effect
+            overlayColor: MaterialStateProperty.all(Colors.transparent), // Remove overlay/highlight effect
           ),
           child: Text(
             _showSignUp ? 'Увійти' : 'Зареєструватися',
