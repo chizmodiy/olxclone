@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:withoutname/pages/otp_page.dart';
+import 'package:flutter/services.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -12,12 +15,67 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   bool _showSignUp = true; // true for Sign Up, false for Log In
+  bool _isLoading = false;
   final TextEditingController _phoneNumberController = TextEditingController();
+  final _supabase = Supabase.instance.client;
 
   void _toggleAuthMode() {
     setState(() {
       _showSignUp = !_showSignUp;
     });
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  Future<void> _handleSignUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final phone = '+380' + _phoneNumberController.text.trim();
+      await _supabase.auth.signInWithOtp(
+        phone: phone,
+      );
+      _showSnackBar('OTP sent to $phone. Please check your phone.');
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
+    } on AuthException catch (e) {
+      _showSnackBar(e.message, isError: true);
+    } catch (e) {
+      _showSnackBar('An unexpected error occurred', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleLogIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final phone = '+380' + _phoneNumberController.text.trim();
+      await _supabase.auth.signInWithOtp(
+        phone: phone,
+      );
+      _showSnackBar('OTP sent to $phone. Please check your phone.');
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
+    } on AuthException catch (e) {
+      _showSnackBar(e.message, isError: true);
+    } catch (e) {
+      _showSnackBar('An unexpected error occurred', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -90,8 +148,9 @@ class _AuthPageState extends State<AuthPage> {
                 child: TextField(
                   controller: _phoneNumberController,
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
                   decoration: InputDecoration(
-                    hintText: '+380',
+                    hintText: '(XX XXX XX XX)',
                     hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color2), // Black
                     border: InputBorder.none,
                     isDense: true,
@@ -107,9 +166,7 @@ class _AuthPageState extends State<AuthPage> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              // Handle registration logic
-            },
+            onPressed: _isLoading ? null : _handleSignUp,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               shadowColor: Colors.transparent,
@@ -120,10 +177,12 @@ class _AuthPageState extends State<AuthPage> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
             ),
-            child: Text(
-              'Зареєструватися',
-              style: AppTextStyles.body1Medium.copyWith(color: Colors.white), // White
-            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(
+                    'Зареєструватися',
+                    style: AppTextStyles.body1Medium.copyWith(color: Colors.white), // White
+                  ),
           ),
         ),
       ],
@@ -172,8 +231,9 @@ class _AuthPageState extends State<AuthPage> {
                 child: TextField(
                   controller: _phoneNumberController,
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
                   decoration: InputDecoration(
-                    hintText: '+380',
+                    hintText: '(XX XXX XX XX)',
                     hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color2), // Black
                     border: InputBorder.none,
                     isDense: true,
@@ -189,9 +249,7 @@ class _AuthPageState extends State<AuthPage> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              // Handle login logic
-            },
+            onPressed: _isLoading ? null : _handleLogIn,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               shadowColor: Colors.transparent,
@@ -202,10 +260,12 @@ class _AuthPageState extends State<AuthPage> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
             ),
-            child: Text(
-              'Увійти',
-              style: AppTextStyles.body1Medium.copyWith(color: Colors.white), // White
-            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(
+                    'Увійти',
+                    style: AppTextStyles.body1Medium.copyWith(color: Colors.white), // White
+                  ),
           ),
         ),
       ],

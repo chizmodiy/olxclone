@@ -29,48 +29,86 @@ class _GeneralPageState extends State<GeneralPage> {
       body: Center(
         child: Text('Selected Page: ${_selectedIndex == 0 ? "Головна" : _selectedIndex == 1 ? "Обране" : _selectedIndex == 2 ? "Проглянуті" : "Чат"}'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Handle the central plus button tap
-        },
-        backgroundColor: AppColors.primaryColor,
-        shape: const CircleBorder(),
-        child: SvgPicture.asset(
-          'assets/icons/plus.svg',
-          width: 20,
-          height: 20,
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(23, 6, 23, 36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.10), // rgba(0, 0, 0, 0.10)
+              offset: Offset(0, 4),
+              blurRadius: 16,
+            ),
+          ],
+          border: Border(top: BorderSide(color: AppColors.zinc200, width: 1.0)),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            _buildNavItem(
-              iconPath: 'assets/icons/home-02.svg',
-              label: 'Головна',
-              index: 0,
+            Expanded(
+              child: _buildNavItem(
+                iconPath: 'assets/icons/home-02.svg',
+                label: 'Головна',
+                index: 0,
+              ),
             ),
-            _buildNavItem(
-              iconPath: 'assets/icons/heart-rounded.svg',
-              label: 'Обране',
-              index: 1,
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildNavItem(
+                iconPath: 'assets/icons/heart-rounded.svg',
+                label: 'Обране',
+                index: 1,
+              ),
             ),
-            const SizedBox(width: 48), // Placeholder for the FAB
-            _buildNavItem(
-              iconPath: 'assets/icons/book-open-01.svg',
-              label: 'Проглянуті',
-              index: 2,
+            const SizedBox(width: 16),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(16, 24, 40, 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(200),
+                border: Border.all(color: AppColors.primaryColor, width: 1),
+              ),
+              child: FloatingActionButton(
+                onPressed: () {
+                  // Handle the central plus button tap
+                },
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                highlightElevation: 0,
+                shape: const CircleBorder(),
+                child: SvgPicture.asset(
+                  'assets/icons/plus.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                ),
+              ),
             ),
-            _buildNavItemWithNotification(
-              iconPath: 'assets/icons/message-circle-01.svg',
-              label: 'Чат',
-              index: 3,
-              hasNotification: true, // Example: set to true to show dot
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildNavItem(
+                iconPath: 'assets/icons/book-open-01.svg',
+                label: 'Проглянуті',
+                index: 2,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildNavItemWithNotification(
+                iconPath: 'assets/icons/message-circle-01.svg',
+                label: 'Чат',
+                index: 3,
+                hasNotification: true, // Example: set to true to show dot
+              ),
             ),
           ],
         ),
@@ -92,7 +130,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
+        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6), // Specific padding from design
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -128,7 +166,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
+        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6), // Specific padding from design
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
