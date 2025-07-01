@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
+import 'package:withoutname/pages/add_listing_page.dart';
 
 class GeneralPage extends StatefulWidget {
   const GeneralPage({super.key});
@@ -79,7 +80,7 @@ class _GeneralPageState extends State<GeneralPage> {
               ),
               child: FloatingActionButton(
                 onPressed: () {
-                  // Handle the central plus button tap
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
                 },
                 backgroundColor: Colors.transparent,
                 elevation: 0,
