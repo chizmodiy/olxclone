@@ -78,6 +78,35 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
+  Future<void> _handleQuickAdminLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final email = 'admin@test.com';
+      final password = 'admin123456';
+      
+      final AuthResponse res = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+              if (res.user != null) {
+          _showSnackBar('Successfully logged in as admin');
+          // Navigate to general page and remove all previous routes
+          Navigator.of(context).pushNamedAndRemoveUntil('/general', (route) => false);
+        }
+    } on AuthException catch (e) {
+      _showSnackBar(e.message, isError: true);
+    } catch (e) {
+      _showSnackBar('An unexpected error occurred', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _phoneNumberController.dispose();
@@ -100,6 +129,32 @@ class _AuthPageState extends State<AuthPage> {
             if (_showSignUp) _buildSignUpForm(context) else _buildLogInForm(context),
             const SizedBox(height: 40),
             _buildAuthToggleButton(context),
+            const SizedBox(height: 20),
+            // Quick admin login button
+            TextButton(
+              onPressed: _isLoading ? null : _handleQuickAdminLogin,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: _isLoading 
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                    ),
+                  )
+                : Text(
+                    'Quick Admin Login',
+                    style: AppTextStyles.body2Regular.copyWith(
+                      color: AppColors.color5,
+                    ),
+                  ),
+            ),
           ],
         ),
       ),
