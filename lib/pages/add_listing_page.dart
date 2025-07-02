@@ -1178,23 +1178,26 @@ class _AddListingPageState extends State<AddListingPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
+        elevation: 0,
         toolbarHeight: 70.0,
         centerTitle: true,
         title: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              padding: const EdgeInsets.all(10),
-              child: IconButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                iconSize: 20,
-                icon: const Icon(Icons.arrow_back, color: Colors.black, size: 20),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                padding: const EdgeInsets.all(10),
+                child: SvgPicture.asset(
+                  'assets/icons/chevron-states.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
+                ),
               ),
             ),
             const SizedBox(width: 8),
