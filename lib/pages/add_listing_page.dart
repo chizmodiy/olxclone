@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
+import 'dart:io';
+import 'dart:ui';
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -14,6 +17,26 @@ class _AddListingPageState extends State<AddListingPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  final List<XFile> _selectedImages = [];
+
+  Future<void> _pickImage() async {
+    if (_selectedImages.length >= 7) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You can select a maximum of 7 images.')),
+      );
+      return;
+    }
+    final List<XFile> images = await _picker.pickMultiImage();
+    if (images.isNotEmpty) {
+      setState(() {
+        _selectedImages.addAll(images);
+        if (_selectedImages.length > 7) {
+          _selectedImages.removeRange(7, _selectedImages.length);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -81,58 +104,112 @@ class _AddListingPageState extends State<AddListingPage> {
                   style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
                 ),
                 Text(
-                  '0/7',
+                  '${_selectedImages.length}/7',
                   style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.zinc50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.zinc200, width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(16, 24, 40, 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.zinc100,
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/Featured icon.svg',
-                        width: 40,
-                        height: 40,
-                        colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+            InkWell(
+              onTap: _pickImage,
+              borderRadius: BorderRadius.circular(12), // Apply borderRadius to InkWell for visual feedback
+              child: CustomPaint(
+                painter: DashedBorderPainter(
+                  color: AppColors.zinc200, // Replace with your desired color
+                  strokeWidth: 1.0,
+                  dashWidth: 13.0, // Length of dashes
+                  gapWidth: 13.0, // Length of gaps
+                  borderRadius: 12.0,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.zinc50,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Перемістіть зображення',
-                    style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: SvgPicture.asset(
+                          'assets/icons/Featured icon.svg',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Перемістіть зображення',
+                        style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'PNG, JPG (max. 200MB)',
+                        style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'PNG, JPG (max. 200MB)',
-                    style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
-                  ),
-                ],
+                ),
               ),
             ),
+            if (_selectedImages.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: _selectedImages.length,
+                  itemBuilder: (context, index) {
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_selectedImages[index].path),
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ),
+                        Positioned(
+                          top: 5,
+                          right: 5,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedImages.removeAt(index);
+                              });
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             const SizedBox(height: 20),
 
             // Title Input Field
@@ -876,5 +953,61 @@ class _AddListingPageState extends State<AddListingPage> {
         ),
       ),
     );
+  }
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double gapWidth;
+  final double borderRadius;
+
+  DashedBorderPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.gapWidth,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final RRect rRect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(borderRadius),
+    );
+
+    final Path path = Path();
+    path.addRRect(rRect);
+
+    PathMetrics pathMetrics = path.computeMetrics();
+    for (PathMetric pathMetric in pathMetrics) {
+      double distance = 0.0;
+      while (distance < pathMetric.length) {
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + gapWidth;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    if (oldDelegate is DashedBorderPainter) {
+      return oldDelegate.color != color ||
+          oldDelegate.strokeWidth != strokeWidth ||
+          oldDelegate.dashWidth != dashWidth ||
+          oldDelegate.gapWidth != gapWidth ||
+          oldDelegate.borderRadius != borderRadius;
+    }
+    return true;
   }
 } 
