@@ -31,7 +31,10 @@ class _AddListingPageState extends State<AddListingPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
+        toolbarHeight: 70.0,
+        centerTitle: true,
         title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: 40,
@@ -40,20 +43,19 @@ class _AddListingPageState extends State<AddListingPage> {
               child: IconButton(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
-                icon: SvgPicture.asset(
-                  'assets/icons/ButtonBACK1.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                ),
+                iconSize: 20,
+                icon: const Icon(Icons.arrow_back, color: Colors.black, size: 20),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
             ),
-            Text(
-              'Додати оголошення',
-              style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Додати оголошення',
+                style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
+              ),
             ),
           ],
         ),
@@ -86,6 +88,7 @@ class _AddListingPageState extends State<AddListingPage> {
             ),
             const SizedBox(height: 6),
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                 color: AppColors.zinc50,
@@ -110,9 +113,9 @@ class _AddListingPageState extends State<AddListingPage> {
                     ),
                     child: Center(
                       child: SvgPicture.asset(
-                        'assets/icons/image_plus.svg',
-                        width: 20,
-                        height: 20,
+                        'assets/icons/Featured icon.svg',
+                        width: 40,
+                        height: 40,
                         colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
                       ),
                     ),
