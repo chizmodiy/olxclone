@@ -25,7 +25,8 @@ class ProductService {
       print('Got ${response.length} listings');
 
       // Convert response to List<Product>
-      return response.map((json) {
+      // Explicitly specify the type for map to help with type inference
+      return response.map<Product>((json) {
         // Extract photos directly from the 'photos' column
         final photos = (json['photos'] as List<dynamic>?)
             ?.cast<String>()

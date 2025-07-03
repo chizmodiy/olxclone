@@ -39,10 +39,23 @@ class ProductCard extends StatelessWidget {
                 width: double.infinity,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Image.network(
-                    images.first,
-                    fit: BoxFit.cover,
-                  ),
+                  child: images.isNotEmpty
+                      ? Image.network(
+                          images.first,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: AppColors.zinc200,
+                              child: Icon(Icons.broken_image, color: AppColors.color5),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: AppColors.zinc200, // Placeholder color
+                          child: Center(
+                            child: Icon(Icons.image, size: 40, color: AppColors.color5), // Placeholder icon
+                          ),
+                        ),
                 ),
               ),
               // Pagination dots
@@ -59,7 +72,8 @@ class ProductCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(
-                      3,
+                      // Use a safe length for pagination dots, e.g., min(images.length, 3)
+                      images.isNotEmpty ? images.length : 1, // At least one dot if no images
                       (index) => Container(
                         width: 8,
                         height: 8,
@@ -134,22 +148,11 @@ class ProductCard extends StatelessWidget {
                         letterSpacing: 0.16,
                       ),
                     ),
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color(0xFF27272A),
-                          width: 1.67,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.favorite_border,
-                        size: 16,
-                        color: Color(0xFF27272A),
-                      ),
-                    ),
+                    const SizedBox(width: 20, height: 20, child: Icon(
+                      Icons.favorite_border,
+                      size: 16,
+                      color: Color(0xFF27272A),
+                    )),
                   ],
                 ),
                 const SizedBox(height: 12),
