@@ -232,6 +232,140 @@ class _HomeContentState extends State<HomeContent> {
             ],
           ),
           const SizedBox(height: 20),
+          Column(
+            children: [
+              Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F3F3),
+                  borderRadius: BorderRadius.circular(200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Пошук',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF838583),
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                        ),
+                        onChanged: (value) {
+                          // TODO: Implement search logic here
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // TODO: Implement Map button logic here
+                      },
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(200),
+                          border: Border.all(color: const Color(0xFFE4E4E7)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.map_outlined, color: Colors.black, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Карта',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                                letterSpacing: 0.14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // TODO: Implement Filter button logic here
+                      },
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(200),
+                          border: Border.all(color: const Color(0xFFE4E4E7)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Фільтр',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                                letterSpacing: 0.14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           Expanded(
             child: _errorMessage != null
                 ? Center(

@@ -49,9 +49,8 @@ class _FavoritesContentState extends State<FavoritesContent> {
   void initState() {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    _loadFavorites().then((_) {
-      _loadProducts(); // Load products only after favorites are loaded
-    });
+    _loadProducts();
+    _loadFavorites();
     _scrollController.addListener(_onScroll);
   }
 
@@ -63,14 +62,6 @@ class _FavoritesContentState extends State<FavoritesContent> {
 
   Future<void> _loadProducts() async {
     if (_isLoading || !_hasMore) return;
-    if (_currentUserId == null || _favoriteProductIds.isEmpty) {
-      // If no user or no favorites, display empty list and stop loading
-      setState(() {
-        _isLoading = false;
-        _hasMore = false;
-      });
-      return;
-    }
 
     setState(() {
       _isLoading = true;
@@ -78,12 +69,10 @@ class _FavoritesContentState extends State<FavoritesContent> {
     });
 
     try {
-      // Fetch only favorite products by their IDs
-      final products = await _productService.getProductsByIds(
-        _favoriteProductIds.toList(),
+      final products = await _productService.getProducts(
         page: _currentPage,
-        limit: 10, // Assuming 10 products per page for favorites too
         sortBy: _sortBy,
+        isGrid: _isGrid,
       );
 
       setState(() {
@@ -124,7 +113,6 @@ class _FavoritesContentState extends State<FavoritesContent> {
         await _profileService.removeFavoriteProduct(product.id);
         setState(() {
           _favoriteProductIds.remove(product.id);
-          _products.removeWhere((p) => p.id == product.id); // Remove from list instantly
         });
       } else {
         await _profileService.addFavoriteProduct(product.id);
@@ -183,7 +171,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Обране', // Changed title
+                'Обране',
                 style: TextStyle(
                   color: Color(0xFF161817),
                   fontSize: 28,
@@ -194,28 +182,6 @@ class _FavoritesContentState extends State<FavoritesContent> {
               ),
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => _onSortChanged(_sortBy),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _sortBy == 'price_asc' ? Icons.arrow_upward : (_sortBy == 'price_desc' ? Icons.arrow_downward : Icons.sort),
-                        size: 20,
-                      ),
-                    ),
-                  ),
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: _toggleView,
@@ -319,4 +285,4 @@ class _FavoritesContentState extends State<FavoritesContent> {
       ),
     );
   }
-} 
+}
