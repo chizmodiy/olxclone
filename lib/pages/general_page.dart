@@ -4,7 +4,6 @@ import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
 import 'package:withoutname/pages/add_listing_page.dart';
 import 'package:withoutname/pages/home_page.dart';
-import 'package:withoutname/pages/favorites_page.dart';
 import 'package:withoutname/pages/viewed_page.dart';
 
 class GeneralPage extends StatefulWidget {
@@ -19,7 +18,7 @@ class _GeneralPageState extends State<GeneralPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const FavoritesPage(),
+    const Center(child: Text('Обране')), // Заглушка для обраного
     const ViewedPage(),
     const Center(child: Text('Чат')), // Заглушка для чату
   ];

@@ -14,14 +14,27 @@ class ProductService {
     try {
       print('=== Starting getProducts ===');
       print('Page: $page, Limit: $limit');
-      
-      // Execute query
-      final response = await _client
-          .from('listings')
-          .select('*') // Select all columns, including 'photos'
-          .order('created_at', ascending: false)
-          .range((page - 1) * limit, page * limit - 1);
 
+      // Build the query
+      PostgrestTransformBuilder<dynamic> query = _client
+          .from('listings')
+          .select('*'); // Select all columns, including 'photos'
+      
+      // Apply sorting based on sortBy parameter
+      if (sortBy == 'price_asc') {
+        query = query.order('price', ascending: true);
+      } else if (sortBy == 'price_desc') {
+        query = query.order('price', ascending: false);
+      } else {
+        // Default sorting by creation date if no specific sort is provided or recognized
+        query = query.order('created_at', ascending: false);
+      }
+
+      // Add pagination
+      query = query.range((page - 1) * limit, page * limit - 1);
+
+      print('Executing query...');
+      final response = await query;
       print('Got ${response.length} listings');
 
       // Convert response to List<Product>
@@ -35,9 +48,15 @@ class ProductService {
         print('Listing ${json['id']} has ${photos.length} photos');
 
         // Format price string
-        final priceString = json['is_free'] 
-            ? 'Безкоштовно' 
-            : '${json['price']}${_getCurrencySymbol(json['currency'])}';
+        final priceValue = json['price'];
+        final currencyValue = json['currency'];
+        final isFree = json['is_free'] as bool? ?? false;
+
+        final priceString = isFree
+            ? 'Безкоштовно'
+            : (priceValue != null 
+                ? '${priceValue}${_getCurrencySymbol(currencyValue)}'
+                : 'Ціна не вказана'); // Handle null price for non-free items
 
         // Create a new map with the correct structure for Product.fromJson
         final productJson = {

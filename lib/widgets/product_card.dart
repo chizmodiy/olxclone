@@ -9,6 +9,8 @@ class ProductCard extends StatelessWidget {
   final List<String> images;
   final bool showLabel;
   final String? labelText;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
   const ProductCard({
     super.key,
@@ -19,11 +21,14 @@ class ProductCard extends StatelessWidget {
     required this.images,
     this.showLabel = false,
     this.labelText,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(minHeight: 250, maxHeight: 250), // Set fixed height for the card
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(12),
@@ -118,7 +123,7 @@ class ProductCard extends StatelessWidget {
           ),
           // Content section
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -132,6 +137,8 @@ class ProductCard extends StatelessWidget {
                     height: 1.4,
                     letterSpacing: 0.14,
                   ),
+                  maxLines: 2, // Limit title to 2 lines
+                  overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -148,11 +155,14 @@ class ProductCard extends StatelessWidget {
                         letterSpacing: 0.16,
                       ),
                     ),
-                    const SizedBox(width: 20, height: 20, child: Icon(
-                      Icons.favorite_border,
-                      size: 16,
-                      color: Color(0xFF27272A),
-                    )),
+                    GestureDetector(
+                      onTap: onFavoriteToggle,
+                      child: SizedBox(width: 20, height: 20, child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        size: 16,
+                        color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                      )),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),

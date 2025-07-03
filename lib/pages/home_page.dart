@@ -3,6 +3,9 @@ import '../widgets/common_header.dart';
 import '../widgets/product_card.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
+import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/profile_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -29,21 +32,25 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   final ProductService _productService = ProductService();
+  final ProfileService _profileService = ProfileService();
   final ScrollController _scrollController = ScrollController();
   
   List<Product> _products = [];
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
-  String? _searchQuery;
-  String? _sortBy;
+  String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
   bool _isGrid = true;
   String? _errorMessage;
+  String? _currentUserId;
+  Set<String> _favoriteProductIds = {};
 
   @override
   void initState() {
     super.initState();
+    _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProducts();
+    _loadFavorites();
     _scrollController.addListener(_onScroll);
   }
 
@@ -64,7 +71,6 @@ class _HomeContentState extends State<HomeContent> {
     try {
       final products = await _productService.getProducts(
         page: _currentPage,
-        searchQuery: _searchQuery,
         sortBy: _sortBy,
         isGrid: _isGrid,
       );
@@ -84,6 +90,41 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  Future<void> _loadFavorites() async {
+    if (_currentUserId == null) return;
+    try {
+      final favoriteIds = await _profileService.getFavoriteProductIds();
+      setState(() {
+        _favoriteProductIds = favoriteIds;
+      });
+    } catch (e) {
+      print('Error loading favorites: $e');
+    }
+  }
+
+  Future<void> _toggleFavorite(Product product) async {
+    if (_currentUserId == null) {
+      print('User not logged in. Cannot toggle favorite.');
+      return;
+    }
+
+    try {
+      if (_favoriteProductIds.contains(product.id)) {
+        await _profileService.removeFavoriteProduct(product.id);
+        setState(() {
+          _favoriteProductIds.remove(product.id);
+        });
+      } else {
+        await _profileService.addFavoriteProduct(product.id);
+        setState(() {
+          _favoriteProductIds.add(product.id);
+        });
+      }
+    } catch (e) {
+      print('Error toggling favorite: $e');
+    }
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
@@ -91,20 +132,15 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
-  void _onSearchChanged(String query) {
+  void _onSortChanged(String? newSortBy) {
     setState(() {
-      _searchQuery = query;
-      _products = [];
-      _currentPage = 1;
-      _hasMore = true;
-      _errorMessage = null;
-    });
-    _loadProducts();
-  }
-
-  void _onSortChanged(String? sortBy) {
-    setState(() {
-      _sortBy = sortBy;
+      if (_sortBy == 'price_asc') {
+        _sortBy = 'price_desc';
+      } else if (_sortBy == 'price_desc') {
+        _sortBy = null; // Back to default (created_at desc)
+      } else {
+        _sortBy = 'price_asc';
+      }
       _products = [];
       _currentPage = 1;
       _hasMore = true;
@@ -116,7 +152,12 @@ class _HomeContentState extends State<HomeContent> {
   void _toggleView() {
     setState(() {
       _isGrid = !_isGrid;
+      _products = [];
+      _currentPage = 1;
+      _hasMore = true;
+      _errorMessage = null;
     });
+    _loadProducts();
   }
 
   @override
@@ -142,7 +183,7 @@ class _HomeContentState extends State<HomeContent> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => _onSortChanged(_sortBy == 'date_desc' ? 'date_asc' : 'date_desc'),
+                    onTap: () => _onSortChanged(_sortBy),
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -157,7 +198,10 @@ class _HomeContentState extends State<HomeContent> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.sort, size: 20),
+                      child: Icon(
+                        _sortBy == 'price_asc' ? Icons.arrow_upward : (_sortBy == 'price_desc' ? Icons.arrow_downward : Icons.sort),
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -188,175 +232,76 @@ class _HomeContentState extends State<HomeContent> {
             ],
           ),
           const SizedBox(height: 20),
-          // Search input
-          Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F3F3),
-              borderRadius: BorderRadius.circular(200),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.search,
-                  color: Colors.grey[600],
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    onChanged: _onSearchChanged,
-                    decoration: const InputDecoration(
-                      hintText: 'Пошук',
-                      hintStyle: TextStyle(
-                        color: Color(0xFF838583),
-                        fontSize: 16,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Map and Filter buttons
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: const Color(0xFFE4E4E7)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.map_outlined, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Карта',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: const Color(0xFFE4E4E7)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.filter_list, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Фільтр',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Product grid
           Expanded(
             child: _errorMessage != null
                 ? Center(
                     child: Text('Помилка завантаження товарів: $_errorMessage'),
                   )
-                : (_products.isEmpty && !_isLoading
-                    ? const Center(
-                        child: Text('Немає товарів'),
-                      )
-                    : SingleChildScrollView(
-                        controller: _scrollController,
-                        child: Column(
-                          children: [
-                            for (var i = 0; i < _products.length; i += 2)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: ProductCard(
-                                        title: _products[i].title,
-                                        price: _products[i].price,
-                                        date: _products[i].formattedDate,
-                                        location: _products[i].location,
-                                        images: _products[i].images,
-                                        showLabel: _products[i].isNegotiable,
-                                        labelText: 'Договірна',
-                                      ),
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _products = [];
+                        _currentPage = 1;
+                        _hasMore = true;
+                        _errorMessage = null;
+                      });
+                      await _loadProducts();
+                    },
+                    child: _products.isEmpty && !_isLoading
+                        ? const Center(
+                            child: Text('Наразі оголошень немає.'),
+                          )
+                        : _isGrid
+                            ? GridView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.only(top: 0),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  mainAxisExtent: 250,
+                                ),
+                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == _products.length) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  final product = _products[index];
+                                  return ProductCard(
+                                    title: product.title,
+                                    price: product.price,
+                                    date: DateFormat.yMMMd().format(product.createdAt),
+                                    location: product.location,
+                                    images: product.images,
+                                    isFavorite: _favoriteProductIds.contains(product.id),
+                                    onFavoriteToggle: () => _toggleFavorite(product),
+                                  );
+                                },
+                              )
+                            : ListView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.only(top: 0),
+                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == _products.length) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  final product = _products[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: ProductCard(
+                                      title: product.title,
+                                      price: product.price,
+                                      date: DateFormat.yMMMd().format(product.createdAt),
+                                      location: product.location,
+                                      images: product.images,
+                                      isFavorite: _favoriteProductIds.contains(product.id),
+                                      onFavoriteToggle: () => _toggleFavorite(product),
                                     ),
-                                    const SizedBox(width: 16),
-                                    if (i + 1 < _products.length)
-                                      Expanded(
-                                        child: ProductCard(
-                                          title: _products[i + 1].title,
-                                          price: _products[i + 1].price,
-                                          date: _products[i + 1].formattedDate,
-                                          location: _products[i + 1].location,
-                                          images: _products[i + 1].images,
-                                          showLabel: _products[i + 1].isNegotiable,
-                                          labelText: 'Договірна',
-                                        ),
-                                      )
-                                    else
-                                      const Spacer(),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            if (_isLoading)
-                              const Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                          ],
-                        ),
-                      )),
+                  ),
           ),
         ],
       ),
