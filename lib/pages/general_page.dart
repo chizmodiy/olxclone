@@ -3,6 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
 import 'package:withoutname/pages/add_listing_page.dart';
+import 'package:withoutname/pages/home_page.dart';
+import 'package:withoutname/pages/favorites_page.dart';
+import 'package:withoutname/pages/viewed_page.dart';
 
 class GeneralPage extends StatefulWidget {
   const GeneralPage({super.key});
@@ -14,6 +17,13 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
 
+  final List<Widget> _pages = [
+    const HomePage(),
+    const FavoritesPage(),
+    const ViewedPage(),
+    const Center(child: Text('Чат')), // Заглушка для чату
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -24,19 +34,14 @@ class _GeneralPageState extends State<GeneralPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Text('Selected Page: ${_selectedIndex == 0 ? "Головна" : _selectedIndex == 1 ? "Обране" : _selectedIndex == 2 ? "Проглянуті" : "Чат"}'),
-      ),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(23, 6, 23, 36),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: const [
             BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.10), // rgba(0, 0, 0, 0.10)
+              color: Color.fromRGBO(0, 0, 0, 0.10),
               offset: Offset(0, 4),
               blurRadius: 16,
             ),
@@ -108,7 +113,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 iconPath: 'assets/icons/message-circle-01.svg',
                 label: 'Чат',
                 index: 3,
-                hasNotification: true, // Example: set to true to show dot
+                hasNotification: true,
               ),
             ),
           ],
@@ -123,15 +128,15 @@ class _GeneralPageState extends State<GeneralPage> {
     required int index,
   }) {
     final bool isSelected = _selectedIndex == index;
-    final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5; // color5 is Zinc-400
-    final Color textColor = isSelected ? AppColors.color2 : AppColors.color8; // color2 is similar to Black, color8 is Zinc-600
+    final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5;
+    final Color textColor = isSelected ? AppColors.color2 : AppColors.color8;
 
     return InkWell(
       onTap: () => _onItemTapped(index),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6), // Specific padding from design
+        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -167,7 +172,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6), // Specific padding from design
+        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

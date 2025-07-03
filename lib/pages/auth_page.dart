@@ -26,12 +26,14 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-      ),
-    );
+    if (isError) {  // Only show error messages
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _handleSignUp() async {
@@ -43,7 +45,6 @@ class _AuthPageState extends State<AuthPage> {
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
-      _showSnackBar('OTP sent to $phone. Please check your phone.');
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
     } on AuthException catch (e) {
       _showSnackBar(e.message, isError: true);
@@ -65,7 +66,6 @@ class _AuthPageState extends State<AuthPage> {
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
-      _showSnackBar('OTP sent to $phone. Please check your phone.');
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
     } on AuthException catch (e) {
       _showSnackBar(e.message, isError: true);
@@ -91,11 +91,10 @@ class _AuthPageState extends State<AuthPage> {
         password: password,
       );
 
-              if (res.user != null) {
-          _showSnackBar('Successfully logged in as admin');
-          // Navigate to general page and remove all previous routes
-          Navigator.of(context).pushNamedAndRemoveUntil('/general', (route) => false);
-        }
+      if (res.user != null) {
+        // Navigate to general page and remove all previous routes without showing success message
+        Navigator.of(context).pushNamedAndRemoveUntil('/general', (route) => false);
+      }
     } on AuthException catch (e) {
       _showSnackBar(e.message, isError: true);
     } catch (e) {

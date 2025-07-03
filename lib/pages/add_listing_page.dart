@@ -13,6 +13,7 @@ import '../models/subcategory.dart';
 import '../services/subcategory_service.dart';
 import '../models/region.dart';
 import '../services/region_service.dart';
+import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
@@ -50,6 +51,10 @@ class _AddListingPageState extends State<AddListingPage> {
   final TextEditingController _telegramController = TextEditingController();
   final TextEditingController _viberController = TextEditingController();
   String _selectedMessenger = 'phone'; // 'phone', 'whatsapp', 'telegram', 'viber'
+  final Map<String, TextEditingController> _extraFieldControllers = {};
+  final Map<String, dynamic> _extraFieldValues = {};
+  final Map<String, RangeValues> _rangeValues = {};
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -120,22 +125,42 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   Future<void> _pickImage() async {
-    if (_selectedImages.length >= 7) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You can select a maximum of 7 images.')),
-      );
-      return;
-    }
-    final List<XFile> images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      print('Selected ${images.length} images');
-      print('First image path: ${images.first.path}');
-      setState(() {
-        _selectedImages.addAll(images);
-        if (_selectedImages.length > 7) {
-          _selectedImages.removeRange(7, _selectedImages.length);
+    try {
+      if (_selectedImages.length >= 7) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You can select a maximum of 7 images.')),
+        );
+        return;
+      }
+      
+      final List<XFile> images = await _picker.pickMultiImage();
+      if (images.isNotEmpty) {
+        print('Selected ${images.length} images');
+        
+        // Validate each image before adding
+        for (var image in images) {
+          try {
+            // Verify the image can be read
+            await image.readAsBytes();
+            
+            if (_selectedImages.length < 7) {
+              setState(() {
+                _selectedImages.add(image);
+              });
+            }
+          } catch (e) {
+            print('Error validating image ${image.path}: $e');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not load image: ${image.name}')),
+            );
+          }
         }
-      });
+      }
+    } catch (e) {
+      print('Error picking images: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error selecting images. Please try again.')),
+      );
     }
   }
 
@@ -156,6 +181,13 @@ class _AddListingPageState extends State<AddListingPage> {
     return Image.file(
       File(imagePath),
       fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        print('Error loading image: $error');
+        return Container(
+          color: AppColors.zinc200,
+          child: Icon(Icons.error, color: AppColors.color5),
+        );
+      },
     );
   }
 
@@ -169,6 +201,7 @@ class _AddListingPageState extends State<AddListingPage> {
     _whatsappController.dispose();
     _telegramController.dispose();
     _viberController.dispose();
+    _extraFieldControllers.forEach((_, controller) => controller.dispose());
     super.dispose();
   }
 
@@ -505,8 +538,278 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onSubcategorySelected(Subcategory subcategory) {
     setState(() {
       _selectedSubcategory = subcategory;
+      // Clear previous extra field controllers
+      _extraFieldControllers.forEach((_, controller) => controller.dispose());
+      _extraFieldControllers.clear();
+      _extraFieldValues.clear();
+      _rangeValues.clear();
+      
+      // Initialize controllers for new extra fields
+      for (var field in subcategory.extraFields) {
+        if (field.type == 'number') {
+          _extraFieldControllers[field.name] = TextEditingController();
+        } else if (field.type == 'range') {
+          _rangeValues[field.name] = RangeValues(
+            (field.defaultValue?['min'] ?? 18).toDouble(),
+            (field.defaultValue?['max'] ?? 100).toDouble(),
+          );
+        }
+      }
     });
     Navigator.pop(context);
+  }
+
+  Widget _buildExtraFieldsSection() {
+    if (_selectedSubcategory == null || _selectedSubcategory!.extraFields.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Додаткові параметри',
+          style: AppTextStyles.body1Medium.copyWith(color: AppColors.color8),
+        ),
+        const SizedBox(height: 16),
+        ..._selectedSubcategory!.extraFields.map((field) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getFieldDisplayName(field.name),
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+              if (field.type == 'number')
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.zinc50,
+                    borderRadius: BorderRadius.circular(200),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _extraFieldControllers[field.name],
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      hintText: 'Введіть значення',
+                      hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      suffixText: field.unit,
+                      suffixStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color8),
+                    ),
+                    style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                    onChanged: (value) {
+                      _extraFieldValues[field.name] = int.tryParse(value);
+                    },
+                  ),
+                )
+              else if (field.type == 'select')
+                GestureDetector(
+                  onTap: () => _showOptionsDialog(field),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.zinc50,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(color: AppColors.zinc200, width: 1),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(16, 24, 40, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _extraFieldValues[field.name] ?? 'Оберіть значення',
+                            style: AppTextStyles.body1Regular.copyWith(
+                              color: _extraFieldValues[field.name] != null 
+                                  ? AppColors.color2 
+                                  : AppColors.color5,
+                            ),
+                          ),
+                        ),
+                        SvgPicture.asset(
+                          'assets/icons/chevron_down.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (field.type == 'range')
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'від ${_rangeValues[field.name]?.start.round() ?? field.defaultValue?['min'] ?? 18}',
+                          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+                        ),
+                        Text(
+                          'до ${_rangeValues[field.name]?.end.round() ?? field.defaultValue?['max'] ?? 100}',
+                          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    RangeSlider(
+                      values: _rangeValues[field.name] ?? RangeValues(
+                        (field.defaultValue?['min'] ?? 18).toDouble(),
+                        (field.defaultValue?['max'] ?? 100).toDouble(),
+                      ),
+                      min: (field.defaultValue?['min'] ?? 18).toDouble(),
+                      max: (field.defaultValue?['max'] ?? 100).toDouble(),
+                      divisions: ((field.defaultValue?['max'] ?? 100) - (field.defaultValue?['min'] ?? 18)).round(),
+                      activeColor: AppColors.primaryColor,
+                      inactiveColor: AppColors.zinc200,
+                      labels: RangeLabels(
+                        '${_rangeValues[field.name]?.start.round() ?? field.defaultValue?['min'] ?? 18}',
+                        '${_rangeValues[field.name]?.end.round() ?? field.defaultValue?['max'] ?? 100}',
+                      ),
+                      onChanged: (RangeValues values) {
+                        setState(() {
+                          _rangeValues[field.name] = values;
+                          _extraFieldValues[field.name] = {
+                            'min': values.start.round(),
+                            'max': values.end.round(),
+                          };
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 20),
+            ],
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  void _showOptionsDialog(ExtraField field) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: MediaQuery.of(context).size.width - 26,
+            constraints: const BoxConstraints(maxHeight: 320),
+            margin: const EdgeInsets.symmetric(horizontal: 13),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.zinc200),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.03),
+                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...?field.options?.map((option) => _buildOptionItem(field.name, option)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionItem(String fieldName, String option) {
+    final isSelected = _extraFieldValues[fieldName] == option;
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _extraFieldValues[fieldName] = option;
+          });
+          Navigator.pop(context);
+        },
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.zinc50 : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  option,
+                  style: AppTextStyles.body1Regular.copyWith(
+                    color: AppColors.color2,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                SvgPicture.asset(
+                  'assets/icons/check.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getFieldDisplayName(String fieldName) {
+    // Convert field names to display names
+    switch (fieldName) {
+      case 'year':
+        return 'Рік випуску';
+      case 'brand':
+        return 'Марка';
+      case 'engine_hp':
+        return 'Потужність двигуна';
+      default:
+        // Convert snake_case to Title Case
+        return fieldName
+            .split('_')
+            .map((word) => word[0].toUpperCase() + word.substring(1))
+            .join(' ');
+    }
   }
 
   Widget _buildRegionSection() {
@@ -989,10 +1292,18 @@ class _AddListingPageState extends State<AddListingPage> {
         if (!_isNegotiablePrice) ...[
           const SizedBox(height: 8),
           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.zinc200),
+              color: AppColors.zinc50,
+              borderRadius: BorderRadius.circular(200),
+              border: Border.all(color: AppColors.zinc200, width: 1),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
             ),
             child: TextField(
               controller: _priceController,
@@ -1002,11 +1313,12 @@ class _AddListingPageState extends State<AddListingPage> {
               ],
               decoration: InputDecoration(
                 hintText: 'Введіть ціну',
-                hintStyle: AppTextStyles.body2Regular.copyWith(color: AppColors.color5),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
                 border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
               ),
-              style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
             ),
           ),
         ],
@@ -1168,6 +1480,134 @@ class _AddListingPageState extends State<AddListingPage> {
           ),
       ],
     );
+  }
+
+  bool _validateForm() {
+    String? errorMessage;
+
+    // Check title
+    if (_titleController.text.isEmpty) {
+      errorMessage = 'Введіть заголовок оголошення';
+    }
+    // Check description
+    else if (_descriptionController.text.isEmpty) {
+      errorMessage = 'Введіть опис оголошення';
+    }
+    // Check category
+    else if (_selectedCategory == null) {
+      errorMessage = 'Оберіть категорію';
+    }
+    // Check subcategory
+    else if (_selectedSubcategory == null) {
+      errorMessage = 'Оберіть підкатегорію';
+    }
+    // Check region
+    else if (_selectedRegion == null) {
+      errorMessage = 'Оберіть область';
+    }
+    // Check price for non-free listings
+    else if (_isForSale) {
+      if (_priceController.text.isEmpty) {
+        errorMessage = 'Введіть ціну';
+      } else if (double.tryParse(_priceController.text) == null) {
+        errorMessage = 'Введіть коректну ціну';
+      }
+    }
+    // Check contact information
+    else if (_selectedMessenger == 'phone' && _phoneController.text.isEmpty) {
+      errorMessage = 'Введіть номер телефону';
+    }
+    else if (_selectedMessenger == 'whatsapp' && _whatsappController.text.isEmpty) {
+      errorMessage = 'Введіть номер WhatsApp';
+    }
+    else if (_selectedMessenger == 'telegram' && _telegramController.text.isEmpty) {
+      errorMessage = 'Введіть username Telegram';
+    }
+    else if (_selectedMessenger == 'viber' && _viberController.text.isEmpty) {
+      errorMessage = 'Введіть номер Viber';
+    }
+
+    // Check required extra fields if any
+    if (_selectedSubcategory != null) {
+      for (var field in _selectedSubcategory!.extraFields) {
+        if (!_extraFieldValues.containsKey(field.name) || 
+            _extraFieldValues[field.name] == null ||
+            (_extraFieldValues[field.name] is String && _extraFieldValues[field.name].isEmpty)) {
+          errorMessage = 'Заповніть поле ${_getFieldDisplayName(field.name)}';
+          break;
+        }
+      }
+    }
+
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _handleSubmit() async {
+    if (!_validateForm()) {
+      return;
+    }
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final listingService = ListingService(Supabase.instance.client);
+
+      // Convert XFile to File and validate images
+      print('Processing ${_selectedImages.length} images');
+      final List<XFile> imageFiles = _selectedImages;
+
+      print('Starting listing creation...');
+      final listingId = await listingService.createListing(
+        title: _titleController.text,
+        description: _descriptionController.text,
+        categoryId: _selectedCategory!.id,
+        subcategoryId: _selectedSubcategory!.id,
+        location: _selectedRegion!.name,
+        isFree: !_isForSale,
+        currency: _isForSale ? _selectedCurrency : null,
+        price: _isForSale ? double.tryParse(_priceController.text) : null,
+        phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
+        whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
+        telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
+        viber: _selectedMessenger == 'viber' ? _viberController.text : null,
+        customAttributes: _extraFieldValues,
+        images: imageFiles,
+      );
+      print('Listing created successfully with ID: $listingId');
+
+      // Navigate back without showing success message
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      print('Error creating listing: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка: ${error.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -1414,6 +1854,8 @@ class _AddListingPageState extends State<AddListingPage> {
             _buildCategorySection(),
             if (_selectedCategory != null && _subcategories.isNotEmpty)
               _buildSubcategorySection(),
+            if (_selectedSubcategory != null)
+              _buildExtraFieldsSection(),
             const SizedBox(height: 20),
 
             // Region Dropdown
@@ -1585,9 +2027,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   height: 44,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Handle confirmation
-                    },
+                    onPressed: _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       shape: RoundedRectangleBorder(
@@ -1608,7 +2048,32 @@ class _AddListingPageState extends State<AddListingPage> {
                   width: double.infinity,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      // Clear all data
+                      setState(() {
+                        _titleController.clear();
+                        _descriptionController.clear();
+                        _phoneNumberController.clear();
+                        _priceController.clear();
+                        _selectedImages.clear();
+                        _selectedCategory = null;
+                        _selectedSubcategory = null;
+                        _selectedRegion = null;
+                        _isForSale = true;
+                        _selectedCurrency = 'UAH';
+                        _isNegotiablePrice = false;
+                        _phoneController.clear();
+                        _whatsappController.clear();
+                        _telegramController.clear();
+                        _viberController.clear();
+                        _selectedMessenger = 'phone';
+                        _extraFieldControllers.forEach((_, controller) => controller.dispose());
+                        _extraFieldControllers.clear();
+                        _extraFieldValues.clear();
+                        _rangeValues.clear();
+                      });
+                      
+                      // Navigate to main page
+                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.white,

@@ -26,12 +26,14 @@ class _OtpPageState extends State<OtpPage> {
   bool _isLoading = false;
 
   void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-      ),
-    );
+    if (isError) {  // Only show error messages
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _verifyOtp() async {
@@ -51,7 +53,6 @@ class _OtpPageState extends State<OtpPage> {
         type: OtpType.sms,
       );
       if (smth.session != null) {
-        _showSnackBar('OTP verified successfully! Navigating to general page.');
         Navigator.of(context).pushReplacementNamed('/general');
       } else {
         _showSnackBar('OTP verification failed.', isError: true);
