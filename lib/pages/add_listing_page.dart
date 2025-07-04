@@ -18,6 +18,7 @@ import '../services/city_service.dart'; // Add this import
 import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
+import 'dart:async'; // Add this import for Timer
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -35,6 +36,7 @@ class _AddListingPageState extends State<AddListingPage> {
   final GlobalKey _categoryButtonKey = GlobalKey();
   final GlobalKey _subcategoryButtonKey = GlobalKey();
   final GlobalKey _regionButtonKey = GlobalKey();
+  final GlobalKey _cityButtonKey = GlobalKey(); // Add new GlobalKey for city button
   Category? _selectedCategory;
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -56,12 +58,20 @@ class _AddListingPageState extends State<AddListingPage> {
   final Map<String, dynamic> _extraFieldValues = {};
   final Map<String, RangeValues> _rangeValues = {};
   bool _isLoading = false;
+  
+  // Nominatim City Search
+  final TextEditingController _citySearchController = TextEditingController();
+  List<City> _cities = [];
+  bool _isSearchingCities = false;
+  City? _selectedCity;
+  Timer? _debounceTimer; // Add debounce timer
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _loadRegions();
+    // _citySearchController.addListener(() => _onCitySearchChanged(_citySearchController.text)); // REMOVE THIS LINE
   }
 
   Future<void> _loadCategories() async {
@@ -105,8 +115,6 @@ class _AddListingPageState extends State<AddListingPage> {
       
       // Initialize regions if needed
       await regionService.initializeRegions();
-      
-      // cityService.initializeCities(); // Remove this line as cities are now from Nominatim
       
       final regions = await regionService.getRegions();
       setState(() {
@@ -192,6 +200,8 @@ class _AddListingPageState extends State<AddListingPage> {
     _telegramController.dispose();
     _viberController.dispose();
     _extraFieldControllers.forEach((_, controller) => controller.dispose());
+    _citySearchController.dispose(); // Dispose city search controller
+    _debounceTimer?.cancel(); // Cancel debounce timer
     super.dispose();
   }
 
@@ -965,8 +975,265 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onRegionSelected(Region region) {
     setState(() {
       _selectedRegion = region;
+      _selectedCity = null; // Clear selected city when region changes
+      _cities.clear(); // Clear city search results
+      _citySearchController.clear(); // Clear city search input
     });
     Navigator.pop(context);
+    // Automatically search for cities in the selected region or prompt user
+    // _onCitySearchChanged('', regionName: region.name); // You can uncomment this to auto-load cities
+  }
+
+  Future<void> _onCitySearchChanged(String query, {String? regionName}) async {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      setState(() {
+        _isSearchingCities = true;
+        _cities.clear();
+      });
+
+      try {
+        final cityService = CityService();
+        final String effectiveRegionName = regionName ?? _selectedRegion?.name ?? '';
+        
+        // Pass bounding box coordinates if available
+        final results = await cityService.searchCities(
+          query,
+          regionName: effectiveRegionName,
+          minLat: _selectedRegion?.minLat,
+          maxLat: _selectedRegion?.maxLat,
+          minLon: _selectedRegion?.minLon,
+          maxLon: _selectedRegion?.maxLon,
+        );
+
+        setState(() {
+          _cities = results;
+        });
+      } catch (e) {
+        print('Error searching cities: $e');
+        setState(() {
+          _cities = [];
+        });
+      } finally {
+        setState(() {
+          _isSearchingCities = false;
+        });
+      }
+    });
+  }
+
+  Widget _buildCitySection() {
+    if (_selectedRegion == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          'Місто',
+          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+        ),
+        const SizedBox(height: 6),
+        GestureDetector(
+          key: _cityButtonKey, // Assign the new key here
+          onTap: () {
+            final RenderBox? button = _cityButtonKey.currentContext?.findRenderObject() as RenderBox?;
+            if (button != null) {
+              final buttonPosition = button.localToGlobal(Offset.zero);
+              final buttonSize = button.size;
+              _showCityPicker(
+                position: buttonPosition,
+                size: buttonSize,
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.zinc50,
+              borderRadius: BorderRadius.circular(200),
+              border: Border.all(color: AppColors.zinc200, width: 1),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedCity?.name ?? 'Оберіть місто',
+                    style: AppTextStyles.body1Regular.copyWith(
+                      color: _selectedCity != null ? AppColors.color2 : AppColors.color5,
+                    ),
+                  ),
+                ),
+                SvgPicture.asset(
+                  'assets/icons/chevron_down.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showCityPicker({required Offset position, required Size size}) {
+    // Calculate the height of one item (padding + container height)
+    const double itemHeight = 44.0; // 10 vertical padding * 2 + container height
+    const double verticalPadding = 8.0; // 4 padding top + 4 padding bottom
+
+    // Use the smaller of contentHeight or maxHeight
+    final double finalHeight = (250.0); // Fixed height for dialog with search
+
+    // Clear previous search results and controller text, then potentially load initial cities
+    _cities.clear(); // Clear any previous search results
+    _citySearchController.text = _selectedCity?.name ?? ''; // Set initial text if city already selected
+
+    // Trigger an initial search if no city is selected yet or if the search field is empty
+    if (_selectedCity == null || _citySearchController.text.isEmpty) {
+      _onCitySearchChanged('', regionName: _selectedRegion!.name); // RE-ENABLE THIS LINE
+    }
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Stack(
+          children: [
+            Positioned(
+              top: position.dy + size.height + 8, // Adjust to 8 pixels below the input
+              left: position.dx,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: size.width,
+                  height: finalHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.zinc200),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.03),
+                        offset: Offset(0, 4),
+                        blurRadius: 6,
+                        spreadRadius: -2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: _citySearchController,
+                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                          decoration: InputDecoration(
+                            hintText: 'Введіть місто',
+                            hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: AppColors.zinc200),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: AppColors.primaryColor),
+                            ),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            suffixIcon: _isSearchingCities
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                : null,
+                          ),
+                          onChanged: (value) => _onCitySearchChanged(value, regionName: _selectedRegion!.name),
+                        ),
+                      ),
+                      if (_isSearchingCities)
+                        const LinearProgressIndicator(color: AppColors.primaryColor, backgroundColor: Colors.transparent)
+                      else
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            itemCount: _cities.length,
+                            itemBuilder: (context, index) {
+                              final city = _cities[index];
+                              return _buildCityItem(city);
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCityItem(City city) {
+    final isSelected = _selectedCity?.id == city.id;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      child: InkWell(
+        onTap: () => _onCitySelected(city),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.zinc50 : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  city.name,
+                  style: AppTextStyles.body1Regular.copyWith(
+                    color: AppColors.color2,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                SvgPicture.asset(
+                  'assets/icons/check.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onCitySelected(City city) {
+    setState(() {
+      _selectedCity = city;
+      _citySearchController.text = city.name; // Set text field value
+      _cities.clear(); // Clear suggestions
+    });
+    Navigator.pop(context); // Close the dialog
   }
 
   Widget _buildListingTypeToggle() {
@@ -985,12 +1252,12 @@ class _AddListingPageState extends State<AddListingPage> {
                 setState(() {
                   _isForSale = true;
                 });
-              },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
                   color: _isForSale ? Colors.white : Colors.transparent,
-                        borderRadius: BorderRadius.circular(200),
+              borderRadius: BorderRadius.circular(200),
                   border: Border.all(
                     color: _isForSale ? AppColors.zinc200 : Colors.transparent,
                     width: 1,
@@ -1089,17 +1356,17 @@ class _AddListingPageState extends State<AddListingPage> {
                         color: _selectedCurrency == 'UAH' ? AppColors.primaryColor : AppColors.zinc200,
                         width: 1,
                       ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(16, 24, 40, 0.05),
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Row(
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+            child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+              children: [
                           SvgPicture.asset(
                           'assets/icons/currency-grivna-svgrepo-com 1.svg',
                             width: 21,
@@ -1122,7 +1389,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   ),
               ),
               const SizedBox(width: 4),
-                  Expanded(
+                Expanded(
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -1149,10 +1416,10 @@ class _AddListingPageState extends State<AddListingPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SvgPicture.asset(
+                SvgPicture.asset(
                           'assets/icons/currency-euro.svg',
-                            width: 20,
-                            height: 20,
+                  width: 20,
+                  height: 20,
                           colorFilter: ColorFilter.mode(
                             _selectedCurrency == 'EUR' ? Colors.white : AppColors.color5,
                             BlendMode.srcIn,
@@ -1164,9 +1431,9 @@ class _AddListingPageState extends State<AddListingPage> {
                           style: AppTextStyles.body2Semibold.copyWith(
                             color: _selectedCurrency == 'EUR' ? Colors.white : AppColors.color8,
                           ),
-                          ),
-                        ],
-                      ),
+                ),
+              ],
+            ),
                     ),
                   ),
               ),
@@ -1220,8 +1487,8 @@ class _AddListingPageState extends State<AddListingPage> {
                     ),
                   ),
                 ],
-              ),
-            ),
+          ),
+        ),
       ],
     );
   }
@@ -1330,7 +1597,7 @@ class _AddListingPageState extends State<AddListingPage> {
           _selectedMessenger = type;
         });
       },
-      child: Container(
+                child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryColor : Colors.white,
@@ -1380,10 +1647,10 @@ class _AddListingPageState extends State<AddListingPage> {
     bool isTelegramInput = false,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.zinc200),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.zinc200),
               ),
               child: TextField(
         controller: controller,
@@ -1495,6 +1762,10 @@ class _AddListingPageState extends State<AddListingPage> {
     else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
     }
+    // Check city
+    else if (_selectedCity == null) {
+      errorMessage = 'Оберіть місто';
+    }
     // Check price for non-free listings
     else if (_isForSale) {
       if (_priceController.text.isEmpty) {
@@ -1571,6 +1842,7 @@ class _AddListingPageState extends State<AddListingPage> {
         viber: _selectedMessenger == 'viber' ? _viberController.text : null,
         customAttributes: _extraFieldValues,
         images: imageFiles,
+        location: _selectedCity!.name, // Add the selected city name as location
       );
 
       // Navigate back without showing success message
@@ -1712,7 +1984,7 @@ class _AddListingPageState extends State<AddListingPage> {
               ),
             ),
             if (_selectedImages.isNotEmpty)
-              Padding(
+                      Padding(
                 padding: const EdgeInsets.only(top: 6.0),
                 child: Wrap(
                   spacing: 6,
@@ -1782,10 +2054,10 @@ class _AddListingPageState extends State<AddListingPage> {
                       ),
                     ],
                   ),
-              child: TextField(
+                        child: TextField(
                 controller: _titleController,
-                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                decoration: InputDecoration(
+                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                          decoration: InputDecoration(
                   hintText: 'Введіть текст',
                   hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
                   border: InputBorder.none,
@@ -1827,7 +2099,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   hintText: 'Введіть текст',
                   hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
                   border: InputBorder.none,
-                  isDense: true,
+                            isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -1845,8 +2117,7 @@ class _AddListingPageState extends State<AddListingPage> {
             // Region Dropdown
             _buildRegionSection(),
             if (_selectedRegion != null)
-              // REMOVE START
-              // _buildCitySection(), // Call _buildCitySection here
+              _buildCitySection(), // Call _buildCitySection here
               const SizedBox(height: 12),
             // REMOVE END
 
@@ -1884,7 +2155,7 @@ class _AddListingPageState extends State<AddListingPage> {
                         color: Color.fromRGBO(16, 24, 40, 0.05),
                         offset: Offset(0, 1),
                         blurRadius: 2,
-                      ),
+                        ),
                     ],
                   ),
                   child: SvgPicture.asset(
@@ -1919,7 +2190,7 @@ class _AddListingPageState extends State<AddListingPage> {
                         const SizedBox(height: 4),
                 Container(
                           padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
+          decoration: BoxDecoration(
                             color: Colors.white,
                     borderRadius: BorderRadius.circular(200),
                             border: Border.all(color: AppColors.zinc200, width: 1),
@@ -1971,10 +2242,10 @@ class _AddListingPageState extends State<AddListingPage> {
                     blurRadius: 2,
                   ),
                 ],
-              ),
-              child: Row(
+          ),
+          child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            children: [
                   SvgPicture.asset(
                     'assets/icons/marker_pin_04.svg',
                     width: 21,
@@ -2022,13 +2293,13 @@ class _AddListingPageState extends State<AddListingPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                child: Text(
                       'Підтвердити',
                       style: AppTextStyles.body2Semibold.copyWith(
                         color: Colors.white,
-                      ),
-                    ),
                   ),
+                ),
+              ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -2077,8 +2348,8 @@ class _AddListingPageState extends State<AddListingPage> {
                     ),
                   ),
                 ),
-              ],
-            ),
+            ],
+          ),
             const SizedBox(height: 20),
           ],
         ),
