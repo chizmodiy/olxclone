@@ -6,6 +6,13 @@ import '../models/product.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
+import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
+
+enum ViewMode {
+  grid8,
+  grid4,
+  list,
+}
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -40,10 +47,12 @@ class _HomeContentState extends State<HomeContent> {
   bool _hasMore = true;
   int _currentPage = 1;
   String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
-  bool _isGrid = true;
+  ViewMode _currentViewMode = ViewMode.grid4; // Changed from _isGrid
   String? _errorMessage;
   String? _currentUserId;
   Set<String> _favoriteProductIds = {};
+  bool _isViewDropdownOpen = false; // New state variable
+  bool _isSortDropdownOpen = false; // New state variable
 
   @override
   void initState() {
@@ -72,7 +81,7 @@ class _HomeContentState extends State<HomeContent> {
       final products = await _productService.getProducts(
         page: _currentPage,
         sortBy: _sortBy,
-        isGrid: _isGrid,
+        // isGrid: _isGrid, // Removed this parameter, logic will be handled locally
       );
 
       setState(() {
@@ -134,13 +143,8 @@ class _HomeContentState extends State<HomeContent> {
 
   void _onSortChanged(String? newSortBy) {
     setState(() {
-      if (_sortBy == 'price_asc') {
-        _sortBy = 'price_desc';
-      } else if (_sortBy == 'price_desc') {
-        _sortBy = null; // Back to default (created_at desc)
-      } else {
-        _sortBy = 'price_asc';
-      }
+      _sortBy = newSortBy; // Directly set the sortBy from selected option
+      _isSortDropdownOpen = false; // Close dropdown after selection
       _products = [];
       _currentPage = 1;
       _hasMore = true;
@@ -151,7 +155,14 @@ class _HomeContentState extends State<HomeContent> {
 
   void _toggleView() {
     setState(() {
-      _isGrid = !_isGrid;
+      _isViewDropdownOpen = !_isViewDropdownOpen;
+    });
+  }
+
+  void _onViewModeSelected(ViewMode mode) {
+    setState(() {
+      _currentViewMode = mode;
+      _isViewDropdownOpen = false; // Close dropdown after selection
       _products = [];
       _currentPage = 1;
       _hasMore = true;
@@ -160,122 +171,274 @@ class _HomeContentState extends State<HomeContent> {
     _loadProducts();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 13),
+  // Helper method to build the dropdown menu for view modes
+  Widget _buildViewModeDropdown() {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Title and buttons row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
+          _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined),
+          _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build individual dropdown menu items
+  Widget _buildDropdownMenuItem(String text, ViewMode mode, IconData icon) {
+    final bool isSelected = _currentViewMode == mode;
+    return GestureDetector(
+      onTap: () => _onViewModeSelected(mode),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
             children: [
-              const Text(
-                'Головна',
-                style: TextStyle(
-                  color: Color(0xFF161817),
-                  fontSize: 28,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
+              Icon(icon, color: const Color(0xFF101828), size: 20), // Gray-900
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: const Color(0xFF101828), // Gray-900
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    height: 1.5,
+                    letterSpacing: isSelected ? 0.16 : 0,
+                  ),
                 ),
               ),
+              if (isSelected)
+                Icon(Icons.check, size: 20, color: const Color(0xFF015873)), // Primary color
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build the dropdown menu for sorting
+  Widget _buildSortDropdown() {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSortDropdownMenuItem('Від новіших', null),
+          _buildSortDropdownMenuItem('Від дешевших', 'price_asc'),
+          _buildSortDropdownMenuItem('Від дорогих', 'price_desc'),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build individual dropdown menu items for sorting
+  Widget _buildSortDropdownMenuItem(String text, String? sortByValue) {
+    final bool isSelected = _sortBy == sortByValue;
+    return GestureDetector(
+      onTap: () => _onSortChanged(sortByValue),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: const Color(0xFF101828), // Gray-900
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    height: 1.5,
+                    letterSpacing: isSelected ? 0.16 : 0,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check, size: 20, color: const Color(0xFF015873)), // Primary color
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          child: Column(
+            children: [
+              // Title and buttons row
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    onTap: () => _onSortChanged(_sortBy),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _sortBy == 'price_asc' ? Icons.arrow_upward : (_sortBy == 'price_desc' ? Icons.arrow_downward : Icons.sort),
-                        size: 20,
-                      ),
+                  const Text(
+                    'Головна',
+                    style: TextStyle(
+                      color: Color(0xFF161817),
+                      fontSize: 28,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _toggleView,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSortDropdownOpen = !_isSortDropdownOpen;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                            boxShadow: _isSortDropdownOpen
+                                ? [
+                                    BoxShadow(
+                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 0, // Changed from 2 to 0
+                                      spreadRadius: 5,
+                                    ),
+                                  ]
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
                           ),
-                        ],
+                          child: Icon(
+                            Icons.sort, // Always show sort icon, regardless of dropdown state
+                            size: 20,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        _isGrid ? Icons.grid_view : Icons.view_list,
-                        size: 20,
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _toggleView,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                            boxShadow: _isViewDropdownOpen
+                                ? [
+                                    BoxShadow(
+                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 0, // Changed from 2 to 0
+                                      spreadRadius: 5,
+                                    ),
+                                  ]
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                          ),
+                          child: Icon(
+                            _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                            size: 20,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Column(
+                children: [
+                  Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F3F3),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              hintText: 'Пошук',
+                              hintStyle: TextStyle(
+                                color: Color(0xFF838583),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                letterSpacing: 0.16,
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Column(
-            children: [
-              Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F3F3),
-                  borderRadius: BorderRadius.circular(200),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Пошук',
-                          hintStyle: const TextStyle(
-                            color: Color(0xFF838583),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                        onChanged: (value) {
-                          // TODO: Implement search logic here
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 12), // Додаємо відступ між пошуком та новими кнопками
               Row(
                 children: [
                   Expanded(
@@ -363,82 +526,92 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                 ],
               ),
+              const SizedBox(height: 20), // Відступ перед списком товарів
+              Expanded(
+                child: _errorMessage != null
+                    ? Center(
+                        child: Text('Помилка завантаження товарів: $_errorMessage'),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          setState(() {
+                            _products = [];
+                            _errorMessage = null;
+                          });
+                          await _loadProducts();
+                        },
+                        child: _products.isEmpty && !_isLoading
+                            ? const Center(
+                                child: Text('Наразі оголошень немає.'),
+                              )
+                            : _currentViewMode == ViewMode.list
+                                ? ListView.builder(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.only(top: 0),
+                                    itemCount: _products.length + (_hasMore ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index == _products.length) {
+                                        return const Center(child: CircularProgressIndicator());
+                                      }
+                                      final product = _products[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 10),
+                                        child: ProductCardListItem(
+                                          title: product.title,
+                                          price: product.price,
+                                          date: DateFormat.yMMMd().format(product.createdAt),
+                                          location: product.location,
+                                          images: product.images,
+                                          isFavorite: _favoriteProductIds.contains(product.id),
+                                          onFavoriteToggle: () => _toggleFavorite(product),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : GridView.builder(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.only(top: 0),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: _currentViewMode == ViewMode.grid8 ? 4 : 2,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      mainAxisExtent: 250,
+                                    ),
+                                    itemCount: _products.length + (_hasMore ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index == _products.length) {
+                                        return const Center(child: CircularProgressIndicator());
+                                      }
+                                      final product = _products[index];
+                                      return ProductCard(
+                                        title: product.title,
+                                        price: product.price,
+                                        date: DateFormat.yMMMd().format(product.createdAt),
+                                        location: product.location,
+                                        images: product.images,
+                                        isFavorite: _favoriteProductIds.contains(product.id),
+                                        onFavoriteToggle: () => _toggleFavorite(product),
+                                      );
+                                    },
+                                  ),
+                      ),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _errorMessage != null
-                ? Center(
-                    child: Text('Помилка завантаження товарів: $_errorMessage'),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _products = [];
-                        _currentPage = 1;
-                        _hasMore = true;
-                        _errorMessage = null;
-                      });
-                      await _loadProducts();
-                    },
-                    child: _products.isEmpty && !_isLoading
-                        ? const Center(
-                            child: Text('Наразі оголошень немає.'),
-                          )
-                        : _isGrid
-                            ? GridView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  mainAxisExtent: 250,
-                                ),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                  final product = _products[index];
-                                  return ProductCard(
-                                    title: product.title,
-                                    price: product.price,
-                                    date: DateFormat.yMMMd().format(product.createdAt),
-                                    location: product.location,
-                                    images: product.images,
-                                    isFavorite: _favoriteProductIds.contains(product.id),
-                                    onFavoriteToggle: () => _toggleFavorite(product),
-                                  );
-                                },
-                              )
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                  final product = _products[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: ProductCard(
-                                      title: product.title,
-                                      price: product.price,
-                                      date: DateFormat.yMMMd().format(product.createdAt),
-                                      location: product.location,
-                                      images: product.images,
-                                      isFavorite: _favoriteProductIds.contains(product.id),
-                                      onFavoriteToggle: () => _toggleFavorite(product),
-                                    ),
-                                  );
-                                },
-                              ),
-                  ),
+        ),
+        if (_isViewDropdownOpen)
+          Positioned(
+            top: 72, // Changed to 72 (8px below the button)
+            right: 13, // Aligned with the right padding
+            child: _buildViewModeDropdown(),
           ),
-        ],
-      ),
+        if (_isSortDropdownOpen)
+          Positioned(
+            top: 72, // Changed to 72 (8px below the button)
+            right: 69, // Aligned with the sort button (13 + 12 + 44)
+            child: _buildSortDropdown(),
+          ),
+      ],
     );
   }
 }

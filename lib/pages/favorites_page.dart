@@ -6,6 +6,8 @@ import '../models/product.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../services/profile_service.dart';
+import '../pages/home_page.dart'; // Import ViewMode enum
+import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
@@ -38,10 +40,11 @@ class _FavoritesContentState extends State<FavoritesContent> {
   List<Product> _products = [];
   bool _isLoading = false;
   String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
-  bool _isGrid = true;
+  ViewMode _currentViewMode = ViewMode.grid4; // Changed from _isGrid
   String? _errorMessage;
   String? _currentUserId;
   Set<String> _favoriteProductIds = {};
+  bool _isViewDropdownOpen = false; // New state variable
 
   @override
   void initState() {
@@ -158,132 +161,228 @@ class _FavoritesContentState extends State<FavoritesContent> {
 
   void _toggleView() {
     setState(() {
-      _isGrid = !_isGrid;
-      // No need to clear products and reload, just change view
+      _isViewDropdownOpen = !_isViewDropdownOpen;
     });
+  }
+
+  void _onViewModeSelected(ViewMode mode) {
+    setState(() {
+      _currentViewMode = mode;
+      _isViewDropdownOpen = false; // Close dropdown after selection
+      // No need to clear products and reload, as favorites are loaded all at once
+      // and just the view changes. However, if product display logic depends on it,
+      // a slight modification here might be needed. For now, it just changes view.
+    });
+  }
+
+  // Helper method to build the dropdown menu for view modes
+  Widget _buildViewModeDropdown() {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
+          _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined), // Added this line
+          _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build individual dropdown menu items
+  Widget _buildDropdownMenuItem(String text, ViewMode mode, IconData icon) {
+    final bool isSelected = _currentViewMode == mode;
+    return GestureDetector(
+      onTap: () => _onViewModeSelected(mode),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF101828), size: 20), // Gray-900
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: const Color(0xFF101828), // Gray-900
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    height: 1.5,
+                    letterSpacing: isSelected ? 0.16 : 0,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check, size: 20, color: const Color(0xFF015873)), // Primary color
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-      child: Column(
-        children: [
-          // Title and buttons row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          child: Column(
             children: [
-              const Text(
-                'Обране',
-                style: TextStyle(
-                  color: Color(0xFF161817),
-                  fontSize: 28,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
-                ),
-              ),
+              // Title and buttons row
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _toggleView,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _isGrid ? Icons.grid_view : Icons.view_list,
-                        size: 20,
-                      ),
+                  const Text(
+                    'Обране',
+                    style: TextStyle(
+                      color: Color(0xFF161817),
+                      fontSize: 28,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
                     ),
+                  ),
+                  Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _toggleView,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                            boxShadow: _isViewDropdownOpen
+                                ? [
+                                    BoxShadow(
+                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                      offset: const Offset(0, 1),
+                                      blurRadius: 0,
+                                      spreadRadius: 5,
+                                    ),
+                                  ]
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                          ),
+                          child: Icon(
+                            _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: _errorMessage != null
-                ? Center(
-                    child: Text('Помилка завантаження товарів: $_errorMessage'),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _products = [];
-                        _errorMessage = null;
-                      });
-                      await _loadProducts();
-                    },
-                    child: _products.isEmpty && !_isLoading
-                        ? const Center(
-                            child: Text('Наразі оголошень немає.'),
-                          )
-                        : _isGrid
-                            ? GridView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  mainAxisExtent: 250,
-                                ),
-                                itemCount: _products.length, // No more _hasMore check needed
-                                itemBuilder: (context, index) {
-                                  // if (index == _products.length) {
-                                  //   return const Center(child: CircularProgressIndicator());
-                                  // }
-                                  final product = _products[index];
-                                  return ProductCard(
-                                    title: product.title,
-                                    price: product.price,
-                                    date: DateFormat.yMMMd().format(product.createdAt),
-                                    location: product.location,
-                                    images: product.images,
-                                    isFavorite: _favoriteProductIds.contains(product.id),
-                                    onFavoriteToggle: () => _toggleFavorite(product),
-                                  );
-                                },
+              const SizedBox(height: 20),
+              Expanded(
+                child: _errorMessage != null
+                    ? Center(
+                        child: Text('Помилка завантаження товарів: $_errorMessage'),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          setState(() {
+                            _products = [];
+                            _errorMessage = null;
+                          });
+                          await _loadProducts();
+                        },
+                        child: _products.isEmpty && !_isLoading
+                            ? const Center(
+                                child: Text('Наразі оголошень немає.'),
                               )
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                itemCount: _products.length, // No more _hasMore check needed
-                                itemBuilder: (context, index) {
-                                  // if (index == _products.length) {
-                                  //   return const Center(child: CircularProgressIndicator());
-                                  // }
-                                  final product = _products[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: ProductCard(
-                                      title: product.title,
-                                      price: product.price,
-                                      date: DateFormat.yMMMd().format(product.createdAt),
-                                      location: product.location,
-                                      images: product.images,
-                                      isFavorite: _favoriteProductIds.contains(product.id),
-                                      onFavoriteToggle: () => _toggleFavorite(product),
+                            : _currentViewMode == ViewMode.list
+                                ? ListView.builder(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.only(top: 0),
+                                    itemCount: _products.length, // No more _hasMore check needed
+                                    itemBuilder: (context, index) {
+                                      // if (index == _products.length) {
+                                      //   return const Center(child: CircularProgressIndicator());
+                                      // }
+                                      final product = _products[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 10),
+                                        child: ProductCardListItem(
+                                          title: product.title,
+                                          price: product.price,
+                                          date: DateFormat.yMMMd().format(product.createdAt),
+                                          location: product.location,
+                                          images: product.images,
+                                          isFavorite: _favoriteProductIds.contains(product.id),
+                                          onFavoriteToggle: () => _toggleFavorite(product),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : GridView.builder(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.only(top: 0),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: _currentViewMode == ViewMode.grid8 ? 4 : 2, // Updated this line
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      mainAxisExtent: 250,
                                     ),
-                                  );
-                                },
-                              ),
+                                    itemCount: _products.length, // No more _hasMore check needed
+                                    itemBuilder: (context, index) {
+                                      // if (index == _products.length) {
+                                      //   return const Center(child: CircularProgressIndicator());
+                                      // }
+                                      final product = _products[index];
+                                      return ProductCard(
+                                        title: product.title,
+                                        price: product.price,
+                                        date: DateFormat.yMMMd().format(product.createdAt),
+                                        location: product.location,
+                                        images: product.images,
+                                        isFavorite: _favoriteProductIds.contains(product.id),
+                                        onFavoriteToggle: () => _toggleFavorite(product),
+                                      );
+                                    },
+                                  ),
                   ),
           ),
         ],
       ),
+        ),
+        if (_isViewDropdownOpen)
+          Positioned(
+            top: 72, // 8px below the button
+            right: 13, // Aligned with the right padding
+            child: _buildViewModeDropdown(),
+          ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import '../models/product.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
+import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 
 class ViewedPage extends StatelessWidget {
   const ViewedPage({super.key});
@@ -248,56 +249,29 @@ class _ViewedContentState extends State<ViewedContent> {
                         ? const Center(
                             child: Text('Наразі оголошень немає.'),
                           )
-                        : _isGrid
-                            ? GridView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  mainAxisExtent: 250,
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.only(top: 0),
+                            itemCount: _products.length + (_hasMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == _products.length) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              final product = _products[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: ProductCardListItem(
+                                  title: product.title,
+                                  price: product.price,
+                                  date: DateFormat.yMMMd().format(product.createdAt),
+                                  location: product.location,
+                                  images: product.images,
+                                  isFavorite: _favoriteProductIds.contains(product.id),
+                                  onFavoriteToggle: () => _toggleFavorite(product),
                                 ),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                  final product = _products[index];
-                                  return ProductCard(
-                                    title: product.title,
-                                    price: product.price,
-                                    date: DateFormat.yMMMd().format(product.createdAt),
-                                    location: product.location,
-                                    images: product.images,
-                                    isFavorite: _favoriteProductIds.contains(product.id),
-                                    onFavoriteToggle: () => _toggleFavorite(product),
-                                  );
-                                },
-                              )
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(top: 0),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                  final product = _products[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: ProductCard(
-                                      title: product.title,
-                                      price: product.price,
-                                      date: DateFormat.yMMMd().format(product.createdAt),
-                                      location: product.location,
-                                      images: product.images,
-                                      isFavorite: _favoriteProductIds.contains(product.id),
-                                      onFavoriteToggle: () => _toggleFavorite(product),
-                                    ),
-                                  );
-                                },
-                              ),
+                              );
+                            },
+                          ),
                   ),
           ),
         ],

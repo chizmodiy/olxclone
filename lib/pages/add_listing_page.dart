@@ -43,6 +43,12 @@ class _AddListingPageState extends State<AddListingPage> {
   Region? _selectedRegion;
   List<Region> _regions = [];
   bool _isLoadingRegions = true;
+  final TextEditingController _cityController = TextEditingController(); // New city controller
+  List<String> _cities = []; // List to store city suggestions
+  bool _isLoadingCities = false; // Loading state for cities
+  String? _selectedCity; // Selected city
+  final GlobalKey _cityButtonKey = GlobalKey(); // Key for city dropdown button
+  bool _isCityDropdownOpen = false; // State for city dropdown visibility
   bool _isForSale = true; // true for "Продати", false for "Безкоштовно"
   String _selectedCurrency = 'UAH'; // 'UAH', 'EUR', or 'USD'
   bool _isNegotiablePrice = false;
@@ -189,6 +195,7 @@ class _AddListingPageState extends State<AddListingPage> {
     _whatsappController.dispose();
     _telegramController.dispose();
     _viberController.dispose();
+    _cityController.dispose(); // Dispose city controller
     _extraFieldControllers.forEach((_, controller) => controller.dispose());
     super.dispose();
   }

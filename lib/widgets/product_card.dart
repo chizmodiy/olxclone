@@ -66,28 +66,31 @@ class ProductCard extends StatelessWidget {
               // Pagination dots
               Positioned(
                 bottom: 14,
-                left: 60,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.black.withOpacity(0.2),
-                    backgroundBlendMode: BlendMode.overlay,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      // Use a safe length for pagination dots, e.g., min(images.length, 3)
-                      images.isNotEmpty ? images.length : 1, // At least one dot if no images
-                      (index) => Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: index == 0
-                              ? AppColors.primaryColor
-                              : Colors.white.withOpacity(0.25),
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.black.withOpacity(0.2),
+                      backgroundBlendMode: BlendMode.overlay,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        // Use a safe length for pagination dots, e.g., min(images.length, 3)
+                        images.isNotEmpty ? images.length : 1, // At least one dot if no images
+                        (index) => Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: index == 0
+                                ? AppColors.primaryColor
+                                : Colors.white.withOpacity(0.25),
+                          ),
                         ),
                       ),
                     ),
