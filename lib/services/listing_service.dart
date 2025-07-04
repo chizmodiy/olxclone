@@ -1,9 +1,4 @@
-import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path/path.dart' as path;
-import 'package:uuid/uuid.dart';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'storage_service.dart';
 

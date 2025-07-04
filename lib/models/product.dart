@@ -50,4 +50,13 @@ class Product {
     ];
     return months[month - 1];
   }
+
+  double get priceValue {
+    if (price == 'Безкоштовно') {
+      return 0.0;
+    }
+    // Remove currency symbols and parse
+    String cleanedPrice = price.replaceAll('₴', '').replaceAll('€', '').replaceAll('\$', '');
+    return double.tryParse(cleanedPrice) ?? double.infinity; // Handle cases where price might not be a valid number
+  }
 } 

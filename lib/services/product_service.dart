@@ -55,7 +55,7 @@ class ProductService {
         final priceString = isFree
             ? 'Безкоштовно'
             : (priceValue != null 
-                ? '${priceValue}${_getCurrencySymbol(currencyValue)}'
+                ? '$priceValue${_getCurrencySymbol(currencyValue)}'
                 : 'Ціна не вказана'); // Handle null price for non-free items
 
         // Create a new map with the correct structure for Product.fromJson
@@ -76,6 +76,58 @@ class ProductService {
       print('Error type: ${e.runtimeType}');
       print('Error details: $e');
       throw Exception('Failed to fetch products: $e');
+    }
+  }
+
+  Future<List<Product>> getProductsByIds(List<String> productIds) async {
+    try {
+      if (productIds.isEmpty) {
+        return [];
+      }
+
+      print('=== Starting getProductsByIds ===');
+      print('Product IDs: $productIds');
+
+      final response = await _client
+          .from('listings')
+          .select('*')
+          .in_('id', productIds)
+          .order('created_at', ascending: false); // Default sort for favorites
+
+      print('Got ${response.length} favorite listings');
+
+      return response.map<Product>((json) {
+        final photos = (json['photos'] as List<dynamic>?)
+            ?.cast<String>()
+            .toList() ?? [];
+
+        final priceValue = json['price'];
+        final currencyValue = json['currency'];
+        final isFree = json['is_free'] as bool? ?? false;
+
+        final priceString = isFree
+            ? 'Безкоштовно'
+            : (priceValue != null
+                ? '$priceValue${_getCurrencySymbol(currencyValue)}'
+                : 'Ціна не вказана');
+
+        final productJson = {
+          'id': json['id'],
+          'title': json['title'],
+          'price': priceString,
+          'created_at': json['created_at'],
+          'location': json['location'],
+          'images': photos,
+          'is_negotiable': json['is_free'] ? false : (json['is_negotiable'] ?? false),
+        };
+
+        return Product.fromJson(productJson);
+      }).toList();
+    } catch (e) {
+      print('=== Error in getProductsByIds ===');
+      print('Error type: ${e.runtimeType}');
+      print('Error details: $e');
+      throw Exception('Failed to fetch favorite products: $e');
     }
   }
 

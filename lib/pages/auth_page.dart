@@ -41,7 +41,7 @@ class _AuthPageState extends State<AuthPage> {
       _isLoading = true;
     });
     try {
-      final phone = '+380' + _phoneNumberController.text.trim();
+      final phone = '+380${_phoneNumberController.text.trim()}';
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
@@ -62,7 +62,7 @@ class _AuthPageState extends State<AuthPage> {
       _isLoading = true;
     });
     try {
-      final phone = '+380' + _phoneNumberController.text.trim();
+      final phone = '+380${_phoneNumberController.text.trim()}';
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
@@ -337,11 +337,11 @@ class _AuthPageState extends State<AuthPage> {
         TextButton(
           onPressed: _toggleAuthMode,
           style: ButtonStyle( // Using ButtonStyle for more control over states
-            padding: MaterialStateProperty.all(EdgeInsets.zero),
-            minimumSize: MaterialStateProperty.all(Size.zero),
+            padding: WidgetStateProperty.all(EdgeInsets.zero),
+            minimumSize: WidgetStateProperty.all(Size.zero),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             splashFactory: NoSplash.splashFactory, // Remove splash effect
-            overlayColor: MaterialStateProperty.all(Colors.transparent), // Remove overlay/highlight effect
+            overlayColor: WidgetStateProperty.all(Colors.transparent), // Remove overlay/highlight effect
           ),
           child: Text(
             _showSignUp ? 'Увійти' : 'Зареєструватися',

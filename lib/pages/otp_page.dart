@@ -158,11 +158,11 @@ class _OtpPageState extends State<OtpPage> {
                 _showSnackBar('Resending OTP...');
               },
               style: ButtonStyle(
-                padding: MaterialStateProperty.all(EdgeInsets.zero),
-                minimumSize: MaterialStateProperty.all(Size.zero),
+                padding: WidgetStateProperty.all(EdgeInsets.zero),
+                minimumSize: WidgetStateProperty.all(Size.zero),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 splashFactory: NoSplash.splashFactory,
-                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
               ),
               child: Text(
                 widget.isSignUp ? 'Надіслати повторно' : 'Забули ПІН-код?',

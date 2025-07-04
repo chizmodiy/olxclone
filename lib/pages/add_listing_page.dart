@@ -65,16 +65,13 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Future<void> _loadCategories() async {
     try {
-      print('Starting to load categories...');
       final categoryService = CategoryService(Supabase.instance.client);
       final categories = await categoryService.getCategories();
-      print('Categories loaded successfully: ${categories.length} items');
       setState(() {
         _categories = categories;
         _isLoadingCategories = false;
       });
     } catch (error) {
-      print('Error loading categories: $error');
       setState(() {
         _isLoadingCategories = false;
       });
@@ -95,7 +92,6 @@ class _AddListingPageState extends State<AddListingPage> {
         _isLoadingSubcategories = false;
       });
     } catch (error) {
-      print('Error loading subcategories: $error');
       setState(() {
         _isLoadingSubcategories = false;
       });
@@ -104,20 +100,17 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Future<void> _loadRegions() async {
     try {
-      print('Starting to load regions...');
       final regionService = RegionService(Supabase.instance.client);
       
       // Initialize regions if needed
       await regionService.initializeRegions();
       
       final regions = await regionService.getRegions();
-      print('Regions loaded successfully: ${regions.length} items');
       setState(() {
         _regions = regions;
         _isLoadingRegions = false;
       });
     } catch (error) {
-      print('Error loading regions: $error');
       setState(() {
         _isLoadingRegions = false;
       });
@@ -135,7 +128,6 @@ class _AddListingPageState extends State<AddListingPage> {
       
       final List<XFile> images = await _picker.pickMultiImage();
       if (images.isNotEmpty) {
-        print('Selected ${images.length} images');
         
         // Validate each image before adding
         for (var image in images) {
@@ -149,7 +141,6 @@ class _AddListingPageState extends State<AddListingPage> {
               });
             }
           } catch (e) {
-            print('Error validating image ${image.path}: $e');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Could not load image: ${image.name}')),
             );
@@ -157,7 +148,6 @@ class _AddListingPageState extends State<AddListingPage> {
         }
       }
     } catch (e) {
-      print('Error picking images: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error selecting images. Please try again.')),
       );
@@ -170,7 +160,6 @@ class _AddListingPageState extends State<AddListingPage> {
         imagePath,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          print('Error loading image: $error');
           return Container(
             color: AppColors.zinc200,
             child: Icon(Icons.error, color: AppColors.color5),
@@ -182,7 +171,6 @@ class _AddListingPageState extends State<AddListingPage> {
       File(imagePath),
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
-        print('Error loading image: $error');
         return Container(
           color: AppColors.zinc200,
           child: Icon(Icons.error, color: AppColors.color5),
@@ -701,7 +689,7 @@ class _AddListingPageState extends State<AddListingPage> {
               const SizedBox(height: 20),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -1565,10 +1553,8 @@ class _AddListingPageState extends State<AddListingPage> {
       final listingService = ListingService(Supabase.instance.client);
 
       // Convert XFile to File and validate images
-      print('Processing ${_selectedImages.length} images');
       final List<XFile> imageFiles = _selectedImages;
 
-      print('Starting listing creation...');
       final listingId = await listingService.createListing(
         title: _titleController.text,
         description: _descriptionController.text,
@@ -1585,14 +1571,12 @@ class _AddListingPageState extends State<AddListingPage> {
         customAttributes: _extraFieldValues,
         images: imageFiles,
       );
-      print('Listing created successfully with ID: $listingId');
 
       // Navigate back without showing success message
       if (mounted) {
         Navigator.of(context).pop();
       }
     } catch (error) {
-      print('Error creating listing: $error');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1734,8 +1718,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   runSpacing: 6,
                   children: List.generate(_selectedImages.length, (index) {
                     final imagePath = _selectedImages[index].path;
-                    print('Rendering image at index $index: $imagePath');
-                    return Container(
+                    return SizedBox(
                       width: 92,
                       height: 92,
                       child: Stack(
@@ -2172,7 +2155,7 @@ class _PhoneNumberFormatter extends TextInputFormatter {
     int index = 0;
 
     // Format: (XX) XXX-XX-XX
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       buffer.write('(');
       if (text.length >= 2) {
         buffer.write(text.substring(0, 2));

@@ -37,8 +37,6 @@ class _FavoritesContentState extends State<FavoritesContent> {
   
   List<Product> _products = [];
   bool _isLoading = false;
-  bool _hasMore = true;
-  int _currentPage = 1;
   String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
   bool _isGrid = true;
   String? _errorMessage;
@@ -49,9 +47,10 @@ class _FavoritesContentState extends State<FavoritesContent> {
   void initState() {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    _loadProducts();
-    _loadFavorites();
-    _scrollController.addListener(_onScroll);
+    _loadFavorites().then((_) {
+      _loadProducts();
+    });
+    // _scrollController.addListener(_onScroll); // _onScroll is no longer needed as we load all favorites at once
   }
 
   @override
@@ -61,7 +60,9 @@ class _FavoritesContentState extends State<FavoritesContent> {
   }
 
   Future<void> _loadProducts() async {
-    if (_isLoading || !_hasMore) return;
+    // We will always load all favorite products at once, so no pagination needed here
+    // However, we still use _isLoading to prevent multiple concurrent fetches
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
@@ -69,16 +70,17 @@ class _FavoritesContentState extends State<FavoritesContent> {
     });
 
     try {
-      final products = await _productService.getProducts(
-        page: _currentPage,
-        sortBy: _sortBy,
-        isGrid: _isGrid,
+      // If favorite IDs are not loaded yet, wait for them. This might happen if _loadProducts is called by _onScroll before _loadFavorites completes.
+      if (_favoriteProductIds.isEmpty) {
+        await _loadFavorites();
+      }
+
+      final products = await _productService.getProductsByIds(
+        _favoriteProductIds.toList(),
       );
 
       setState(() {
-        _products.addAll(products);
-        _currentPage++;
-        _hasMore = products.length == 10;
+        _products = products; // Replace all products with favorites
         _isLoading = false;
       });
     } catch (e) {
@@ -86,7 +88,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print('Error loading products: $_errorMessage');
+      print('Error loading favorite products: $_errorMessage');
     }
   }
 
@@ -126,10 +128,8 @@ class _FavoritesContentState extends State<FavoritesContent> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadProducts();
-    }
+    // This method is no longer needed as all favorite products are loaded at once.
+    // Keep it empty or remove if not used elsewhere.
   }
 
   void _onSortChanged(String? newSortBy) {
@@ -141,23 +141,26 @@ class _FavoritesContentState extends State<FavoritesContent> {
       } else {
         _sortBy = 'price_asc';
       }
-      _products = [];
-      _currentPage = 1;
-      _hasMore = true;
-      _errorMessage = null;
+      // Sort the already loaded products instead of reloading
+      _products.sort((a, b) {
+        if (_sortBy == 'price_asc') {
+          return a.priceValue.compareTo(b.priceValue);
+        } else if (_sortBy == 'price_desc') {
+          return b.priceValue.compareTo(a.priceValue);
+        } else {
+          // Default sort by date_created desc
+          return b.createdAt.compareTo(a.createdAt);
+        }
+      });
     });
-    _loadProducts();
+    // _loadProducts(); // No need to reload, just sort existing products
   }
 
   void _toggleView() {
     setState(() {
       _isGrid = !_isGrid;
-      _products = [];
-      _currentPage = 1;
-      _hasMore = true;
-      _errorMessage = null;
+      // No need to clear products and reload, just change view
     });
-    _loadProducts();
   }
 
   @override
@@ -219,8 +222,6 @@ class _FavoritesContentState extends State<FavoritesContent> {
                     onRefresh: () async {
                       setState(() {
                         _products = [];
-                        _currentPage = 1;
-                        _hasMore = true;
                         _errorMessage = null;
                       });
                       await _loadProducts();
@@ -239,11 +240,11 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                   mainAxisSpacing: 10,
                                   mainAxisExtent: 250,
                                 ),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemCount: _products.length, // No more _hasMore check needed
                                 itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
+                                  // if (index == _products.length) {
+                                  //   return const Center(child: CircularProgressIndicator());
+                                  // }
                                   final product = _products[index];
                                   return ProductCard(
                                     title: product.title,
@@ -259,11 +260,11 @@ class _FavoritesContentState extends State<FavoritesContent> {
                             : ListView.builder(
                                 controller: _scrollController,
                                 padding: const EdgeInsets.only(top: 0),
-                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemCount: _products.length, // No more _hasMore check needed
                                 itemBuilder: (context, index) {
-                                  if (index == _products.length) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
+                                  // if (index == _products.length) {
+                                  //   return const Center(child: CircularProgressIndicator());
+                                  // }
                                   final product = _products[index];
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
