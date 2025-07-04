@@ -44,12 +44,6 @@ class _AddListingPageState extends State<AddListingPage> {
   Region? _selectedRegion;
   List<Region> _regions = [];
   bool _isLoadingRegions = true;
-  City? _selectedCity; // Add this
-  List<City> _cities = []; // Add this
-  bool _isLoadingCities = false; // Add this
-  final TextEditingController _citySearchController = TextEditingController(); // Add this
-  List<City> _filteredCities = []; // Add this
-  FocusNode _cityFocusNode = FocusNode(); // Add this
   bool _isForSale = true; // true for "Продати", false for "Безкоштовно"
   String _selectedCurrency = 'UAH'; // 'UAH', 'EUR', or 'USD'
   bool _isNegotiablePrice = false;
@@ -68,19 +62,6 @@ class _AddListingPageState extends State<AddListingPage> {
     super.initState();
     _loadCategories();
     _loadRegions();
-    _citySearchController.addListener(_onCitySearchChanged); // Add listener
-    _cityFocusNode.addListener(() { // Add focus listener to control visibility of results
-      if (!_cityFocusNode.hasFocus) {
-        // Delay clearing results slightly to allow tap events on list items to register
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (!_cityFocusNode.hasFocus) { // Check again after delay
-            setState(() {
-              _filteredCities = [];
-            });
-          }
-        });
-      }
-    });
   }
 
   Future<void> _loadCategories() async {
@@ -210,9 +191,6 @@ class _AddListingPageState extends State<AddListingPage> {
     _whatsappController.dispose();
     _telegramController.dispose();
     _viberController.dispose();
-    _citySearchController.removeListener(_onCitySearchChanged); // Remove listener
-    _citySearchController.dispose(); // Dispose controller
-    _cityFocusNode.dispose(); // Dispose focus node
     _extraFieldControllers.forEach((_, controller) => controller.dispose());
     super.dispose();
   }
@@ -987,185 +965,8 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onRegionSelected(Region region) {
     setState(() {
       _selectedRegion = region;
-      _selectedCity = null; // Clear selected city when region changes
-      _cities = []; // Clear cities list
     });
-    _loadCities(region.name); // Load cities for the selected region using region name
     Navigator.pop(context);
-  }
-
-  Future<void> _loadCities(String regionName) async { // Changed parameter from regionId to regionName
-    setState(() {
-      _isLoadingCities = true;
-      _selectedCity = null; // Clear selected city
-      _citySearchController.clear(); // Clear search field when loading new cities
-      _filteredCities = []; // Clear filtered cities
-    });
-
-    try {
-      final cityService = CityService(); // No longer pass Supabase.instance.client
-      final cities = await cityService.getCitiesForRegion(regionName); // Use regionName
-      setState(() {
-        _cities = cities;
-        _isLoadingCities = false;
-        print('Завантажено міст для регіону $regionName: ${_cities.length}'); // Debug print
-      });
-    } catch (error) {
-      setState(() {
-        _isLoadingCities = false;
-      });
-      print('Помилка завантаження міст: $error'); // Debug print for errors
-    }
-  }
-
-  void _onCitySearchChanged() {
-    final query = _citySearchController.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredCities = [];
-      } else {
-        _filteredCities = _cities.where((city) =>
-            city.name.toLowerCase().contains(query)).toList();
-      }
-    });
-  }
-
-  Widget _buildCitySection() {
-    if (_selectedRegion == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          'Місто / Село',
-          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.zinc50,
-            borderRadius: BorderRadius.circular(200),
-            border: Border.all(color: AppColors.zinc200, width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(16, 24, 40, 0.05),
-                offset: Offset(0, 1),
-                blurRadius: 2,
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _citySearchController,
-            focusNode: _cityFocusNode,
-            decoration: InputDecoration(
-              hintText: 'Введіть назву міста або села',
-              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-              suffixIcon: _citySearchController.text.isNotEmpty
-                  ? GestureDetector(
-                      onTap: () {
-                        _citySearchController.clear();
-                        setState(() {
-                          _selectedCity = null;
-                          _filteredCities = [];
-                        });
-                      },
-                      child: Icon(Icons.clear, color: AppColors.color7), // Clear button
-                    )
-                  : null,
-            ),
-            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-          ),
-        ),
-        if (_cityFocusNode.hasFocus && _filteredCities.isNotEmpty) // Show results only when focused and results exist
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            constraints: const BoxConstraints(maxHeight: 200), // Max height for the dropdown
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.zinc200),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(16, 24, 40, 0.03),
-                  offset: Offset(0, 4),
-                  blurRadius: 6,
-                  spreadRadius: -2,
-                ),
-              ],
-            ),
-            child: ListView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              itemCount: _filteredCities.length,
-              itemBuilder: (context, index) {
-                final city = _filteredCities[index];
-                return _buildCityItem(city);
-              },
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCityItem(City city) {
-    final isSelected = _selectedCity?.id == city.id;
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      child: InkWell(
-        onTap: () => _onCitySelected(city),
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.zinc50 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  city.name,
-                  style: AppTextStyles.body1Regular.copyWith(
-                    color: AppColors.color2,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (isSelected)
-                SvgPicture.asset(
-                  'assets/icons/check.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _onCitySelected(City city) {
-    setState(() {
-      _selectedCity = city;
-      _citySearchController.text = city.name; // Set text field to selected city name
-      _filteredCities = []; // Clear filtered results after selection
-      _cityFocusNode.unfocus(); // Remove focus from the text field
-    });
-    // Navigator.pop(context); // No longer needed with searchbox
   }
 
   Widget _buildListingTypeToggle() {
@@ -1694,10 +1495,6 @@ class _AddListingPageState extends State<AddListingPage> {
     else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
     }
-    // Check city
-    else if (_selectedCity == null) { // Add this validation
-      errorMessage = 'Оберіть місто або село';
-    }
     // Check price for non-free listings
     else if (_isForSale) {
       if (_priceController.text.isEmpty) {
@@ -1765,7 +1562,6 @@ class _AddListingPageState extends State<AddListingPage> {
         description: _descriptionController.text,
         categoryId: _selectedCategory!.id,
         subcategoryId: _selectedSubcategory!.id,
-        location: _selectedCity!.name, // Use selected city name
         isFree: !_isForSale,
         currency: _isForSale ? _selectedCurrency : null,
         price: _isForSale ? double.tryParse(_priceController.text) : null,
@@ -2048,9 +1844,11 @@ class _AddListingPageState extends State<AddListingPage> {
 
             // Region Dropdown
             _buildRegionSection(),
-            if (_selectedRegion != null) // Removed && _cities.isNotEmpty
-              _buildCitySection(), // Call _buildCitySection here
-            const SizedBox(height: 12),
+            if (_selectedRegion != null)
+              // REMOVE START
+              // _buildCitySection(), // Call _buildCitySection here
+              const SizedBox(height: 12),
+            // REMOVE END
 
             // Map Placeholder
                 Container(
@@ -2247,7 +2045,6 @@ class _AddListingPageState extends State<AddListingPage> {
                         _selectedCategory = null;
                         _selectedSubcategory = null;
                         _selectedRegion = null;
-                        _selectedCity = null; // Clear selected city
                         _isForSale = true;
                         _selectedCurrency = 'UAH';
                         _isNegotiablePrice = false;
