@@ -37,6 +37,7 @@ class _AddListingPageState extends State<AddListingPage> {
   final GlobalKey _subcategoryButtonKey = GlobalKey();
   final GlobalKey _regionButtonKey = GlobalKey();
   final GlobalKey _cityButtonKey = GlobalKey(); // Add new GlobalKey for city button
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Added _formKey
   Category? _selectedCategory;
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -117,16 +118,16 @@ class _AddListingPageState extends State<AddListingPage> {
       await regionService.initializeRegions();
       
       final regions = await regionService.getRegions();
-      setState(() {
-        _regions = regions;
-        _isLoadingRegions = false;
-      });
+        setState(() {
+          _regions = regions;
+          _isLoadingRegions = false;
+        });
     } catch (error) {
-      setState(() {
-        _isLoadingRegions = false;
-      });
+        setState(() {
+          _isLoadingRegions = false;
+        });
+      }
     }
-  }
 
   Future<void> _pickImage() async {
     try {
@@ -147,11 +148,11 @@ class _AddListingPageState extends State<AddListingPage> {
             await image.readAsBytes();
             
             if (_selectedImages.length < 7) {
-              setState(() {
+        setState(() {
                 _selectedImages.add(image);
-              });
-            }
-          } catch (e) {
+        });
+      }
+    } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Could not load image: ${image.name}')),
             );
@@ -366,7 +367,7 @@ class _AddListingPageState extends State<AddListingPage> {
     setState(() {
       _selectedCategory = category;
     });
-    _loadSubcategories(category.id);
+        _loadSubcategories(category.id);
     Navigator.pop(context);
   }
 
@@ -463,7 +464,7 @@ class _AddListingPageState extends State<AddListingPage> {
               decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
                 boxShadow: const [
                   BoxShadow(
                         color: Color.fromRGBO(16, 24, 40, 0.03),
@@ -1013,7 +1014,7 @@ class _AddListingPageState extends State<AddListingPage> {
       } catch (e) {
         print('Error searching cities: $e');
         setState(() {
-          _cities = [];
+        _cities = [];
         });
       } finally {
         setState(() {
@@ -1739,7 +1740,23 @@ class _AddListingPageState extends State<AddListingPage> {
     );
   }
 
-  bool _validateForm() {
+  String? _validateExtraFields() {
+    String? errorMessage; // Make errorMessage nullable
+
+    for (var field in _selectedSubcategory!.extraFields) {
+      if (field.isRequired &&
+          (!_extraFieldValues.containsKey(field.id) ||
+              _extraFieldValues[field.id] == null ||
+              (_extraFieldValues[field.id] is String &&
+                  _extraFieldValues[field.id].isEmpty))) {
+        errorMessage = 'Будь ласка, заповніть всі обов\'язкові поля.';
+        break;
+      }
+    }
+    return errorMessage; // Return nullable errorMessage
+  }
+
+  String? _validateForm() {
     String? errorMessage;
 
     // Check title
@@ -1757,113 +1774,111 @@ class _AddListingPageState extends State<AddListingPage> {
     // Check subcategory
     else if (_selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
-    }
-    // Check region
-    else if (_selectedRegion == null) {
+    } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
-    }
-    // Check city
-    else if (_selectedCity == null) {
+    } else if (_selectedCity == null) {
       errorMessage = 'Оберіть місто';
+    } else if (!_isForSale &&
+        (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
+      errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
+    } else if (_isForSale &&
+        (_priceController.text.isEmpty ||
+            double.tryParse(_priceController.text) == null)) {
+      errorMessage = 'Будь ласка, введіть дійсну ціну';
+    } else if (_selectedMessenger.isEmpty) {
+      errorMessage = 'Будь ласка, оберіть спосіб зв\'язку';
+    } else if (_selectedMessenger == 'phone' &&
+        _phoneController.text.isEmpty) {
+      errorMessage = 'Будь ласка, введіть номер телефону';
+    } else if (_selectedMessenger == 'whatsapp' &&
+        _whatsappController.text.isEmpty) {
+      errorMessage = 'Будь ласка, введіть номер WhatsApp';
+    } else if (_selectedMessenger == 'telegram' &&
+        _telegramController.text.isEmpty) {
+      errorMessage = 'Будь ласка, введіть ім\'я користувача Telegram';
+    } else if (_selectedMessenger == 'viber' &&
+        _viberController.text.isEmpty) {
+      errorMessage = 'Будь ласка, введіть номер Viber';
+    } else if (_selectedImages.isEmpty) {
+      errorMessage = 'Додайте хоча б одне зображення';
     }
-    // Check price for non-free listings
-    else if (_isForSale) {
-      if (_priceController.text.isEmpty) {
-        errorMessage = 'Введіть ціну';
-      } else if (double.tryParse(_priceController.text) == null) {
-        errorMessage = 'Введіть коректну ціну';
-      }
-    }
-    // Check contact information
-    else if (_selectedMessenger == 'phone' && _phoneController.text.isEmpty) {
-      errorMessage = 'Введіть номер телефону';
-    }
-    else if (_selectedMessenger == 'whatsapp' && _whatsappController.text.isEmpty) {
-      errorMessage = 'Введіть номер WhatsApp';
-    }
-    else if (_selectedMessenger == 'telegram' && _telegramController.text.isEmpty) {
-      errorMessage = 'Введіть username Telegram';
-    }
-    else if (_selectedMessenger == 'viber' && _viberController.text.isEmpty) {
-      errorMessage = 'Введіть номер Viber';
-    }
-
-    // Check required extra fields if any
-    if (_selectedSubcategory != null) {
-      for (var field in _selectedSubcategory!.extraFields) {
-        if (!_extraFieldValues.containsKey(field.name) || 
-            _extraFieldValues[field.name] == null ||
-            (_extraFieldValues[field.name] is String && _extraFieldValues[field.name].isEmpty)) {
-          errorMessage = 'Заповніть поле ${_getFieldDisplayName(field.name)}';
-          break;
-        }
-      }
-    }
-
-    if (errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-
-    return true;
+    return errorMessage;
   }
 
-  Future<void> _handleSubmit() async {
-    if (!_validateForm()) {
+  Future<void> _createListing() async {
+    final formValidationMessage = _validateForm();
+    if (formValidationMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(formValidationMessage)),
+      );
       return;
     }
 
-    try {
-      setState(() {
-        _isLoading = true;
+    final extraFieldsValidationMessage = _validateExtraFields();
+    if (extraFieldsValidationMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(extraFieldsValidationMessage)),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+      try {
+        final listingService = ListingService(Supabase.instance.client);
+      
+      // Convert XFile to File for upload if needed, or handle directly
+      final List<XFile> imagesToUpload = _selectedImages;
+
+      // Prepare custom attributes, including range values
+      Map<String, dynamic> finalCustomAttributes = Map.from(_extraFieldValues);
+      _rangeValues.forEach((key, value) {
+        finalCustomAttributes[key] = {
+          'start': value.start,
+          'end': value.end,
+        };
       });
 
-      final listingService = ListingService(Supabase.instance.client);
-
-      // Convert XFile to File and validate images
-      final List<XFile> imageFiles = _selectedImages;
-
-      final listingId = await listingService.createListing(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        categoryId: _selectedCategory!.id,
-        subcategoryId: _selectedSubcategory!.id,
-        isFree: !_isForSale,
-        currency: _isForSale ? _selectedCurrency : null,
-        price: _isForSale ? double.tryParse(_priceController.text) : null,
-        phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
-        whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
-        telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
-        viber: _selectedMessenger == 'viber' ? _viberController.text : null,
-        customAttributes: _extraFieldValues,
-        images: imageFiles,
-        location: _selectedCity!.name, // Add the selected city name as location
-      );
-
-      // Navigate back without showing success message
-      if (mounted) {
-        Navigator.of(context).pop();
+      String locationString = '';
+      if (_selectedRegion != null && _selectedCity != null) {
+        locationString = '${_selectedRegion!.name}, ${_selectedCity!.name}';
+      } else if (_selectedRegion != null) {
+        locationString = _selectedRegion!.name;
+      } else if (_selectedCity != null) {
+        locationString = _selectedCity!.name;
       }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Помилка: ${error.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+
+        final listingId = await listingService.createListing(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          categoryId: _selectedCategory!.id,
+          subcategoryId: _selectedSubcategory!.id,
+        location: locationString,
+          isFree: !_isForSale,
+          currency: _isForSale ? _selectedCurrency : null,
+          price: _isForSale ? double.tryParse(_priceController.text) : null,
+          phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
+          whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
+          telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
+          viber: _selectedMessenger == 'viber' ? _viberController.text : null,
+        customAttributes: finalCustomAttributes,
+        images: imagesToUpload,
         );
-      }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Оголошення успішно опубліковано!')),
+        );
+        Navigator.of(context).pop();
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Помилка: $error')),
+        );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -1875,7 +1890,8 @@ class _AddListingPageState extends State<AddListingPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        elevation: 0,
+        elevation: 0.0, // Remove shadow
+        scrolledUnderElevation: 0.0, // Ensure no elevation when scrolled
         toolbarHeight: 70.0,
         centerTitle: true,
         title: Row(
@@ -2007,10 +2023,10 @@ class _AddListingPageState extends State<AddListingPage> {
                             right: 8,
                             child: GestureDetector(
                               onTap: () {
-                                setState(() {
-                                  _selectedImages.removeAt(index);
-                                });
-                              },
+                setState(() {
+                  _selectedImages.removeAt(index);
+                });
+              },
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
@@ -2031,7 +2047,7 @@ class _AddListingPageState extends State<AddListingPage> {
                     );
                   }),
                 ),
-              ),
+            ),
             const SizedBox(height: 20),
 
             // Title Input Field
@@ -2055,7 +2071,7 @@ class _AddListingPageState extends State<AddListingPage> {
                     ],
                   ),
                         child: TextField(
-                controller: _titleController,
+              controller: _titleController,
                           style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
                           decoration: InputDecoration(
                   hintText: 'Введіть текст',
@@ -2090,7 +2106,7 @@ class _AddListingPageState extends State<AddListingPage> {
                     ],
                   ),
               child: TextField(
-                controller: _descriptionController,
+              controller: _descriptionController,
                 maxLines: null,
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
@@ -2286,7 +2302,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   height: 44,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _handleSubmit,
+                    onPressed: _createListing,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       shape: RoundedRectangleBorder(
@@ -2308,7 +2324,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   child: TextButton(
                     onPressed: () {
                       // Clear all data
-                      setState(() {
+                setState(() {
                         _titleController.clear();
                         _descriptionController.clear();
                         _priceController.clear();
@@ -2349,7 +2365,7 @@ class _AddListingPageState extends State<AddListingPage> {
                   ),
                 ),
             ],
-          ),
+            ),
             const SizedBox(height: 20),
           ],
         ),

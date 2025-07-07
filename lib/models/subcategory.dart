@@ -1,32 +1,39 @@
-
 class ExtraField {
+  final String id;
   final String name;
   final String type;
   final List<String>? options;
   final dynamic defaultValue;
   final String? unit;
+  final bool isRequired;
 
   ExtraField({
+    required this.id,
     required this.name,
     required this.type,
     this.options,
     this.defaultValue,
     this.unit,
+    this.isRequired = false,
   });
 
   factory ExtraField.fromJson(String name, dynamic value) {
     if (value is Map<String, dynamic>) {
       return ExtraField(
+        id: name,
         name: name,
         type: value['type'] as String,
         defaultValue: value['default'],
         unit: value['unit'] as String?,
+        isRequired: value['required'] as bool? ?? false,
       );
     } else if (value is List) {
       return ExtraField(
+        id: name,
         name: name,
         type: 'select',
         options: List<String>.from(value),
+        isRequired: false,
       );
     }
     throw FormatException('Invalid extra field format');
@@ -41,6 +48,7 @@ class ExtraField {
         'type': type,
         if (defaultValue != null) 'default': defaultValue,
         if (unit != null) 'unit': unit,
+        if (isRequired) 'required': isRequired,
       }
     };
   }

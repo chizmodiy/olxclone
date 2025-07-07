@@ -47,7 +47,7 @@ class ProductCard extends StatelessWidget {
             Stack(
               children: [
                 SizedBox(
-                  height: 120,
+                  height: 100, // Changed from 120 to 100
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -133,7 +133,7 @@ class ProductCard extends StatelessWidget {
             ),
             // Content section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5), // Changed from 8 to 5
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -175,7 +175,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 12), // Changed from 8 to 12
                   Text(
                     date,
                     style: const TextStyle(
@@ -187,7 +187,6 @@ class ProductCard extends StatelessWidget {
                       letterSpacing: 0.24,
                     ),
                   ),
-                  const SizedBox(height: 2),
                   Text(
                     location,
                     style: const TextStyle(
