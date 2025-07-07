@@ -559,7 +559,11 @@ class _HomeContentState extends State<HomeContent> {
                                         child: ProductCardListItem(
                                           id: product.id, // Pass product ID
                                           title: product.title,
-                                          price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                          price: product.isNegotiable
+                                              ? 'Ціна договірна'
+                                              : product.price == 'Безкоштовно'
+                                                  ? 'Безкоштовно'
+                                                  : '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
                                           images: product.images,
@@ -593,7 +597,11 @@ class _HomeContentState extends State<HomeContent> {
                                       return ProductCard(
                                         id: product.id, // Pass product ID
                                         title: product.title,
-                                        price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                        price: product.isNegotiable
+                                            ? 'Ціна договірна'
+                                            : product.price == 'Безкоштовно'
+                                                ? 'Безкоштовно'
+                                                : '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
                                         date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                         location: product.location,
                                         images: product.images,
