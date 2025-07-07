@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart'; // Assuming AppColors is defined here
-import 'package:intl/intl.dart';
 
 class ProductCardListItem extends StatelessWidget {
   final String id; // Add this line

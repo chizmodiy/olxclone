@@ -46,13 +46,17 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const AuthPage(),
         '/general': (context) => const GeneralPage(),
+        '/product_detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return ProductDetailPage(productId: args['id']!, photos: []);
+        },
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/product-detail') {
           final args = settings.arguments as Map<String, String>;
           return MaterialPageRoute(
             builder: (context) {
-              return ProductDetailPage(productId: args['id']!);
+              return ProductDetailPage(productId: args['id']!, photos: []);
             },
           );
         }

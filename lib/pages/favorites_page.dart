@@ -340,7 +340,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                               ? 'Ціна договірна'
                                               : product.price == 'Безкоштовно'
                                                   ? 'Безкоштовно'
-                                                  : '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
+                                                  : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
                                           images: product.images,
@@ -378,7 +378,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                             ? 'Ціна договірна'
                                             : product.price == 'Безкоштовно'
                                                 ? 'Безкоштовно'
-                                                : '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
+                                                : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
                                         date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                         location: product.location,
                                         images: product.images,

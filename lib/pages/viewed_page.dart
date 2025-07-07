@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_header.dart';
-import '../widgets/product_card.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
 import 'package:intl/intl.dart';

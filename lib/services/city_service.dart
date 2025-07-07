@@ -1,4 +1,3 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/city.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -30,7 +29,7 @@ class CityService {
     // Add viewbox if bounding box coordinates are provided
     if (minLat != null && maxLat != null && minLon != null && maxLon != null) {
       // Nominatim viewbox order: left,top,right,bottom (minlon,maxlat,maxlon,minlat)
-      params['viewbox'] = '${minLon},${maxLat},${maxLon},${minLat}';
+      params['viewbox'] = '$minLon,$maxLat,$maxLon,$minLat';
       params['bounded'] = '1'; // Limit results to the bounding box
     }
 
