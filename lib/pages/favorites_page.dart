@@ -336,7 +336,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                         child: ProductCardListItem(
                                           id: product.id, // Pass product ID
                                           title: product.title,
-                                          price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                          price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
                                           images: product.images,
@@ -370,7 +370,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                       return ProductCard(
                                         id: product.id, // Pass product ID
                                         title: product.title,
-                                        price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                        price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue)}',
                                         date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                         location: product.location,
                                         images: product.images,
