@@ -334,13 +334,20 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                       return Padding(
                                         padding: const EdgeInsets.only(bottom: 10),
                                         child: ProductCardListItem(
+                                          id: product.id, // Pass product ID
                                           title: product.title,
-                                          price: product.price,
-                                          date: DateFormat.yMMMd().format(product.createdAt),
+                                          price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                          date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
                                           images: product.images,
                                           isFavorite: _favoriteProductIds.contains(product.id),
                                           onFavoriteToggle: () => _toggleFavorite(product),
+                                          onTap: () {
+                                            Navigator.of(context).pushNamed(
+                                              '/product-detail',
+                                              arguments: {'id': product.id},
+                                            );
+                                          },
                                         ),
                                       );
                                     },
@@ -361,13 +368,20 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                       // }
                                       final product = _products[index];
                                       return ProductCard(
+                                        id: product.id, // Pass product ID
                                         title: product.title,
-                                        price: product.price,
-                                        date: DateFormat.yMMMd().format(product.createdAt),
+                                        price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                        date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                         location: product.location,
                                         images: product.images,
                                         isFavorite: _favoriteProductIds.contains(product.id),
                                         onFavoriteToggle: () => _toggleFavorite(product),
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(
+                                            '/product-detail',
+                                            arguments: {'id': product.id},
+                                          );
+                                        },
                                       );
                                     },
                                   ),

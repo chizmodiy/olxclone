@@ -251,23 +251,34 @@ class _ViewedContentState extends State<ViewedContent> {
                           )
                         : ListView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.only(top: 0),
-                            itemCount: _products.length + (_hasMore ? 1 : 0),
+                            itemCount: _products.length + (_hasMore ? 1 : 0), // Add 1 for loading indicator
                             itemBuilder: (context, index) {
                               if (index == _products.length) {
-                                return const Center(child: CircularProgressIndicator());
+                                return const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
                               }
                               final product = _products[index];
+                              final isFavorite = _favoriteProductIds.contains(product.id);
+
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.only(bottom: 10), // Space between list items
                                 child: ProductCardListItem(
+                                  id: product.id, // Pass product ID
                                   title: product.title,
-                                  price: product.price,
-                                  date: DateFormat.yMMMd().format(product.createdAt),
+                                  price: '${NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.price)}',
+                                  date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
                                   images: product.images,
-                                  isFavorite: _favoriteProductIds.contains(product.id),
+                                  isFavorite: isFavorite,
                                   onFavoriteToggle: () => _toggleFavorite(product),
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed(
+                                      '/product-detail',
+                                      arguments: {'id': product.id},
+                                    );
+                                  },
                                 ),
                               );
                             },

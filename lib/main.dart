@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/pages/auth_page.dart';
 import 'package:withoutname/pages/general_page.dart';
+import 'package:withoutname/pages/product_detail_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,18 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const AuthPage(),
         '/general': (context) => const GeneralPage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/product-detail') {
+          final args = settings.arguments as Map<String, String>;
+          return MaterialPageRoute(
+            builder: (context) {
+              return ProductDetailPage(productId: args['id']!);
+            },
+          );
+        }
+        // Handle other routes
+        return null;
       },
     );
   }
