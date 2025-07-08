@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../services/category_service.dart';
+import '../services/profile_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -19,12 +21,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late final PageController _pageController;
   late final ProductService _productService;
   late final CategoryService _categoryService;
+  late final ProfileService _profileService;
   int _currentPage = 0;
   Product? _product;
   bool _isLoading = true;
   String? _error;
   String? _categoryName;
   String? _subcategoryName;
+  String? _currentUserId;
+  bool _isFavorite = false;
 
   // Мапа категорій
   final Map<String, String> _categories = {
@@ -70,7 +75,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _pageController = PageController();
     _productService = ProductService();
     _categoryService = CategoryService();
+    _profileService = ProfileService();
+    _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProduct();
+    _loadFavoriteStatus();
   }
 
   Future<void> _loadProduct() async {
@@ -91,6 +99,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _error = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    if (_currentUserId == null) return;
+    try {
+      final favoriteIds = await _profileService.getFavoriteProductIds();
+      setState(() {
+        _isFavorite = favoriteIds.contains(widget.productId);
+      });
+    } catch (e) {
+      print('Error loading favorite status: $e');
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_currentUserId == null) {
+      print('User not logged in. Cannot toggle favorite.');
+      return;
+    }
+
+    try {
+      if (_isFavorite) {
+        await _profileService.removeFavoriteProduct(widget.productId);
+      } else {
+        await _profileService.addFavoriteProduct(widget.productId);
+      }
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+    } catch (e) {
+      print('Error toggling favorite: $e');
     }
   }
 
@@ -329,9 +369,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         right: 0,
                                         top: 9,
                                         child: GestureDetector(
-                                          onTap: () {
-                                            // TODO: Implement favorite toggle
-                                          },
+                                          onTap: _toggleFavorite,
                                           child: Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
@@ -341,13 +379,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                                 color: const Color(0xFFF4F4F5),
                                               ),
                                             ),
-                                            child: const SizedBox(
+                                            child: SizedBox(
                                               width: 20,
                                               height: 20,
                                               child: Icon(
-                                                Icons.favorite_border,
+                                                _isFavorite ? Icons.favorite : Icons.favorite_border,
                                                 size: 20,
-                                                color: Colors.black,
+                                                color: _isFavorite ? const Color(0xFF015873) : Colors.black,
                                               ),
                                             ),
                                           ),
@@ -403,43 +441,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 40),
+                                
+                                // Description section
+                                Container(
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Опис',
+                                        style: TextStyle(
+                                          color: Color(0xFF52525B),
+                                          fontSize: 14,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.4,
+                                          letterSpacing: 0.14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _product!.description ?? 'Опис відсутній',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.5,
+                                          letterSpacing: 0.16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                          
-                          const SizedBox(height: 40), // Spacing between sections
-                          
-                          // Section 2
-                          Container(
-                            // Second section content will go here
-                          ),
-                          
-                          const SizedBox(height: 40), // Spacing between sections
-                          
-                          // Section 3
-                          Container(
-                            // Third section content will go here
-                          ),
-                          
-                          const SizedBox(height: 40), // Spacing between sections
-                          
-                          // Section 4
-                          Container(
-                            // Fourth section content will go here
-                          ),
-                          
-                          const SizedBox(height: 40), // Spacing between sections
-                          
-                          // Section 5
-                          Container(
-                            // Fifth section content will go here
-                          ),
-                          
-                          const SizedBox(height: 40), // Spacing between sections
-                          
-                          // Section 6
-                          Container(
-                            // Sixth section content will go here
                           ),
                         ],
                       ),
