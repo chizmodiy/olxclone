@@ -26,6 +26,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late final ProfileService _profileService;
   int _currentPage = 0;
   Product? _product;
+  UserProfile? _userProfile;
   bool _isLoading = true;
   String? _error;
   String? _categoryName;
@@ -90,9 +91,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final product = await _productService.getProductById(widget.productId);
       final categoryName = await _categoryService.getCategoryNameCached(product.categoryId);
       final subcategoryName = await _categoryService.getSubcategoryNameCached(product.subcategoryId);
+      final userProfile = await _profileService.getUser(product.userId);
       
       setState(() {
         _product = product;
+        _userProfile = userProfile;
         _categoryName = categoryName;
         _subcategoryName = subcategoryName;
         _isLoading = false;
@@ -212,7 +215,34 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() {
       _activeContactMethod = method;
     });
-    // TODO: Implement actual contact actions (call, message, etc.)
+  }
+
+  Widget _buildUserInfo() {
+    if (_userProfile == null) {
+      return const Text(
+        'Завантаження...',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w600,
+          height: 1.5,
+          letterSpacing: 0.16,
+        ),
+      );
+    }
+
+    return Text(
+      _userProfile!.fullName,
+      style: const TextStyle(
+        color: Colors.black,
+        fontSize: 16,
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w600,
+        height: 1.5,
+        letterSpacing: 0.16,
+      ),
+    );
   }
 
   @override
@@ -724,37 +754,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: FutureBuilder<UserProfile?>(
-                                      future: _profileService.getUser(_product!.userId),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return const Text(
-                                            'Завантаження...',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 16,
-                                              fontFamily: 'Inter',
-                                              fontWeight: FontWeight.w600,
-                                              height: 1.5,
-                                              letterSpacing: 0.16,
-                                            ),
-                                          );
-                                        }
-                                        
-                                        final user = snapshot.data;
-                                        return Text(
-                                          user?.fullName ?? 'Користувач',
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.5,
-                                            letterSpacing: 0.16,
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                    child: _buildUserInfo(),
                                   ),
                                 ],
                               ),
@@ -861,6 +861,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ],
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 40),
+                        // Write button section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.only(top: 24),
+                          child: SizedBox(
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Функція буде доступна незабаром'),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF015873),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 10,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(200),
+                                ),
+                                elevation: 1,
+                                shadowColor: const Color(0xFF101828).withOpacity(0.05),
+                              ),
+                              child: const Text(
+                                'Написати',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.5,
+                                  letterSpacing: 0.16,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
