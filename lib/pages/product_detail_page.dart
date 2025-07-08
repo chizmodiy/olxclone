@@ -54,6 +54,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final imageHeight = size.height * 0.35; // 35% від висоти екрану
+
     if (_isLoading) {
       return const Scaffold(
         body: Center(
@@ -91,23 +94,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Scaffold(
       body: Column(
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
-            height: 844,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(color: Colors.white),
+            height: size.height,
             child: Stack(
               children: [
+                // Image gallery section
                 Positioned(
                   left: 0,
                   top: 0,
+                  right: 0,
                   child: Container(
-                    width: 390,
-                    height: 268,
+                    height: imageHeight,
                     clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Stack(
                       children: [
+                        // Image PageView
                         PageView.builder(
                           controller: _pageController,
                           itemCount: _product!.photos.length,
@@ -120,6 +123,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             return Image.network(
                               _product!.photos[index],
                               fit: BoxFit.cover,
+                              width: double.infinity,
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
                                   color: Colors.grey[200],
@@ -129,37 +133,41 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             );
                           },
                         ),
+                        // Page indicators
                         if (_product!.photos.length > 1)
                           Positioned(
-                            left: 169,
-                            top: 203,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: ShapeDecoration(
-                                color: Colors.black.withOpacity(0.25),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            left: 0,
+                            right: 0,
+                            bottom: 20,
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: ShapeDecoration(
+                                  color: Colors.black.withOpacity(0.25),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: List.generate(_product!.photos.length, (index) {
-                                  return Container(
-                                    width: 8,
-                                    height: 8,
-                                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                                    decoration: ShapeDecoration(
-                                      color: _currentPage == index 
-                                        ? const Color(0xFF015873) 
-                                        : Colors.white.withOpacity(0.25),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4)
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: List.generate(_product!.photos.length, (index) {
+                                    return Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                                      decoration: ShapeDecoration(
+                                        color: _currentPage == index 
+                                          ? const Color(0xFF015873) 
+                                          : Colors.white.withOpacity(0.25),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(4)
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                }),
+                                    );
+                                  }),
+                                ),
                               ),
                             ),
                           ),
@@ -170,67 +178,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 // Navigation buttons
                 Positioned(
                   left: 0,
-                  top: 71,
-                  child: Container(
-                    width: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 13),
+                  right: 0,
+                  top: MediaQuery.of(context).padding.top + 16,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
+                        _buildNavigationButton(
+                          icon: Icons.arrow_back,
                           onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: ShapeDecoration(
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  width: 1,
-                                  color: const Color(0xFFE4E4E7),
-                                ),
-                                borderRadius: BorderRadius.circular(200),
-                              ),
-                              shadows: const [
-                                BoxShadow(
-                                  color: Color(0x0C101828),
-                                  blurRadius: 2,
-                                  offset: Offset(0, 1),
-                                )
-                              ],
-                            ),
-                            child: const Icon(Icons.arrow_back),
-                          ),
                         ),
-                        GestureDetector(
+                        _buildNavigationButton(
+                          icon: Icons.share,
                           onTap: () {
-                            // TODO: Implement share functionality
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Функція поділитися буде додана незабаром'),
                               ),
                             );
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: ShapeDecoration(
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  width: 1,
-                                  color: const Color(0xFFE4E4E7),
-                                ),
-                                borderRadius: BorderRadius.circular(200),
-                              ),
-                              shadows: const [
-                                BoxShadow(
-                                  color: Color(0x0C101828),
-                                  blurRadius: 2,
-                                  offset: Offset(0, 1),
-                                )
-                              ],
-                            ),
-                            child: const Icon(Icons.share),
-                          ),
                         ),
                       ],
                     ),
@@ -239,23 +206,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 // Content section
                 Positioned(
                   left: 0,
-                  top: 235,
+                  right: 0,
+                  top: imageHeight - 20, // Overlap the image slightly
+                  bottom: 0,
                   child: Container(
-                    width: 390,
-                    height: 609,
-                    padding: const EdgeInsets.only(
-                      top: 20,
-                      left: 14,
-                      right: 14,
-                      bottom: 56,
-                    ),
-                    decoration: const ShapeDecoration(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                        ),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
                       ),
                     ),
                     child: SingleChildScrollView(
@@ -272,6 +231,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              width: 1,
+              color: Color(0xFFE4E4E7),
+            ),
+            borderRadius: BorderRadius.circular(200),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: Color(0x0C101828),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            )
+          ],
+        ),
+        child: Icon(icon),
       ),
     );
   }
