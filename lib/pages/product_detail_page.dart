@@ -223,7 +223,140 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         children: [
                           // Section 1
                           Container(
-                            // First section content will go here
+                            width: double.infinity,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Date
+                                Text(
+                                  _product!.formattedDate,
+                                  style: const TextStyle(
+                                    color: Color(0xFF838583),
+                                    fontSize: 12,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.3, // line-height: 15.60px
+                                    letterSpacing: 0.24,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                // Title and Price with Favorite button
+                                Container(
+                                  width: double.infinity,
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.only(right: 48), // Даємо місце для кнопки
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _product!.title,
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.5,
+                                                letterSpacing: 0.16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              _product!.formattedPrice,
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 24,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.2,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Favorite button
+                                      Positioned(
+                                        right: 0,
+                                        top: 9,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            // TODO: Implement favorite toggle
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF4F4F5),
+                                              borderRadius: BorderRadius.circular(200),
+                                              border: Border.all(
+                                                color: const Color(0xFFF4F4F5),
+                                              ),
+                                            ),
+                                            child: const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: Icon(
+                                                Icons.favorite_border,
+                                                size: 20,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Categories
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF83DAF5),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        'Мода і стиль',
+                                        style: const TextStyle(
+                                          color: Color(0xFF015873),
+                                          fontSize: 14,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.43, // line-height: 20px
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFAFAFA),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        'Жіночий одяг',
+                                        style: const TextStyle(
+                                          color: Color(0xFF52525B),
+                                          fontSize: 14,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.43, // line-height: 20px
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           
                           const SizedBox(height: 40), // Spacing between sections
