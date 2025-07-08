@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../services/product_service.dart';
 import '../services/category_service.dart';
 import '../services/profile_service.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Added for SvgPicture
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -31,6 +32,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   String? _subcategoryName;
   String? _currentUserId;
   bool _isFavorite = false;
+  String _activeContactMethod = 'phone'; // 'phone', 'whatsapp', 'telegram', 'viber', 'message'
 
   // Мапа категорій
   final Map<String, String> _categories = {
@@ -141,6 +143,78 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     super.dispose();
   }
 
+  Widget _buildContactButton(
+    String type,
+    String iconPath,
+    VoidCallback onPressed, {
+    bool isPrimary = false,
+  }) {
+    final bool isSocialIcon = type == 'whatsapp' || type == 'telegram' || type == 'viber';
+    
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: isPrimary ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(
+          color: isPrimary ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
+        ),
+      ),
+      child: IconButton(
+        icon: SvgPicture.asset(
+          iconPath,
+          width: 20,
+          height: 20,
+          colorFilter: isSocialIcon 
+              ? null 
+              : ColorFilter.mode(
+                  isPrimary ? Colors.white : Colors.black,
+                  BlendMode.srcIn,
+                ),
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildContactInfo(String iconPath, String text) {
+    bool isSocialIcon = false;
+    if (iconPath.contains('whatsapp') || iconPath.contains('telegram') || iconPath.contains('viber')) {
+      isSocialIcon = true;
+    }
+    
+    return Row(
+      children: [
+        SvgPicture.asset(
+          iconPath,
+          width: 24,
+          height: 24,
+          colorFilter: isSocialIcon ? null : const ColorFilter.mode(Color(0xFFA1A1AA), BlendMode.srcIn),
+        ),
+        const SizedBox(width: 7),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF101828),
+            fontSize: 16,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+            letterSpacing: 0.16,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleContactPress(String method) {
+    setState(() {
+      _activeContactMethod = method;
+    });
+    // TODO: Implement actual contact actions (call, message, etc.)
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -148,6 +222,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (_isLoading) {
       return const Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: CircularProgressIndicator(),
         ),
@@ -156,6 +231,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (_error != null) {
       return Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -174,6 +250,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (_product == null) {
       return const Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: Text('Товар не знайдено'),
         ),
@@ -181,571 +258,646 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
 
     return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: size.height,
-            child: Stack(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            Column(
               children: [
                 // Image gallery section
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    height: imageHeight,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: const BoxDecoration(),
-                    child: Stack(
-                      children: [
-                        // Image PageView
-                        PageView.builder(
-                          controller: _pageController,
-                          itemCount: _product!.photos.length,
-                          onPageChanged: (int page) {
-                            setState(() {
-                              _currentPage = page;
-                            });
-                          },
-                          itemBuilder: (context, index) {
-                            return Image.network(
-                              _product!.photos[index],
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.error),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                        // Page indicators
-                        if (_product!.photos.length > 1)
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 20,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: ShapeDecoration(
-                                  color: Colors.black.withOpacity(0.25),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                SizedBox(
+                  height: imageHeight,
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        itemCount: _product!.photos.length,
+                        onPageChanged: (int page) {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            _product!.photos[index],
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.error),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      if (_product!.photos.length > 1)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 20,
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: ShapeDecoration(
+                                color: Colors.black.withOpacity(0.25),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: List.generate(_product!.photos.length, (index) {
-                                    return Container(
-                                      width: 8,
-                                      height: 8,
-                                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                                      decoration: ShapeDecoration(
-                                        color: _currentPage == index 
-                                          ? const Color(0xFF015873) 
-                                          : Colors.white.withOpacity(0.25),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(4)
-                                        ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: List.generate(_product!.photos.length, (index) {
+                                  return Container(
+                                    width: 8,
+                                    height: 8,
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    decoration: ShapeDecoration(
+                                      color: _currentPage == index 
+                                        ? const Color(0xFF015873) 
+                                        : Colors.white.withOpacity(0.25),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4)
                                       ),
-                                    );
-                                  }),
-                                ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Navigation buttons
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: MediaQuery.of(context).padding.top + 16,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildNavigationButton(
-                          icon: Icons.arrow_back,
-                          onTap: () => Navigator.pop(context),
                         ),
-                        _buildNavigationButton(
-                          icon: Icons.share,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Функція поділитися буде додана незабаром'),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
                 // Content section
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: imageHeight - 20,
-                  bottom: 0,
+                Transform.translate(
+                  offset: const Offset(0, -20),
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(14, 20, 14, 38),
+                    width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
                     ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Section 1
-                          Container(
-                            width: double.infinity,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Date
-                                Text(
-                                  _product!.formattedDate,
-                                  style: const TextStyle(
-                                    color: Color(0xFF838583),
-                                    fontSize: 12,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.3, // line-height: 15.60px
-                                    letterSpacing: 0.24,
-                                  ),
+                    padding: const EdgeInsets.fromLTRB(14, 20, 14, 38),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section 1
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Date
+                              Text(
+                                _product!.formattedDate,
+                                style: const TextStyle(
+                                  color: Color(0xFF838583),
+                                  fontSize: 12,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.3,
+                                  letterSpacing: 0.24,
                                 ),
-                                const SizedBox(height: 6),
-                                // Title and Price with Favorite button
-                                Container(
-                                  width: double.infinity,
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.only(right: 48), // Даємо місце для кнопки
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _product!.title,
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 16,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w600,
-                                                height: 1.5,
-                                                letterSpacing: 0.16,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              _product!.formattedPrice,
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 24,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w600,
-                                                height: 1.2,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Favorite button
-                                      Positioned(
-                                        right: 0,
-                                        top: 9,
-                                        child: GestureDetector(
-                                          onTap: _toggleFavorite,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF4F4F5),
-                                              borderRadius: BorderRadius.circular(200),
-                                              border: Border.all(
-                                                color: const Color(0xFFF4F4F5),
-                                              ),
-                                            ),
-                                            child: SizedBox(
-                                              width: 20,
-                                              height: 20,
-                                              child: Icon(
-                                                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                                size: 20,
-                                                color: _isFavorite ? const Color(0xFF015873) : Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Categories
-                                Row(
+                              ),
+                              const SizedBox(height: 6),
+                              // Title and Price with Favorite button
+                              Container(
+                                width: double.infinity,
+                                child: Stack(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF83DAF5),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Text(
-                                        _categoryName ?? 'Інше',
-                                        style: const TextStyle(
-                                          color: Color(0xFF015873),
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.43,
-                                        ),
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.only(right: 48),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _product!.title,
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.5,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            _product!.formattedPrice,
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 24,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.2,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFAFAFA),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Text(
-                                        _subcategoryName ?? 'Інше',
-                                        style: const TextStyle(
-                                          color: Color(0xFF52525B),
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.43,
+                                    // Favorite button
+                                    Positioned(
+                                      right: 0,
+                                      top: 9,
+                                      child: GestureDetector(
+                                        onTap: _toggleFavorite,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF4F4F5),
+                                            borderRadius: BorderRadius.circular(200),
+                                            border: Border.all(
+                                              color: const Color(0xFFF4F4F5),
+                                            ),
+                                          ),
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: Icon(
+                                              _isFavorite ? Icons.favorite : Icons.favorite_border,
+                                              size: 20,
+                                              color: _isFavorite ? const Color(0xFF015873) : Colors.black,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 40),
-                                
-                                // Description section
-                                Container(
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Опис',
-                                        style: TextStyle(
-                                          color: Color(0xFF52525B),
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.4,
-                                          letterSpacing: 0.14,
-                                        ),
+                              ),
+                              const SizedBox(height: 16),
+                              // Categories
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF83DAF5),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      _categoryName ?? 'Інше',
+                                      style: const TextStyle(
+                                        color: Color(0xFF015873),
+                                        fontSize: 14,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.43,
                                       ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        _product!.description ?? 'Опис відсутній',
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.5,
-                                          letterSpacing: 0.16,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFAFAFA),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      _subcategoryName ?? 'Інше',
+                                      style: const TextStyle(
+                                        color: Color(0xFF52525B),
+                                        fontSize: 14,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.43,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        
+                        // Description section
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Опис',
+                                style: TextStyle(
+                                  color: Color(0xFF52525B),
+                                  fontSize: 14,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.4,
+                                  letterSpacing: 0.14,
                                 ),
-                                const SizedBox(height: 40),
-                                
-                                // Location section
-                                Container(
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Location header with icon
-                                      Row(
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _product!.description ?? 'Опис відсутній',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                  letterSpacing: 0.16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        
+                        // Location section
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    child: const Icon(
+                                      Icons.location_on_outlined,
+                                      color: Color(0xFFA1A1AA),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 7),
+                                  Text(
+                                    _product!.location,
+                                    style: const TextStyle(
+                                      color: Color(0xFF101828),
+                                      fontSize: 16,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.5,
+                                      letterSpacing: 0.16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                height: 362,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE4E4E7),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      right: 16,
+                                      top: 190,
+                                      child: Column(
                                         children: [
                                           Container(
-                                            width: 24,
-                                            height: 24,
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(200),
+                                              border: Border.all(
+                                                color: const Color(0xFFE4E4E7),
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF101828).withOpacity(0.05),
+                                                  blurRadius: 2,
+                                                  offset: const Offset(0, 1),
+                                                ),
+                                              ],
+                                            ),
                                             child: const Icon(
-                                              Icons.location_on_outlined,
-                                              color: Color(0xFFA1A1AA), // Zinc-400
-                                              size: 24,
+                                              Icons.gps_fixed,
+                                              size: 20,
+                                              color: Colors.black,
                                             ),
                                           ),
-                                          const SizedBox(width: 7),
-                                          Text(
-                                            _product!.location,
-                                            style: const TextStyle(
-                                              color: Color(0xFF101828), // Gray-900
+                                          const SizedBox(height: 16),
+                                          Column(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(200),
+                                                  border: Border.all(
+                                                    color: const Color(0xFFE4E4E7),
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(0xFF101828).withOpacity(0.05),
+                                                      blurRadius: 2,
+                                                      offset: const Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Icon(
+                                                  Icons.add,
+                                                  size: 20,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(200),
+                                                  border: Border.all(
+                                                    color: const Color(0xFFE4E4E7),
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: const Color(0xFF101828).withOpacity(0.05),
+                                                      blurRadius: 2,
+                                                      offset: const Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Icon(
+                                                  Icons.remove,
+                                                  size: 20,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Positioned(
+                                      left: 267,
+                                      top: 113,
+                                      child: Icon(
+                                        Icons.location_on,
+                                        size: 32,
+                                        color: Color(0xFF015873),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: 13,
+                                      bottom: 13,
+                                      child: Container(
+                                        width: 111,
+                                        height: 25,
+                                        color: Colors.white.withOpacity(0.8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        
+                        // User section
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Користувач',
+                                    style: TextStyle(
+                                      color: Color(0xFF52525B),
+                                      fontSize: 14,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.4,
+                                      letterSpacing: 0.14,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(200),
+                                    ),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Функція скарги буде додана незабаром'),
+                                          ),
+                                        );
+                                      },
+                                      child: const Icon(
+                                        Icons.flag_outlined,
+                                        size: 20,
+                                        color: Color(0xFF27272A),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(240),
+                                      color: const Color(0xFFE4E4E7),
+                                    ),
+                                    child: const Icon(
+                                      Icons.person,
+                                      size: 24,
+                                      color: Color(0xFF71717A),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: FutureBuilder<UserProfile?>(
+                                      future: _profileService.getUser(_product!.userId),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return const Text(
+                                            'Завантаження...',
+                                            style: TextStyle(
+                                              color: Colors.black,
                                               fontSize: 16,
                                               fontFamily: 'Inter',
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.w600,
                                               height: 1.5,
                                               letterSpacing: 0.16,
                                             ),
+                                          );
+                                        }
+                                        
+                                        final user = snapshot.data;
+                                        return Text(
+                                          user?.fullName ?? 'Користувач',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.5,
+                                            letterSpacing: 0.16,
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      // Map placeholder
-                                      Container(
-                                        width: double.infinity,
-                                        height: 362,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE4E4E7), // Zinc-200
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Stack(
-                                          children: [
-                                            // Map controls
-                                            Positioned(
-                                              right: 16,
-                                              top: 190,
-                                              child: Column(
-                                                children: [
-                                                  // Current location button
-                                                  Container(
-                                                    padding: const EdgeInsets.all(10),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius: BorderRadius.circular(200),
-                                                      border: Border.all(
-                                                        color: const Color(0xFFE4E4E7), // Zinc-200
-                                                      ),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: const Color(0xFF101828).withOpacity(0.05),
-                                                          blurRadius: 2,
-                                                          offset: const Offset(0, 1),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.gps_fixed,
-                                                      size: 20,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  // Zoom controls
-                                                  Column(
-                                                    children: [
-                                                      Container(
-                                                        padding: const EdgeInsets.all(10),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius: BorderRadius.circular(200),
-                                                          border: Border.all(
-                                                            color: const Color(0xFFE4E4E7), // Zinc-200
-                                                          ),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: const Color(0xFF101828).withOpacity(0.05),
-                                                              blurRadius: 2,
-                                                              offset: const Offset(0, 1),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: const Icon(
-                                                          Icons.add,
-                                                          size: 20,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Container(
-                                                        padding: const EdgeInsets.all(10),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius: BorderRadius.circular(200),
-                                                          border: Border.all(
-                                                            color: const Color(0xFFE4E4E7), // Zinc-200
-                                                          ),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: const Color(0xFF101828).withOpacity(0.05),
-                                                              blurRadius: 2,
-                                                              offset: const Offset(0, 1),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: const Icon(
-                                                          Icons.remove,
-                                                          size: 20,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            // Location pin
-                                            const Positioned(
-                                              left: 267,
-                                              top: 113,
-                                              child: Icon(
-                                                Icons.location_on,
-                                                size: 32,
-                                                color: Color(0xFF015873), // Primary color
-                                              ),
-                                            ),
-                                            // Map attribution
-                                            Positioned(
-                                              left: 13,
-                                              bottom: 13,
-                                              child: Container(
-                                                width: 111,
-                                                height: 25,
-                                                color: Colors.white.withOpacity(0.8),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                        );
+                                      },
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Contacts section
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Контакти',
+                              style: TextStyle(
+                                color: Color(0xFF52525B),
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                                letterSpacing: 0.14,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Contact buttons row
+                                Row(
+                                  children: [
+                                                                              // WhatsApp button
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: _buildContactButton(
+                                              'whatsapp',
+                                              'assets/icons/whatsapp.svg',
+                                              () => _handleContactPress('whatsapp'),
+                                              isPrimary: _activeContactMethod == 'whatsapp',
+                                            ),
+                                          ),
+                                          // Telegram button
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: _buildContactButton(
+                                              'telegram',
+                                              'assets/icons/telegram.svg',
+                                              () => _handleContactPress('telegram'),
+                                              isPrimary: _activeContactMethod == 'telegram',
+                                            ),
+                                          ),
+                                          // Viber button
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: _buildContactButton(
+                                              'viber',
+                                              'assets/icons/viber.svg',
+                                              () => _handleContactPress('viber'),
+                                              isPrimary: _activeContactMethod == 'viber',
+                                            ),
+                                          ),
+                                          // Phone button
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: _buildContactButton(
+                                              'phone',
+                                              'assets/icons/phone.svg',
+                                              () => _handleContactPress('phone'),
+                                              isPrimary: _activeContactMethod == 'phone',
+                                            ),
+                                          ),
+                                          // Message button
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: _buildContactButton(
+                                              'message',
+                                              'assets/icons/message-circle-01.svg',
+                                              () => _handleContactPress('message'),
+                                              isPrimary: _activeContactMethod == 'message',
+                                            ),
+                                          ),
+                                  ],
                                 ),
-                                const SizedBox(height: 40),
-                                
-                                // User section
-                                Container(
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Користувач',
-                                            style: TextStyle(
-                                              color: Color(0xFF52525B),
-                                              fontSize: 14,
-                                              fontFamily: 'Inter',
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.4,
-                                              letterSpacing: 0.14,
-                                            ),
-                                          ),
-                                          // Report button
-                                          Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(200),
-                                            ),
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                // TODO: Implement report functionality
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text('Функція скарги буде додана незабаром'),
-                                                  ),
-                                                );
-                                              },
-                                              child: const Icon(
-                                                Icons.flag_outlined,
-                                                size: 20,
-                                                color: Color(0xFF27272A),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      // User info
-                                      Row(
-                                        children: [
-                                          // Avatar
-                                          Container(
-                                            width: 48,
-                                            height: 48,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(240),
-                                              color: const Color(0xFFE4E4E7), // Zinc-200
-                                            ),
-                                            child: const Icon(
-                                              Icons.person,
-                                              size: 24,
-                                              color: Color(0xFF71717A), // Zinc-500
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          // User name
-                                          Expanded(
-                                            child: FutureBuilder<UserProfile?>(
-                                              future: _profileService.getUser(_product!.userId),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                                  return const Text(
-                                                    'Завантаження...',
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontSize: 16,
-                                                      fontFamily: 'Inter',
-                                                      fontWeight: FontWeight.w600,
-                                                      height: 1.5,
-                                                      letterSpacing: 0.16,
-                                                    ),
-                                                  );
-                                                }
-                                                
-                                                final user = snapshot.data;
-                                                return Text(
-                                                  user?.fullName ?? 'Користувач',
-                                                  style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16,
-                                                    fontFamily: 'Inter',
-                                                    fontWeight: FontWeight.w600,
-                                                    height: 1.5,
-                                                    letterSpacing: 0.16,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                const SizedBox(height: 16),
+                                // Contact info display
+                                if (_activeContactMethod == 'phone')
+                                  _buildContactInfo(
+                                    'assets/icons/phone.svg',
+                                    _product?.phoneNumber ?? 'Відсутнє',
                                   ),
-                                ),
+                                if (_activeContactMethod == 'whatsapp')
+                                  _buildContactInfo(
+                                    'assets/icons/whatsapp.svg',
+                                    _product?.whatsapp ?? 'Відсутнє',
+                                  ),
+                                if (_activeContactMethod == 'telegram')
+                                  _buildContactInfo(
+                                    'assets/icons/telegram.svg',
+                                    _product?.telegram ?? 'Відсутнє',
+                                  ),
+                                if (_activeContactMethod == 'viber')
+                                  _buildContactInfo(
+                                    'assets/icons/viber.svg',
+                                    _product?.viber ?? 'Відсутнє',
+                                  ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            // Navigation buttons
+            Positioned(
+              left: 0,
+              right: 0,
+              top: MediaQuery.of(context).padding.top + 16,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildNavigationButton(
+                      icon: Icons.arrow_back,
+                      onTap: () => Navigator.pop(context),
+                    ),
+                    _buildNavigationButton(
+                      icon: Icons.share,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Функція поділитися буде додана незабаром'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

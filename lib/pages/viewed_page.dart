@@ -188,7 +188,7 @@ class _ViewedContentState extends State<ViewedContent> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F3F3),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(200),
                 ),
                 child: Row(
