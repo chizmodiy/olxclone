@@ -1,7 +1,22 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user.dart';
 
 class ProfileService {
   final SupabaseClient _client = Supabase.instance.client;
+
+  Future<UserProfile?> getUser(String userId) async {
+    try {
+      final response = await _client
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .single();
+      return response != null ? UserProfile.fromJson(response as Map<String, dynamic>) : null;
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      return null;
+    }
+  }
 
   Future<Map<String, dynamic>?> _getProfile() async {
     final currentUser = _client.auth.currentUser;
@@ -13,7 +28,7 @@ class ProfileService {
     try {
       final response = await _client
           .from('profiles')
-          .select('favorite_products')
+          .select()
           .eq('id', currentUser.id)
           .single();
       return response as Map<String, dynamic>?;
@@ -55,6 +70,25 @@ class ProfileService {
           .from('profiles')
           .update({'favorite_products': currentFavorites.toList()})
           .eq('id', currentUser.id);
+    }
+  }
+
+  Future<void> updateUserProfile({
+    required String userId,
+    String? firstName,
+    String? lastName,
+    String? avatarUrl,
+  }) async {
+    final updates = <String, dynamic>{};
+    if (firstName != null) updates['first_name'] = firstName;
+    if (lastName != null) updates['last_name'] = lastName;
+    if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+
+    if (updates.isNotEmpty) {
+      await _client
+          .from('profiles')
+          .update(updates)
+          .eq('id', userId);
     }
   }
 } 

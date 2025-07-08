@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
+import '../models/user.dart';
 import '../services/product_service.dart';
 import '../services/category_service.dart';
 import '../services/profile_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -471,6 +472,264 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                           height: 1.5,
                                           letterSpacing: 0.16,
                                         ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+                                
+                                // Location section
+                                Container(
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Location header with icon
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 24,
+                                            height: 24,
+                                            child: const Icon(
+                                              Icons.location_on_outlined,
+                                              color: Color(0xFFA1A1AA), // Zinc-400
+                                              size: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 7),
+                                          Text(
+                                            _product!.location,
+                                            style: const TextStyle(
+                                              color: Color(0xFF101828), // Gray-900
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.5,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Map placeholder
+                                      Container(
+                                        width: double.infinity,
+                                        height: 362,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE4E4E7), // Zinc-200
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            // Map controls
+                                            Positioned(
+                                              right: 16,
+                                              top: 190,
+                                              child: Column(
+                                                children: [
+                                                  // Current location button
+                                                  Container(
+                                                    padding: const EdgeInsets.all(10),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.circular(200),
+                                                      border: Border.all(
+                                                        color: const Color(0xFFE4E4E7), // Zinc-200
+                                                      ),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: const Color(0xFF101828).withOpacity(0.05),
+                                                          blurRadius: 2,
+                                                          offset: const Offset(0, 1),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.gps_fixed,
+                                                      size: 20,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  // Zoom controls
+                                                  Column(
+                                                    children: [
+                                                      Container(
+                                                        padding: const EdgeInsets.all(10),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(200),
+                                                          border: Border.all(
+                                                            color: const Color(0xFFE4E4E7), // Zinc-200
+                                                          ),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: const Color(0xFF101828).withOpacity(0.05),
+                                                              blurRadius: 2,
+                                                              offset: const Offset(0, 1),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: const Icon(
+                                                          Icons.add,
+                                                          size: 20,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Container(
+                                                        padding: const EdgeInsets.all(10),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(200),
+                                                          border: Border.all(
+                                                            color: const Color(0xFFE4E4E7), // Zinc-200
+                                                          ),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: const Color(0xFF101828).withOpacity(0.05),
+                                                              blurRadius: 2,
+                                                              offset: const Offset(0, 1),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: const Icon(
+                                                          Icons.remove,
+                                                          size: 20,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // Location pin
+                                            const Positioned(
+                                              left: 267,
+                                              top: 113,
+                                              child: Icon(
+                                                Icons.location_on,
+                                                size: 32,
+                                                color: Color(0xFF015873), // Primary color
+                                              ),
+                                            ),
+                                            // Map attribution
+                                            Positioned(
+                                              left: 13,
+                                              bottom: 13,
+                                              child: Container(
+                                                width: 111,
+                                                height: 25,
+                                                color: Colors.white.withOpacity(0.8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+                                
+                                // User section
+                                Container(
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Користувач',
+                                            style: TextStyle(
+                                              color: Color(0xFF52525B),
+                                              fontSize: 14,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.4,
+                                              letterSpacing: 0.14,
+                                            ),
+                                          ),
+                                          // Report button
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(200),
+                                            ),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                // TODO: Implement report functionality
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Функція скарги буде додана незабаром'),
+                                                  ),
+                                                );
+                                              },
+                                              child: const Icon(
+                                                Icons.flag_outlined,
+                                                size: 20,
+                                                color: Color(0xFF27272A),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      // User info
+                                      Row(
+                                        children: [
+                                          // Avatar
+                                          Container(
+                                            width: 48,
+                                            height: 48,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(240),
+                                              color: const Color(0xFFE4E4E7), // Zinc-200
+                                            ),
+                                            child: const Icon(
+                                              Icons.person,
+                                              size: 24,
+                                              color: Color(0xFF71717A), // Zinc-500
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // User name
+                                          Expanded(
+                                            child: FutureBuilder<UserProfile?>(
+                                              future: _profileService.getUser(_product!.userId),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                                  return const Text(
+                                                    'Завантаження...',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 16,
+                                                      fontFamily: 'Inter',
+                                                      fontWeight: FontWeight.w600,
+                                                      height: 1.5,
+                                                      letterSpacing: 0.16,
+                                                    ),
+                                                  );
+                                                }
+                                                
+                                                final user = snapshot.data;
+                                                return Text(
+                                                  user?.fullName ?? 'Користувач',
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.5,
+                                                    letterSpacing: 0.16,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
