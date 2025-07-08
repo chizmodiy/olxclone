@@ -77,7 +77,8 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Future<void> _loadCategories() async {
     try {
-      final categoryService = CategoryService(Supabase.instance.client);
+      // Initialize services
+      final categoryService = CategoryService();
       final categories = await categoryService.getCategories();
       setState(() {
         _categories = categories;

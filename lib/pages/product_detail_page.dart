@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
+import '../services/category_service.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -17,16 +18,58 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   late final PageController _pageController;
   late final ProductService _productService;
+  late final CategoryService _categoryService;
   int _currentPage = 0;
   Product? _product;
   bool _isLoading = true;
   String? _error;
+  String? _categoryName;
+  String? _subcategoryName;
+
+  // Мапа категорій
+  final Map<String, String> _categories = {
+    '066e2754-e51c-4395-9e3f-f78503444704': 'Знайомства',
+    '0eb7b6db-e505-4503-8bc0-020914a3ebcf': 'Бізнес та послуги',
+    '261d5661-f4c6-408e-b1f3-8d9a04f68081': 'Тварини',
+    '2b33ab6e-94b3-4268-b8b8-5c23d7ba2d2b': 'Оренда та прокат',
+    '30934dd8-8fb3-4e24-91a4-6cf137bd7412': 'Дім і сад',
+    '3d668ce4-969f-49ad-96c2-7152c2184567': 'Робота',
+    '63ca90d1-6735-4fff-b469-94f325b99900': 'Авто',
+    '7065bc9d-d34f-4394-9a08-e8da1f8c6a98': 'Нерухомість',
+    '7515a738-62eb-4a8b-bcfd-872a10a72e25': 'Віддам безкоштовно',
+    '85e264dd-3456-42a8-a6ca-6123e2a07d40': 'Житло подобово',
+    '90d34cdb-7617-4b17-8106-9c94d802f812': 'Мода і стиль',
+    'c785ac08-c2f0-4766-af8d-0b09cb0c3d94': 'Запчастини для транспорту',
+    'cce00594-36b9-482b-b21f-43818155de2b': 'Хобі, відпочинок і спорт',
+    'cf21cd87-d2e6-45d2-bea3-d68931ca5f97': 'Електроніка',
+    'e34417la-a607-4fc3-b6e9-7ad049c1fdc5': 'Допомога',
+    'ffa87acb-45fb-42b3-bfc6-00609ec6e879': 'Дитячий світ',
+  };
+
+  // Мапа підкатегорій
+  final Map<String, String> _subcategories = {
+    'women_clothing': 'Жіночий одяг',
+    'men_clothing': 'Чоловічий одяг',
+    'phones': 'Телефони',
+    'computers': 'Комп\'ютери',
+    'furniture': 'Меблі',
+    // Додайте інші підкатегорії за потреби
+  };
+
+  String _getCategoryName(String categoryId) {
+    return _categories[categoryId] ?? 'Інше';
+  }
+
+  String _getSubcategoryName(String subcategoryId) {
+    return _subcategories[subcategoryId] ?? 'Інше';
+  }
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _productService = ProductService();
+    _categoryService = CategoryService();
     _loadProduct();
   }
 
@@ -34,8 +77,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     try {
       setState(() => _isLoading = true);
       final product = await _productService.getProductById(widget.productId);
+      final categoryName = await _categoryService.getCategoryNameCached(product.categoryId);
+      final subcategoryName = await _categoryService.getSubcategoryNameCached(product.subcategoryId);
+      
       setState(() {
         _product = product;
+        _categoryName = categoryName;
+        _subcategoryName = subcategoryName;
         _isLoading = false;
       });
     } catch (e) {
@@ -322,13 +370,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Text(
-                                        'Мода і стиль',
+                                        _categoryName ?? 'Інше',
                                         style: const TextStyle(
                                           color: Color(0xFF015873),
                                           fontSize: 14,
                                           fontFamily: 'Inter',
                                           fontWeight: FontWeight.w500,
-                                          height: 1.43, // line-height: 20px
+                                          height: 1.43,
                                         ),
                                       ),
                                     ),
@@ -343,13 +391,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Text(
-                                        'Жіночий одяг',
+                                        _subcategoryName ?? 'Інше',
                                         style: const TextStyle(
                                           color: Color(0xFF52525B),
                                           fontSize: 14,
                                           fontFamily: 'Inter',
                                           fontWeight: FontWeight.w500,
-                                          height: 1.43, // line-height: 20px
+                                          height: 1.43,
                                         ),
                                       ),
                                     ),
