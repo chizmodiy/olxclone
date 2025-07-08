@@ -207,10 +207,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  top: imageHeight - 20, // Overlap the image slightly
+                  top: imageHeight - 20,
                   bottom: 0,
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(14, 20, 14, 38),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
@@ -221,7 +221,45 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // TODO: Add product details content here
+                          // Section 1
+                          Container(
+                            // First section content will go here
+                          ),
+                          
+                          const SizedBox(height: 40), // Spacing between sections
+                          
+                          // Section 2
+                          Container(
+                            // Second section content will go here
+                          ),
+                          
+                          const SizedBox(height: 40), // Spacing between sections
+                          
+                          // Section 3
+                          Container(
+                            // Third section content will go here
+                          ),
+                          
+                          const SizedBox(height: 40), // Spacing between sections
+                          
+                          // Section 4
+                          Container(
+                            // Fourth section content will go here
+                          ),
+                          
+                          const SizedBox(height: 40), // Spacing between sections
+                          
+                          // Section 5
+                          Container(
+                            // Fifth section content will go here
+                          ),
+                          
+                          const SizedBox(height: 40), // Spacing between sections
+                          
+                          // Section 6
+                          Container(
+                            // Sixth section content will go here
+                          ),
                         ],
                       ),
                     ),
