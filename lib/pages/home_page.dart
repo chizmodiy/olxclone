@@ -45,7 +45,7 @@ class _HomeContentState extends State<HomeContent> {
   List<Product> _products = [];
   bool _isLoading = false;
   bool _hasMore = true;
-  int _currentPage = 1;
+  int _currentPage = 0;
   String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
   ViewMode _currentViewMode = ViewMode.grid4; // Changed from _isGrid
   String? _errorMessage;
@@ -79,9 +79,12 @@ class _HomeContentState extends State<HomeContent> {
 
     try {
       final products = await _productService.getProducts(
-        page: _currentPage,
+        limit: 10, // Assuming a fixed limit for now
+        offset: _currentPage * 10,
+        searchQuery: '', // No search query implemented yet
+        categoryId: null, // No category filtering implemented yet
         sortBy: _sortBy,
-        // isGrid: _isGrid, // Removed this parameter, logic will be handled locally
+        isFree: false, // No 'isFree' filtering implemented yet
       );
 
       setState(() {
@@ -307,6 +310,41 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Помилка: $_errorMessage'),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _errorMessage = null;
+                  _products = [];
+                  _currentPage = 0;
+                  _hasMore = true;
+                });
+                _loadProducts();
+              },
+              child: const Text('Спробувати знову'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_products.isEmpty && _isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_products.isEmpty && !_isLoading) {
+      return const Center(
+        child: Text('Немає доступних оголошень'),
+      );
+    }
+
     return Stack(
       children: [
         Padding(
@@ -560,13 +598,12 @@ class _HomeContentState extends State<HomeContent> {
                                           id: product.id, // Pass product ID
                                           title: product.title,
                                           price: product.isNegotiable
-                                              ? 'Ціна договірна'
-                                              : product.price == 'Безкоштовно'
-                                                  ? 'Безкоштовно'
-                                                  : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
+                                              ? 'Договірна'
+                                              : NumberFormat.currency(locale: 'uk_UA', symbol:
+                                              '₴').format(product.priceValue),
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
-                                          images: product.images,
+                                          images: product.photos,
                                           isFavorite: _favoriteProductIds.contains(product.id),
                                           onFavoriteToggle: () => _toggleFavorite(product),
                                           onTap: () {

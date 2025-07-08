@@ -70,9 +70,8 @@ class _ViewedContentState extends State<ViewedContent> {
 
     try {
       final products = await _productService.getProducts(
-        page: _currentPage,
-        sortBy: _sortBy,
-        isGrid: _isGrid,
+        limit: 10,
+        offset: _currentPage * 10,
       );
 
       setState(() {
@@ -269,7 +268,7 @@ class _ViewedContentState extends State<ViewedContent> {
                                   price: NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
-                                  images: product.images,
+                                  images: product.photos,
                                   isFavorite: isFavorite,
                                   onFavoriteToggle: () => _toggleFavorite(product),
                                   onTap: () {

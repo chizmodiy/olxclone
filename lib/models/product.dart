@@ -1,19 +1,43 @@
 class Product {
   final String id;
   final String title;
-  final String price;
-  final DateTime createdAt;
+  final String? description;
+  final String categoryId;
+  final String subcategoryId;
   final String location;
-  final List<String> images;
+  final bool isFree;
+  final String? currency;
+  final double? price;
+  final String? phoneNumber;
+  final String? whatsapp;
+  final String? telegram;
+  final String? viber;
+  final String userId;
+  final Map<String, dynamic>? customAttributes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<String> photos;
   final bool isNegotiable;
 
   Product({
     required this.id,
     required this.title,
-    required this.price,
-    required this.createdAt,
+    this.description,
+    required this.categoryId,
+    required this.subcategoryId,
     required this.location,
-    required this.images,
+    required this.isFree,
+    this.currency,
+    this.price,
+    this.phoneNumber,
+    this.whatsapp,
+    this.telegram,
+    this.viber,
+    required this.userId,
+    this.customAttributes,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.photos,
     this.isNegotiable = false,
   });
 
@@ -21,10 +45,24 @@ class Product {
     return Product(
       id: json['id'] as String,
       title: json['title'] as String,
-      price: json['price'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      description: json['description'] as String?,
+      categoryId: json['category_id'] as String,
+      subcategoryId: json['subcategory_id'] as String,
       location: json['location'] as String,
-      images: (json['images'] as List<dynamic>).cast<String>(),
+      isFree: json['is_free'] as bool,
+      currency: json['currency'] as String?,
+      price: json['price'] != null ? (json['price'] as num).toDouble() : null,
+      phoneNumber: json['phone_number'] as String?,
+      whatsapp: json['whatsapp'] as String?,
+      telegram: json['telegram'] as String?,
+      viber: json['viber'] as String?,
+      userId: json['user_id'] as String,
+      customAttributes: json['custom_attributes'] != null 
+        ? Map<String, dynamic>.from(json['custom_attributes'] as Map)
+        : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+      photos: (json['photos'] as List<dynamic>?)?.cast<String>() ?? [],
       isNegotiable: json['is_negotiable'] as bool? ?? false,
     );
   }
@@ -51,12 +89,25 @@ class Product {
     return months[month - 1];
   }
 
+  String get formattedPrice {
+    if (isFree) return 'Безкоштовно';
+    if (price == null) return 'Ціна не вказана';
+    
+    final currencySymbol = switch(currency?.toLowerCase()) {
+      'uah' => '₴',
+      'usd' => '\$',
+      'eur' => '€',
+      _ => '₴',
+    };
+    
+    return '$currencySymbol${price!.toStringAsFixed(2)}';
+  }
+
+  // Додаємо getter для сумісності зі старим кодом
+  List<String> get images => photos;
+  
   double get priceValue {
-    if (price == 'Безкоштовно') {
-      return 0.0;
-    }
-    // Remove currency symbols and parse
-    String cleanedPrice = price.replaceAll('₴', '').replaceAll('€', '').replaceAll('\$', '');
-    return double.tryParse(cleanedPrice) ?? double.infinity; // Handle cases where price might not be a valid number
+    if (isFree) return 0.0;
+    return price ?? 0.0;
   }
 } 

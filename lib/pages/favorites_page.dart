@@ -337,13 +337,12 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                           id: product.id, // Pass product ID
                                           title: product.title,
                                           price: product.isNegotiable
-                                              ? 'Ціна договірна'
-                                              : product.price == 'Безкоштовно'
-                                                  ? 'Безкоштовно'
-                                                  : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
+                                              ? 'Договірна'
+                                              : NumberFormat.currency(locale: 'uk_UA', symbol:
+                                              '₴').format(product.priceValue),
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
-                                          images: product.images,
+                                          images: product.photos,
                                           isFavorite: _favoriteProductIds.contains(product.id),
                                           onFavoriteToggle: () => _toggleFavorite(product),
                                           onTap: () {
