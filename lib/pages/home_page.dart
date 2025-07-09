@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
-import '../widgets/filter_bottom_sheet.dart'; // Import FilterBottomSheet
+import '../pages/filter_page.dart'; // Import FilterPage
 
 enum ViewMode {
   grid8,
@@ -181,15 +181,12 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   void _showFilterBottomSheet() async {
-    final Map<String, dynamic>? newFilters = await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => FilterBottomSheet(
-        initialFilters: _currentFilters, // Pass current filters to the bottom sheet
+    final Map<String, dynamic>? newFilters = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterPage(
+          initialFilters: _currentFilters,
+        ),
       ),
     );
 

@@ -53,7 +53,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
     setState(() => _isLoading = true);
 
     try {
-      final complaintService = ComplaintService(Supabase.instance.client);
+      final complaintService = ComplaintService();
       await complaintService.createComplaint(
         listingId: widget.productId,
         title: _titleController.text,
@@ -96,7 +96,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
             children: [
               Text(
                 'Поскаржитись на оголошення',
-                style: AppTextStyles.h2,
+                style: AppTextStyles.headlineMedium,
               ),
               const SizedBox(height: 16),
               Text(
