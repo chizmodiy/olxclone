@@ -1,8 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:postgrest/postgrest.dart';
 import '../models/user.dart';
 
 class ProfileService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  ProfileService({SupabaseClient? client}) 
+      : _client = client ?? Supabase.instance.client;
 
   Future<UserProfile?> getUser(String userId) async {
     try {
@@ -89,6 +93,55 @@ class ProfileService {
           .from('profiles')
           .update(updates)
           .eq('id', userId);
+    }
+  }
+
+  Future<void> addToViewedList(String listingId) async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return;
+
+      // First get current viewed_list
+      final response = await _client
+          .from('profiles')
+          .select('viewed_list')
+          .eq('id', userId)
+          .single();
+
+      List<String> currentList = List<String>.from(response['viewed_list'] ?? []);
+      
+      // Add new listing to the beginning if not already present
+      if (!currentList.contains(listingId)) {
+        currentList.insert(0, listingId);
+      }
+
+      // Update the profile with new list
+      await _client
+          .from('profiles')
+          .update({
+            'viewed_list': currentList
+          })
+          .eq('id', userId);
+    } catch (e) {
+      print('Error adding to viewed list: $e');
+    }
+  }
+
+  Future<List<String>> getViewedList() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return [];
+
+      final response = await _client
+          .from('profiles')
+          .select('viewed_list')
+          .eq('id', userId)
+          .single();
+      
+      return List<String>.from(response['viewed_list'] ?? []);
+    } catch (e) {
+      print('Error getting viewed list: $e');
+      return [];
     }
   }
 } 

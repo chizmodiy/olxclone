@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../services/profile_service.dart';
 
 class ProductCard extends StatelessWidget {
   final String id;
@@ -13,8 +14,9 @@ class ProductCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onTap;
+  final ProfileService _profileService;
 
-  const ProductCard({
+  ProductCard({
     super.key,
     required this.id,
     required this.title,
@@ -27,12 +29,15 @@ class ProductCard extends StatelessWidget {
     this.isFavorite = false,
     this.onFavoriteToggle,
     this.onTap,
-  });
+  }) : _profileService = ProfileService();
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        _profileService.addToViewedList(id);
+        if (onTap != null) onTap!();
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         constraints: BoxConstraints(minHeight: 250, maxHeight: 250), // Set fixed height for the card
