@@ -4,6 +4,11 @@ class AppColors {
   static const Color primaryColor = Color(0xFF015873); // Defined as Primary in the design
   static const Color notificationDotColor = Color(0xFFD45C5C); // Defined for the notification dot
 
+  static const Color white = Colors.white; // Explicitly defined white
+  static const Color black = Colors.black; // Explicitly defined black
+  static const Color primary = primaryColor; // Alias for primaryColor
+  static const Color zinc400 = Color(0xFFA1A1AA); // Explicitly defined Zinc-400
+
   static const Color color1 = Color(0xFF959595);
   static const Color color2 = Color(0xFF353433); // This can be used for active text (similar to Black)
   static const Color color3 = Color(0xFF073240);
