@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'storage_service.dart';
+import '../models/listing.dart'; // Added this import
 
 enum CurrencyEnum {
   UAH,
@@ -99,6 +100,19 @@ class ListingService {
       print('Error type: ${error.runtimeType}');
       print('Error details: $error');
       throw Exception('Failed to create listing: $error');
+    }
+  }
+
+  Future<Listing> getListingById(String listingId) async {
+    try {
+      final response = await _client
+          .from('listings')
+          .select()
+          .eq('id', listingId)
+          .single();
+      return Listing.fromJson(response);
+    } catch (error) {
+      throw Exception('Failed to fetch listing: $error');
     }
   }
 } 

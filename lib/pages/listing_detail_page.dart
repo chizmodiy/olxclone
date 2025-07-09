@@ -46,8 +46,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: ComplaintModal(
-          listingId: listing.id,
-          listingTitle: listing.title,
+          productId: listing.id,
+          productTitle: listing.title,
         ),
       ),
     );
@@ -85,7 +85,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             return Center(
               child: Text(
                 'Помилка: ${snapshot.error}',
-                style: AppTextStyles.body1.copyWith(color: AppColors.errorColor),
+                style: AppTextStyles.body1Regular.copyWith(color: AppColors.notificationDotColor),
               ),
             );
           }
@@ -117,32 +117,32 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                 const SizedBox(height: 16),
                 Text(
                   listing.title,
-                  style: AppTextStyles.h1,
+                  style: AppTextStyles.heading1Semibold,
                 ),
                 const SizedBox(height: 8),
                 if (listing.price != null)
                   Text(
                     '${listing.price} ${listing.currency}',
-                    style: AppTextStyles.h2.copyWith(
+                    style: AppTextStyles.heading2Semibold.copyWith(
                       color: AppColors.primaryColor,
                     ),
                   )
                 else
                   Text(
                     'Безкоштовно',
-                    style: AppTextStyles.h2.copyWith(
+                    style: AppTextStyles.heading2Semibold.copyWith(
                       color: AppColors.primaryColor,
                     ),
                   ),
                 const SizedBox(height: 16),
                 Text(
                   listing.description,
-                  style: AppTextStyles.body1,
+                  style: AppTextStyles.body1Regular,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Місцезнаходження: ${listing.location}',
-                  style: AppTextStyles.body2,
+                  style: AppTextStyles.body2Regular,
                 ),
                 const SizedBox(height: 8),
                 if (listing.phoneNumber != null)
