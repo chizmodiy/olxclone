@@ -28,22 +28,27 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           // Аватар користувача
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: avatarUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(avatarUrl),
-                      fit: BoxFit.cover,
-                    )
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: avatarUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(avatarUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: avatarUrl == null ? Colors.grey[300] : null,
+              ),
+              child: avatarUrl == null
+                  ? const Icon(Icons.person, color: Colors.white)
                   : null,
-              color: avatarUrl == null ? Colors.grey[300] : null,
             ),
-            child: avatarUrl == null
-                ? const Icon(Icons.person, color: Colors.white)
-                : null,
           ),
         ],
       ),
