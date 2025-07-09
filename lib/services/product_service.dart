@@ -40,11 +40,15 @@ class ProductService {
     int offset = 0,
     String? searchQuery,
     String? categoryId,
+    String? subcategoryId,
+    double? minPrice,
+    double? maxPrice,
+    bool? hasDelivery,
     String? sortBy,
     bool? isFree,
   }) async {
     try {
-      print('Fetching products with params: limit=$limit, offset=$offset, searchQuery=$searchQuery, categoryId=$categoryId, sortBy=$sortBy, isFree=$isFree');
+      print('Fetching products with params: limit=$limit, offset=$offset, searchQuery=$searchQuery, categoryId=$categoryId, subcategoryId=$subcategoryId, minPrice=$minPrice, maxPrice=$maxPrice, hasDelivery=$hasDelivery, sortBy=$sortBy, isFree=$isFree');
       
       PostgrestFilterBuilder query = _supabase.from('listings').select();
 
@@ -55,6 +59,24 @@ class ProductService {
 
       if (categoryId != null) {
         query = query.eq('category_id', categoryId) as PostgrestFilterBuilder;
+      }
+
+      if (subcategoryId != null) {
+        query = query.eq('subcategory_id', subcategoryId) as PostgrestFilterBuilder;
+      }
+
+      if (minPrice != null) {
+        query = query.gte('price', minPrice) as PostgrestFilterBuilder;
+      }
+
+      if (maxPrice != null) {
+        query = query.lte('price', maxPrice) as PostgrestFilterBuilder;
+      }
+
+      if (hasDelivery != null) {
+        // Assuming 'has_delivery' is a boolean field in your database
+        // You might need to adjust this based on your actual schema for delivery
+        query = query.eq('has_delivery', hasDelivery) as PostgrestFilterBuilder;
       }
 
       if (isFree != null) {

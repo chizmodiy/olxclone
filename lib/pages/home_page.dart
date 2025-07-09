@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
+import '../widgets/filter_bottom_sheet.dart'; // Import FilterBottomSheet
 
 enum ViewMode {
   grid8,
@@ -53,6 +54,7 @@ class _HomeContentState extends State<HomeContent> {
   Set<String> _favoriteProductIds = {};
   bool _isViewDropdownOpen = false; // New state variable
   bool _isSortDropdownOpen = false; // New state variable
+  Map<String, dynamic> _currentFilters = {}; // New state variable for filters
 
   @override
   void initState() {
@@ -82,7 +84,11 @@ class _HomeContentState extends State<HomeContent> {
         limit: 10, // Assuming a fixed limit for now
         offset: _currentPage * 10,
         searchQuery: '', // No search query implemented yet
-        categoryId: null, // No category filtering implemented yet
+        categoryId: _currentFilters['category'], // Pass category filter
+        subcategoryId: _currentFilters['subcategory'], // Pass subcategory filter
+        minPrice: _currentFilters['minPrice'], // Pass minPrice filter
+        maxPrice: _currentFilters['maxPrice'], // Pass maxPrice filter
+        hasDelivery: _currentFilters['hasDelivery'], // Pass hasDelivery filter
         sortBy: _sortBy,
         isFree: false, // No 'isFree' filtering implemented yet
       );
@@ -172,6 +178,31 @@ class _HomeContentState extends State<HomeContent> {
       _errorMessage = null;
     });
     _loadProducts();
+  }
+
+  void _showFilterBottomSheet() async {
+    final Map<String, dynamic>? newFilters = await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => FilterBottomSheet(
+        initialFilters: _currentFilters, // Pass current filters to the bottom sheet
+      ),
+    );
+
+    if (newFilters != null) {
+      setState(() {
+        _currentFilters = newFilters;
+        _products = []; // Clear products to reload with new filters
+        _currentPage = 0;
+        _hasMore = true;
+        _errorMessage = null;
+      });
+      _loadProducts(); // Reload products with new filters
+    }
   }
 
   // Helper method to build the dropdown menu for view modes
@@ -524,7 +555,7 @@ class _HomeContentState extends State<HomeContent> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        // TODO: Implement Filter button logic here
+                        _showFilterBottomSheet();
                       },
                       child: Container(
                         height: 48,
