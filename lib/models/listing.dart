@@ -17,6 +17,7 @@ class Listing {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<String> photos;
+  final bool isNegotiable;
   bool isFavorite;
 
   Listing({
@@ -38,6 +39,7 @@ class Listing {
     required this.createdAt,
     required this.updatedAt,
     required this.photos,
+    this.isNegotiable = false,
     this.isFavorite = false,
   });
 
@@ -63,6 +65,7 @@ class Listing {
       photos: (json['photos'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ?? [],
+      isNegotiable: json['is_negotiable'] as bool? ?? false,
       isFavorite: json['is_favorite'] as bool? ?? false,
     );
   }
@@ -87,7 +90,23 @@ class Listing {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'photos': photos,
+      'is_negotiable': isNegotiable,
       'is_favorite': isFavorite,
     };
+  }
+
+  String get formattedPrice {
+    if (isFree) return 'Віддам безкоштовно';
+    if (isNegotiable) return 'Договірна';
+    if (price == null) return 'Ціна не вказана';
+    
+    final currencySymbol = switch(currency?.toLowerCase()) {
+      'uah' => '₴',
+      'usd' => '\$',
+      'eur' => '€',
+      _ => '₴',
+    };
+    
+    return '$currencySymbol${price!.toStringAsFixed(2)}';
   }
 } 

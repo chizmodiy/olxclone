@@ -373,11 +373,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                       return ProductCard(
                                         id: product.id, // Pass product ID
                                         title: product.title,
-                                        price: product.isNegotiable
-                                            ? 'Ціна договірна'
-                                            : product.price == 'Безкоштовно'
-                                                ? 'Безкоштовно'
-                                                : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
+                                        price: product.formattedPrice,
                                         date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                         location: product.location,
                                         images: product.images,

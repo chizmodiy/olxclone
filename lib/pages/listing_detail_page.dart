@@ -33,6 +33,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     _listingFuture = listingService.getListingById(widget.listingId);
   }
 
+
+
   void _showComplaintModal(Listing listing) {
     showModalBottomSheet(
       context: context,
@@ -120,20 +122,12 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                   style: AppTextStyles.heading1Semibold,
                 ),
                 const SizedBox(height: 8),
-                if (listing.price != null)
-                  Text(
-                    '${listing.price} ${listing.currency}',
-                    style: AppTextStyles.heading2Semibold.copyWith(
-                      color: AppColors.primaryColor,
-                    ),
-                  )
-                else
-                  Text(
-                    'Безкоштовно',
-                    style: AppTextStyles.heading2Semibold.copyWith(
-                      color: AppColors.primaryColor,
-                    ),
+                Text(
+                  listing.formattedPrice,
+                  style: AppTextStyles.heading2Semibold.copyWith(
+                    color: AppColors.primaryColor,
                   ),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   listing.description,

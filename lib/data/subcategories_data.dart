@@ -149,26 +149,90 @@ Map<String, dynamic>? getExtraFieldsForSubcategory(String subcategoryId) {
 // Функція для отримання назви поля для відображення
 String getFieldDisplayName(String fieldName) {
   switch (fieldName) {
+    // Знайомства
     case 'age_range':
       return 'Вік';
-    case 'size':
-      return 'Розмір';
-    case 'condition':
-      return 'Стан';
-    case 'area':
-      return 'Площа';
-    case 'rooms':
-      return 'Кількість кімнат';
+    
+    // Авто
     case 'year':
       return 'Рік випуску';
-    case 'engine_hp':
-      return 'Потужність двигуна';
-    case 'engine_power_hp':
-      return 'Двигун (к.с.)';
     case 'brand':
       return 'Марка';
     case 'car_brand':
       return 'Марка авто';
+    case 'engine_hp':
+      return 'Потужність двигуна';
+    case 'engine_power_hp':
+      return 'Двигун (к.с.)';
+    case 'mileage':
+      return 'Пробіг (км)';
+    case 'fuel_type':
+      return 'Тип палива';
+    case 'transmission':
+      return 'Коробка передач';
+    case 'body_type':
+      return 'Тип кузова';
+    case 'color':
+      return 'Колір';
+    
+    // Нерухомість
+    case 'area':
+      return 'Площа (м²)';
+    case 'square_meters':
+      return 'Площа (м²)';
+    case 'rooms':
+      return 'Кількість кімнат';
+    case 'floor':
+      return 'Поверх';
+    case 'total_floors':
+      return 'Всього поверхів';
+    case 'property_type':
+      return 'Тип нерухомості';
+    case 'renovation':
+      return 'Ремонт';
+    case 'furniture':
+      return 'Меблі';
+    case 'balcony':
+      return 'Балкон';
+    case 'parking':
+      return 'Парковка';
+    
+    // Електроніка
+    case 'model':
+      return 'Модель';
+    case 'memory':
+      return 'Пам\'ять';
+    case 'storage':
+      return 'Накопичувач';
+    case 'processor':
+      return 'Процесор';
+    case 'screen_size':
+      return 'Розмір екрану';
+    case 'battery':
+      return 'Батарея';
+    
+    // Одяг
+    case 'size':
+      return 'Розмір';
+    case 'material':
+      return 'Матеріал';
+    case 'season':
+      return 'Сезон';
+    case 'style':
+      return 'Стиль';
+    case 'gender':
+      return 'Стать';
+    
+    // Загальні
+    case 'condition':
+      return 'Стан';
+    case 'warranty':
+      return 'Гарантія';
+    case 'delivery':
+      return 'Доставка';
+    case 'payment':
+      return 'Оплата';
+    
     default:
       // Конвертуємо snake_case в Title Case
       return fieldName

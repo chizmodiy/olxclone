@@ -90,7 +90,8 @@ class Product {
   }
 
   String get formattedPrice {
-    if (isFree) return 'Безкоштовно';
+    if (isFree) return 'Віддам безкоштовно';
+    if (isNegotiable) return 'Договірна';
     if (price == null) return 'Ціна не вказана';
     
     final currencySymbol = switch(currency?.toLowerCase()) {

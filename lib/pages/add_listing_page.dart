@@ -569,11 +569,6 @@ class _AddListingPageState extends State<AddListingPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        Text(
-          'Додаткові параметри',
-          style: AppTextStyles.body1Medium.copyWith(color: AppColors.color8),
-        ),
-        const SizedBox(height: 16),
         ..._selectedSubcategory!.extraFields.map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -854,6 +849,7 @@ class _AddListingPageState extends State<AddListingPage> {
   String _getFieldDisplayName(String fieldName) {
     // Convert field names to display names
     switch (fieldName) {
+      // Авто
       case 'year':
         return 'Рік випуску';
       case 'brand':
@@ -864,14 +860,75 @@ class _AddListingPageState extends State<AddListingPage> {
         return 'Потужність двигуна';
       case 'engine_power_hp':
         return 'Двигун (к.с.)';
+      case 'mileage':
+        return 'Пробіг (км)';
+      case 'fuel_type':
+        return 'Тип палива';
+      case 'transmission':
+        return 'Коробка передач';
+      case 'body_type':
+        return 'Тип кузова';
+      case 'color':
+        return 'Колір';
+      
+      // Нерухомість
       case 'area':
+        return 'Площа (м²)';
+      case 'square_meters':
         return 'Площа (м²)';
       case 'rooms':
         return 'Кількість кімнат';
+      case 'floor':
+        return 'Поверх';
+      case 'total_floors':
+        return 'Всього поверхів';
+      case 'property_type':
+        return 'Тип нерухомості';
+      case 'renovation':
+        return 'Ремонт';
+      case 'furniture':
+        return 'Меблі';
+      case 'balcony':
+        return 'Балкон';
+      case 'parking':
+        return 'Парковка';
+      
+      // Електроніка
+      case 'model':
+        return 'Модель';
+      case 'memory':
+        return 'Пам\'ять';
+      case 'storage':
+        return 'Накопичувач';
+      case 'processor':
+        return 'Процесор';
+      case 'screen_size':
+        return 'Розмір екрану';
+      case 'battery':
+        return 'Батарея';
+      
+      // Одяг
       case 'size':
         return 'Розмір';
+      case 'material':
+        return 'Матеріал';
+      case 'season':
+        return 'Сезон';
+      case 'style':
+        return 'Стиль';
+      case 'gender':
+        return 'Стать';
+      
+      // Загальні
       case 'condition':
         return 'Стан';
+      case 'warranty':
+        return 'Гарантія';
+      case 'delivery':
+        return 'Доставка';
+      case 'payment':
+        return 'Оплата';
+      
       default:
         // Convert snake_case to Title Case
         return fieldName
@@ -1315,13 +1372,17 @@ class _AddListingPageState extends State<AddListingPage> {
               ),
               child: Row(
                 children: [
-                  Expanded(
+                                    Expanded(
             child: GestureDetector(
               onTap: () {
                 setState(() {
                   _isForSale = true;
+                  // Clear price and currency when switching to paid
+                  _priceController.clear();
+                  _selectedCurrency = 'UAH';
+                  _isNegotiablePrice = false;
                 });
-          },
+              },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
@@ -1357,6 +1418,11 @@ class _AddListingPageState extends State<AddListingPage> {
               onTap: () {
                 setState(() {
                   _isForSale = false;
+                  // Clear subcategory and extra fields when switching to free
+                  _selectedSubcategory = null;
+                  _extraFieldControllers.forEach((_, controller) => controller.dispose());
+                  _extraFieldControllers.clear();
+                  _extraFieldValues.clear();
                 });
               },
                     child: Container(
@@ -1839,8 +1905,8 @@ class _AddListingPageState extends State<AddListingPage> {
     else if (_selectedCategory == null) {
       errorMessage = 'Оберіть категорію';
     }
-    // Check subcategory
-    else if (_selectedSubcategory == null) {
+    // Check subcategory - only required for paid listings
+    else if (_isForSale && _selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
     } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
@@ -1931,7 +1997,7 @@ class _AddListingPageState extends State<AddListingPage> {
           title: _titleController.text,
           description: _descriptionController.text,
           categoryId: _selectedCategory!.id,
-          subcategoryId: _selectedSubcategory!.id,
+          subcategoryId: _isForSale ? _selectedSubcategory!.id : _selectedCategory!.id, // Use category ID as subcategory for free listings
         location: locationString,
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
@@ -1940,7 +2006,7 @@ class _AddListingPageState extends State<AddListingPage> {
           whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
           telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
           viber: _selectedMessenger == 'viber' ? _viberController.text : null,
-        customAttributes: finalCustomAttributes,
+        customAttributes: _isForSale ? finalCustomAttributes : {}, // Empty attributes for free listings
         images: imagesToUpload,
         );
 
@@ -2201,9 +2267,9 @@ class _AddListingPageState extends State<AddListingPage> {
 
             // Category Dropdown
             _buildCategorySection(),
-            if (_selectedCategory != null && _subcategories.isNotEmpty)
+            if (_selectedCategory != null && _subcategories.isNotEmpty && _isForSale)
               _buildSubcategorySection(),
-            if (_selectedSubcategory != null)
+            if (_selectedSubcategory != null && _isForSale)
               _buildExtraFieldsSection(),
             const SizedBox(height: 20),
 
@@ -2359,13 +2425,17 @@ class _AddListingPageState extends State<AddListingPage> {
             _buildListingTypeToggle(),
             const SizedBox(height: 20),
 
-            // Currency Switch
-            _buildCurrencySection(),
-            const SizedBox(height: 20),
+            // Currency Switch - only show if not free
+            if (_isForSale) ...[
+              _buildCurrencySection(),
+              const SizedBox(height: 20),
+            ],
 
-            // Price Input Field
-            _buildPriceSection(),
-            const SizedBox(height: 20),
+            // Price Input Field - only show if not free
+            if (_isForSale) ...[
+              _buildPriceSection(),
+              const SizedBox(height: 20),
+            ],
 
             // Contact Form Section
             _buildContactForm(),

@@ -228,7 +228,7 @@ class _ViewedContentState extends State<ViewedContent> {
                                 child: ProductCardListItem(
                                   id: product.id, // Pass product ID
                                   title: product.title,
-                                  price: NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
+                                  price: product.formattedPrice,
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
                                   images: product.photos,
