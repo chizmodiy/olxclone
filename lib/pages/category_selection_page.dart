@@ -9,7 +9,7 @@ import 'package:withoutname/services/subcategory_service.dart'; // New import
 import 'package:supabase_flutter/supabase_flutter.dart'; // New import for Supabase client
 
 class CategorySelectionPage extends StatefulWidget {
-  const CategorySelectionPage({Key? key}) : super(key: key);
+  const CategorySelectionPage({super.key});
 
   @override
   State<CategorySelectionPage> createState() => _CategorySelectionPageState();
@@ -159,7 +159,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                         },
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -257,7 +257,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                           });
                         },
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 import '../pages/filter_page.dart'; // Import FilterPage
+import 'dart:async'; // Add this import for Timer
 
 enum ViewMode {
   grid8,
@@ -55,6 +56,9 @@ class HomeContentState extends State<HomeContent> {
   bool _isViewDropdownOpen = false; // New state variable
   bool _isSortDropdownOpen = false; // New state variable
   Map<String, dynamic> _currentFilters = {}; // New state variable for filters
+  final TextEditingController _searchController = TextEditingController(); // Search controller
+  String _searchQuery = ''; // Current search query
+  Timer? _searchDebounceTimer; // Timer for debouncing search
 
   @override
   void initState() {
@@ -68,6 +72,8 @@ class HomeContentState extends State<HomeContent> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _searchDebounceTimer?.cancel();
     super.dispose();
   }
 
@@ -83,7 +89,7 @@ class HomeContentState extends State<HomeContent> {
       final products = await _productService.getProducts(
         limit: 10, // Assuming a fixed limit for now
         offset: _currentPage * 10,
-        searchQuery: '', // No search query implemented yet
+        searchQuery: _searchQuery, // Передаємо пошуковий запит
         categoryId: _currentFilters['category'], // Pass category filter
         subcategoryId: _currentFilters['subcategory'], // Pass subcategory filter
         minPrice: _currentFilters['minPrice'], // Pass minPrice filter
@@ -91,6 +97,15 @@ class HomeContentState extends State<HomeContent> {
         hasDelivery: _currentFilters['hasDelivery'], // Pass hasDelivery filter
         sortBy: _sortBy,
         isFree: false, // No 'isFree' filtering implemented yet
+        minArea: _currentFilters['minArea'], // Pass minArea filter
+        maxArea: _currentFilters['maxArea'], // Pass maxArea filter
+        minYear: _currentFilters['minYear'], // Pass minYear filter
+        maxYear: _currentFilters['maxYear'], // Pass maxYear filter
+        brand: _currentFilters['car_brand'], // Pass car_brand filter
+        minEngineHp: _currentFilters['minEnginePowerHp'], // Pass minEnginePowerHp filter
+        maxEngineHp: _currentFilters['maxEnginePowerHp'], // Pass maxEnginePowerHp filter
+        size: _currentFilters['size'], // Pass size filter
+        condition: _currentFilters['condition'], // Pass condition filter
       );
 
       setState(() {
@@ -348,361 +363,339 @@ class HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Помилка: $_errorMessage'),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _errorMessage = null;
-                  _products = [];
-                  _currentPage = 0;
-                  _hasMore = true;
-                });
-                _loadProducts();
-              },
-              child: const Text('Спробувати знову'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_products.isEmpty && _isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    return Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 13),
-          child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      child: Column(
+        children: [
+          // Title and buttons row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Title and buttons row
+              const Text(
+                'Головна',
+                style: TextStyle(
+                  color: Color(0xFF161817),
+                  fontSize: 28,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
+              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Головна',
-                    style: TextStyle(
-                      color: Color(0xFF161817),
-                      fontSize: 28,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isSortDropdownOpen = !_isSortDropdownOpen;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                        boxShadow: _isSortDropdownOpen
+                            ? [
+                                BoxShadow(
+                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 0, // Changed from 2 to 0
+                                  spreadRadius: 5,
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                      ),
+                      child: Icon(
+                        Icons.sort, // Always show sort icon, regardless of dropdown state
+                        size: 20,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isSortDropdownOpen = !_isSortDropdownOpen;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                            boxShadow: _isSortDropdownOpen
-                                ? [
-                                    BoxShadow(
-                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 0, // Changed from 2 to 0
-                                      spreadRadius: 5,
-                                    ),
-                                  ]
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                          ),
-                          child: Icon(
-                            Icons.sort, // Always show sort icon, regardless of dropdown state
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                        ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _toggleView,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                        boxShadow: _isViewDropdownOpen
+                            ? [
+                                BoxShadow(
+                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 0, // Changed from 2 to 0
+                                  spreadRadius: 5,
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                       ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: _toggleView,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                            boxShadow: _isViewDropdownOpen
-                                ? [
-                                    BoxShadow(
-                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 0, // Changed from 2 to 0
-                                      spreadRadius: 5,
-                                    ),
-                                  ]
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                          ),
-                          child: Icon(
-                            _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                        ),
+                      child: Icon(
+                        _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                        size: 20,
+                        color: Colors.black,
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Column(
-                children: [
-                  Container(
+            ],
+          ),
+          const SizedBox(height: 20),
+          Column(
+            children: [
+              Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F3F3),
+                  borderRadius: BorderRadius.circular(200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController, // Використовуємо той самий контролер
+                        decoration: const InputDecoration(
+                          hintText: 'Пошук',
+                          hintStyle: TextStyle(
+                            color: Color(0xFF838583),
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                            letterSpacing: 0.16,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                        ),
+                        onChanged: _onSearchChanged, // Використовуємо той самий обробник
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12), // Додаємо відступ між пошуком та новими кнопками
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO: Implement Map button logic here
+                  },
+                  child: Container(
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF3F3F3),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
                       borderRadius: BorderRadius.circular(200),
+                      border: Border.all(color: const Color(0xFFE4E4E7)),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
+                        Icon(Icons.map_outlined, color: Colors.black, size: 20),
                         SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              hintText: 'Пошук',
-                              hintStyle: TextStyle(
-                                color: Color(0xFF838583),
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w400,
-                                height: 1.5,
-                                letterSpacing: 0.16,
-                              ),
-                              border: InputBorder.none,
-                            ),
+                        Text(
+                          'Карта',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                            letterSpacing: 0.14,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 12), // Додаємо відступ між пошуком та новими кнопками
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: Implement Map button logic here
-                      },
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(200),
-                          border: Border.all(color: const Color(0xFFE4E4E7)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.map_outlined, color: Colors.black, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Карта',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0.14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        _showFilterBottomSheet();
-                      },
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(200),
-                          border: Border.all(color: const Color(0xFFE4E4E7)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Фільтр',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0.14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20), // Відступ перед списком товарів
+              const SizedBox(width: 12),
               Expanded(
-                child: _errorMessage != null
-                    ? Center(
-                        child: Text('Помилка завантаження товарів: $_errorMessage'),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          setState(() {
-                            _products = [];
-                            _errorMessage = null;
-                          });
-                          await _loadProducts();
-                        },
-                        child: _products.isEmpty && !_isLoading
-                            ? const Center(
-                                child: Text('Наразі оголошень немає.'),
-                              )
-                            : _currentViewMode == ViewMode.list
-                                ? ListView.builder(
-                                    controller: _scrollController,
-                                    padding: const EdgeInsets.only(top: 0),
-                                    itemCount: _products.length + (_hasMore ? 1 : 0),
-                                    itemBuilder: (context, index) {
-                                      if (index == _products.length) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-                                      final product = _products[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 10),
-                                        child: ProductCardListItem(
-                                          id: product.id, // Pass product ID
-                                          title: product.title,
-                                          price: product.isNegotiable
-                                              ? 'Договірна'
-                                              : NumberFormat.currency(locale: 'uk_UA', symbol:
-                                              '₴').format(product.priceValue),
-                                          date: DateFormat('dd.MM.yyyy').format(product.createdAt),
-                                          location: product.location,
-                                          images: product.photos,
-                                          isFavorite: _favoriteProductIds.contains(product.id),
-                                          onFavoriteToggle: () => _toggleFavorite(product),
-                                          onTap: () {
-                                            Navigator.of(context).pushNamed(
-                                              '/product-detail',
-                                              arguments: {'id': product.id},
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : GridView.builder(
-                                    controller: _scrollController,
-                                    padding: const EdgeInsets.only(top: 0),
-                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: _currentViewMode == ViewMode.grid8 ? 4 : 2,
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                      mainAxisExtent: 250,
-                                    ),
-                                    itemCount: _products.length + (_hasMore ? 1 : 0),
-                                    itemBuilder: (context, index) {
-                                      if (index == _products.length) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-                                      final product = _products[index];
-                                      return ProductCard(
-                                        id: product.id, // Pass product ID
-                                        title: product.title,
-                                        price: product.isNegotiable
-                                            ? 'Ціна договірна'
-                                            : product.price == 'Безкоштовно'
-                                                ? 'Безкоштовно'
-                                                : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
-                                        date: DateFormat('dd.MM.yyyy').format(product.createdAt),
-                                        location: product.location,
-                                        images: product.images,
-                                        isFavorite: _favoriteProductIds.contains(product.id),
-                                        onFavoriteToggle: () => _toggleFavorite(product),
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(
-                                            '/product-detail',
-                                            arguments: {'id': product.id},
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                      ),
+                child: GestureDetector(
+                  onTap: () {
+                    _showFilterBottomSheet();
+                  },
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(color: const Color(0xFFE4E4E7)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Фільтр',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                            letterSpacing: 0.14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-        if (_isViewDropdownOpen)
-          Positioned(
-            top: 72, // Changed to 72 (8px below the button)
-            right: 13, // Aligned with the right padding
-            child: _buildViewModeDropdown(),
+          const SizedBox(height: 20), // Відступ перед списком товарів
+          Expanded(
+            child: _errorMessage != null
+                ? Center(
+                    child: Text('Помилка завантаження товарів: $_errorMessage'),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _products = [];
+                        _errorMessage = null;
+                      });
+                      await _loadProducts();
+                    },
+                    child: _products.isEmpty && !_isLoading
+                        ? const Center(
+                            child: Text('Наразі оголошень немає.'),
+                          )
+                        : _currentViewMode == ViewMode.list
+                            ? ListView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.only(top: 0),
+                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == _products.length) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  final product = _products[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: ProductCardListItem(
+                                      id: product.id, // Pass product ID
+                                      title: product.title,
+                                      price: product.isNegotiable
+                                          ? 'Договірна'
+                                          : NumberFormat.currency(locale: 'uk_UA', symbol:
+                                          '₴').format(product.priceValue),
+                                      date: DateFormat('dd.MM.yyyy').format(product.createdAt),
+                                      location: product.location,
+                                      images: product.photos,
+                                      isFavorite: _favoriteProductIds.contains(product.id),
+                                      onFavoriteToggle: () => _toggleFavorite(product),
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(
+                                          '/product-detail',
+                                          arguments: {'id': product.id},
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              )
+                            : GridView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.only(top: 0),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: _currentViewMode == ViewMode.grid8 ? 4 : 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  mainAxisExtent: 250,
+                                ),
+                                itemCount: _products.length + (_hasMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == _products.length) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  final product = _products[index];
+                                  return ProductCard(
+                                    id: product.id, // Pass product ID
+                                    title: product.title,
+                                    price: product.isNegotiable
+                                        ? 'Ціна договірна'
+                                        : product.price == 'Безкоштовно'
+                                            ? 'Безкоштовно'
+                                            : NumberFormat.currency(locale: 'uk_UA', symbol: '₴').format(product.priceValue),
+                                    date: DateFormat('dd.MM.yyyy').format(product.createdAt),
+                                    location: product.location,
+                                    images: product.images,
+                                    isFavorite: _favoriteProductIds.contains(product.id),
+                                    onFavoriteToggle: () => _toggleFavorite(product),
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(
+                                        '/product-detail',
+                                        arguments: {'id': product.id},
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+              ),
           ),
-        if (_isSortDropdownOpen)
-          Positioned(
-            top: 72, // Changed to 72 (8px below the button)
-            right: 69, // Aligned with the sort button (13 + 12 + 44)
-            child: _buildSortDropdown(),
-          ),
-      ],
+        ],
+      ),
     );
+  }
+
+  void _onSearchChanged(String value) {
+    if (_searchDebounceTimer?.isActive ?? false) _searchDebounceTimer!.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () {
+      setState(() {
+        _searchQuery = value;
+        _products = [];
+        _currentPage = 0;
+        _hasMore = true;
+        _errorMessage = null;
+      });
+      _loadProducts();
+    });
   }
 }

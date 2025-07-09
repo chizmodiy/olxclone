@@ -28,7 +28,7 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
     'condition': ['Нове', 'Б/в', 'Потребує ремонту'],
   },
 
-  // Білизна
+  // Білизна та купальники
   'women_underwear': {
     'size': ['XS', 'S', 'M', 'L', 'XL'],
     'condition': ['Нове', 'Б/в'],
@@ -68,51 +68,54 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
   // Транспорт
   'cars': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
-    'brand': [
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
+    'car_brand': [
       'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
       'Renault', 'Skoda', 'Ford', 'Nissan', 'Opel', 'Інше'
     ],
   },
   'cars_poland': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
-    'brand': [
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
+    'car_brand': [
       'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
       'Renault', 'Skoda', 'Ford', 'Nissan', 'Opel', 'Інше'
     ],
   },
   'trucks': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'buses': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'moto': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'special_equipment': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'agricultural': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'water_transport': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'trailers': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
+  },
+  'trucks_poland': {
+    'year': {'type': 'number'},
+    'engine_power_hp': {'type': 'number', 'unit': 'к.с.'},
   },
   'other_transport': {
     'year': {'type': 'number'},
-    'engine_hp': {'type': 'number'},
   },
 
   // Нерухомість
@@ -160,8 +163,12 @@ String getFieldDisplayName(String fieldName) {
       return 'Рік випуску';
     case 'engine_hp':
       return 'Потужність двигуна';
+    case 'engine_power_hp':
+      return 'Двигун (к.с.)';
     case 'brand':
       return 'Марка';
+    case 'car_brand':
+      return 'Марка авто';
     default:
       // Конвертуємо snake_case в Title Case
       return fieldName

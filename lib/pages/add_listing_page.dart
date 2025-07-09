@@ -2442,30 +2442,7 @@ class _AddListingPageState extends State<AddListingPage> {
                 ),
             ],
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 71,
-                child: ElevatedButton(
-                  onPressed: _createListing,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      side: const BorderSide(color: AppColors.primaryColor, width: 1),
-                    ),
-                    elevation: 4,
-                    shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                  ),
-                  child: Text(
-                    'Підтвердити',
-                    style: AppTextStyles.body2Semibold.copyWith(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
+
           ],
         ),
       ),

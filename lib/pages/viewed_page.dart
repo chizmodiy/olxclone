@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
+import 'dart:async'; // Import Timer
 
 class ViewedPage extends StatelessWidget {
   const ViewedPage({super.key});
@@ -38,11 +39,14 @@ class _ViewedContentState extends State<ViewedContent> {
   List<Product> _products = [];
   bool _isLoading = false;
   bool _hasMore = true;
-  int _currentPage = 0; // Changed to 0 as we'll fetch all viewed IDs first
+  final int _currentPage = 0; // Changed to 0 as we'll fetch all viewed IDs first
   String? _sortBy; 
   bool _isGrid = false;
   String? _errorMessage;
   String? _currentUserId;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  Timer? _searchDebounceTimer;
 
   @override
   void initState() {
@@ -55,6 +59,8 @@ class _ViewedContentState extends State<ViewedContent> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _searchDebounceTimer?.cancel();
     super.dispose();
   }
 
@@ -125,8 +131,20 @@ class _ViewedContentState extends State<ViewedContent> {
     });
   }
 
+  void _onSearchChanged(String value) {
+    if (_searchDebounceTimer?.isActive ?? false) _searchDebounceTimer!.cancel();
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () {
+      setState(() {
+        _searchQuery = value;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredProducts = _searchQuery.isEmpty
+        ? _products
+        : _products.where((p) => p.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 13),
       child: Column(
@@ -154,7 +172,7 @@ class _ViewedContentState extends State<ViewedContent> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFFF3F3F3),
                   borderRadius: BorderRadius.circular(200),
                 ),
                 child: Row(
@@ -164,17 +182,18 @@ class _ViewedContentState extends State<ViewedContent> {
                     SizedBox(width: 8),
                     Expanded(
                       child: TextField(
-                        decoration: InputDecoration(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
                           hintText: 'Пошук',
-                          hintStyle: const TextStyle(
+                          hintStyle: TextStyle(
                             color: Color(0xFF838583),
                             fontSize: 16,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w400,
                             height: 1.5,
+                            letterSpacing: 0.16,
                           ),
                           border: InputBorder.none,
-                          isDense: true,
                         ),
                         style: const TextStyle(
                           color: Colors.black,
@@ -183,9 +202,7 @@ class _ViewedContentState extends State<ViewedContent> {
                           fontWeight: FontWeight.w400,
                           height: 1.5,
                         ),
-                        onChanged: (value) {
-                          // TODO: Implement search logic here
-                        },
+                        onChanged: _onSearchChanged,
                       ),
                     ),
                   ],
@@ -199,33 +216,14 @@ class _ViewedContentState extends State<ViewedContent> {
                 ? Center(
                     child: Text('Помилка завантаження товарів: $_errorMessage'),
                   )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _products = [];
-                        _currentPage = 0; // Reset to 0 for new fetch
-                        _hasMore = true;
-                        _errorMessage = null;
-                      });
-                      await _loadViewedProducts();
-                    },
-                    child: _products.isEmpty && !_isLoading
-                        ? const Center(
-                            child: Text('Наразі оголошень немає.'),
-                          )
-                        : ListView.builder(
-                            controller: _scrollController,
-                            itemCount: _products.length + (_hasMore ? 1 : 0), // Add 1 for loading indicator
-                            itemBuilder: (context, index) {
-                              if (index == _products.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
-                                );
-                              }
-                              final product = _products[index];
-
-                              return Padding(
+                : filteredProducts.isEmpty
+                    ? const Center(child: Text('Немає переглянутих товарів'))
+                    : ListView.builder(
+                        controller: _scrollController,
+                        itemCount: filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = filteredProducts[index];
+                          return Padding(
                                 padding: const EdgeInsets.only(bottom: 10), // Space between list items
                                 child: ProductCardListItem(
                                   id: product.id, // Pass product ID
@@ -246,9 +244,8 @@ class _ViewedContentState extends State<ViewedContent> {
                                   },
                                 ),
                               );
-                            },
-                          ),
-                  ),
+                        },
+                      ),
           ),
         ],
       ),

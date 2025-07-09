@@ -10,7 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SubcategorySelectionPage extends StatefulWidget {
   final Category category; // The category for which to show subcategories
 
-  const SubcategorySelectionPage({Key? key, required this.category}) : super(key: key);
+  const SubcategorySelectionPage({super.key, required this.category});
 
   @override
   State<SubcategorySelectionPage> createState() => _SubcategorySelectionPageState();
@@ -114,7 +114,7 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
                         },
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

@@ -46,41 +46,93 @@ class ProductService {
     bool? hasDelivery,
     String? sortBy,
     bool? isFree,
+    double? minArea,
+    double? maxArea,
+    double? minYear,
+    double? maxYear,
+    String? brand,
+    double? minEngineHp,
+    double? maxEngineHp,
+    String? size,
+    String? condition,
   }) async {
     try {
-      print('Fetching products with params: limit=$limit, offset=$offset, searchQuery=$searchQuery, categoryId=$categoryId, subcategoryId=$subcategoryId, minPrice=$minPrice, maxPrice=$maxPrice, hasDelivery=$hasDelivery, sortBy=$sortBy, isFree=$isFree');
+      print('Fetching products with params: limit=$limit, offset=$offset, searchQuery=$searchQuery, categoryId=$categoryId, subcategoryId=$subcategoryId, minPrice=$minPrice, maxPrice=$maxPrice, hasDelivery=$hasDelivery, sortBy=$sortBy, isFree=$isFree, minArea=$minArea, maxArea=$maxArea, minYear=$minYear, maxYear=$maxYear, brand=$brand, minEngineHp=$minEngineHp, maxEngineHp=$maxEngineHp, size=$size, condition=$condition');
       
       PostgrestFilterBuilder query = _supabase.from('listings').select();
 
       // Додаємо умови пошуку
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.ilike('title', '%$searchQuery%') as PostgrestFilterBuilder;
+        query = query.ilike('title', '%$searchQuery%');
       }
 
       if (categoryId != null) {
-        query = query.eq('category_id', categoryId) as PostgrestFilterBuilder;
+        query = query.eq('category_id', categoryId);
       }
 
       if (subcategoryId != null) {
-        query = query.eq('subcategory_id', subcategoryId) as PostgrestFilterBuilder;
+        query = query.eq('subcategory_id', subcategoryId);
       }
 
       if (minPrice != null) {
-        query = query.gte('price', minPrice) as PostgrestFilterBuilder;
+        query = query.gte('price', minPrice);
       }
 
       if (maxPrice != null) {
-        query = query.lte('price', maxPrice) as PostgrestFilterBuilder;
+        query = query.lte('price', maxPrice);
       }
 
       if (hasDelivery != null) {
         // Assuming 'has_delivery' is a boolean field in your database
         // You might need to adjust this based on your actual schema for delivery
-        query = query.eq('has_delivery', hasDelivery) as PostgrestFilterBuilder;
+        query = query.eq('has_delivery', hasDelivery);
       }
 
       if (isFree != null) {
-        query = query.eq('is_free', isFree) as PostgrestFilterBuilder;
+        query = query.eq('is_free', isFree);
+      }
+
+      // Add area filters for custom attributes
+      if (minArea != null || maxArea != null) {
+        // Filter by area in custom_attributes JSON field
+        if (minArea != null) {
+          query = query.gte('custom_attributes->area', minArea);
+        }
+        if (maxArea != null) {
+          query = query.lte('custom_attributes->area', maxArea);
+        }
+      }
+
+      // Add car filters for custom attributes
+      if (minYear != null || maxYear != null) {
+        if (minYear != null) {
+          query = query.gte('custom_attributes->year', minYear);
+        }
+        if (maxYear != null) {
+          query = query.lte('custom_attributes->year', maxYear);
+        }
+      }
+
+      if (brand != null) {
+        query = query.eq('custom_attributes->car_brand', brand);
+      }
+
+      if (minEngineHp != null || maxEngineHp != null) {
+        if (minEngineHp != null) {
+          query = query.gte('custom_attributes->engine_power_hp', minEngineHp);
+        }
+        if (maxEngineHp != null) {
+          query = query.lte('custom_attributes->engine_power_hp', maxEngineHp);
+        }
+      }
+
+      // Add fashion filters for custom attributes
+      if (size != null) {
+        query = query.eq('custom_attributes->size', size);
+      }
+
+      if (condition != null) {
+        query = query.eq('custom_attributes->condition', condition);
       }
 
       // Додаємо сортування

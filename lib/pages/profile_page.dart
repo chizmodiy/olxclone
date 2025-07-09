@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   Widget _sectionTitle(String title) => Padding(
         padding: const EdgeInsets.only(bottom: 16),

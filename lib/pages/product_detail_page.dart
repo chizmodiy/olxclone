@@ -658,7 +658,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       child: Column(
         children: [
           // First section - Image gallery
-          Container(
+          SizedBox(
             height: imageHeight,
             child: Stack(
               children: [
@@ -781,7 +781,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Section 1
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -800,7 +800,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                         const SizedBox(height: 6),
                         // Title and Price with Favorite button
-                        Container(
+                        SizedBox(
                           width: double.infinity,
                           child: Stack(
                             children: [
@@ -918,7 +918,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 40),
                   
                   // Description section
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -952,14 +952,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 40),
                   
                   // Location section
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Container(
+                            SizedBox(
                               width: 24,
                               height: 24,
                               child: const Icon(
@@ -1099,7 +1099,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 40),
                   
                   // User section
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
