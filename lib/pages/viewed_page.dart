@@ -38,19 +38,17 @@ class _ViewedContentState extends State<ViewedContent> {
   List<Product> _products = [];
   bool _isLoading = false;
   bool _hasMore = true;
-  int _currentPage = 1;
-  String? _sortBy; // Can be 'price_asc', 'price_desc', or null (for default by date)
+  int _currentPage = 0; // Changed to 0 as we'll fetch all viewed IDs first
+  String? _sortBy; 
   bool _isGrid = false;
   String? _errorMessage;
   String? _currentUserId;
-  Set<String> _favoriteProductIds = {};
 
   @override
   void initState() {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    _loadProducts();
-    _loadFavorites();
+    _loadViewedProducts(); // Call new method to load viewed products
     _scrollController.addListener(_onScroll);
   }
 
@@ -60,8 +58,8 @@ class _ViewedContentState extends State<ViewedContent> {
     super.dispose();
   }
 
-  Future<void> _loadProducts() async {
-    if (_isLoading || !_hasMore) return;
+  Future<void> _loadViewedProducts() async {
+    if (_isLoading) return; // Removed _hasMore check here as we'll get all IDs at once
 
     setState(() {
       _isLoading = true;
@@ -69,94 +67,62 @@ class _ViewedContentState extends State<ViewedContent> {
     });
 
     try {
-      final products = await _productService.getProducts(
-        limit: 10,
-        offset: _currentPage * 10,
-      );
+      final viewedProductIds = await _profileService.getViewedList();
+      
+      if (viewedProductIds.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _hasMore = false;
+        });
+        return;
+      }
+
+      // Fetch product details for each ID
+      // This might need a new method in ProductService to get multiple products by IDs
+      // For now, let's assume getProducts can take a list of IDs or we iterate
+      // For simplicity, let's modify getProducts temporarily or add a new one
+      final products = await _productService.getProductsByIds(viewedProductIds);
 
       setState(() {
-        _products.addAll(products);
-        _currentPage++;
-        _hasMore = products.length == 10;
+        _products = products; // Directly assign as we're not paginating here based on viewed IDs
         _isLoading = false;
+        _hasMore = false; // No more pages, all loaded at once
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print('Error loading products: $_errorMessage');
-    }
-  }
-
-  Future<void> _loadFavorites() async {
-    if (_currentUserId == null) return;
-    try {
-      final favoriteIds = await _profileService.getFavoriteProductIds();
-      setState(() {
-        _favoriteProductIds = favoriteIds;
-      });
-    } catch (e) {
-      print('Error loading favorites: $e');
-    }
-  }
-
-  Future<void> _toggleFavorite(Product product) async {
-    if (_currentUserId == null) {
-      print('User not logged in. Cannot toggle favorite.');
-      return;
-    }
-
-    try {
-      if (_favoriteProductIds.contains(product.id)) {
-        await _profileService.removeFavoriteProduct(product.id);
-        setState(() {
-          _favoriteProductIds.remove(product.id);
-        });
-      } else {
-        await _profileService.addFavoriteProduct(product.id);
-        setState(() {
-          _favoriteProductIds.add(product.id);
-        });
-      }
-    } catch (e) {
-      print('Error toggling favorite: $e');
+      print('Error loading viewed products: $_errorMessage');
     }
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadProducts();
-    }
+    // No pagination for viewed products, so no need to load more on scroll
   }
 
   void _onSortChanged(String? newSortBy) {
+    // Sorting logic can be implemented here if needed for viewed list
     setState(() {
       if (_sortBy == 'price_asc') {
         _sortBy = 'price_desc';
       } else if (_sortBy == 'price_desc') {
-        _sortBy = null; // Back to default (created_at desc)
+        _sortBy = null;
       } else {
         _sortBy = 'price_asc';
       }
-      _products = [];
-      _currentPage = 1;
-      _hasMore = true;
-      _errorMessage = null;
+      // Re-sort existing products or reload if sorting needs backend support
+      _products = []; // Clear for re-fetch or re-sort
+      _loadViewedProducts(); // Reload with new sort preference
     });
-    _loadProducts();
   }
 
   void _toggleView() {
     setState(() {
       _isGrid = !_isGrid;
-      _products = [];
-      _currentPage = 1;
-      _hasMore = true;
-      _errorMessage = null;
+      _products = []; // Clear for re-fetch or re-render based on view type
+      _loadViewedProducts();
     });
-    _loadProducts();
   }
 
   @override
@@ -237,11 +203,11 @@ class _ViewedContentState extends State<ViewedContent> {
                     onRefresh: () async {
                       setState(() {
                         _products = [];
-                        _currentPage = 1;
+                        _currentPage = 0; // Reset to 0 for new fetch
                         _hasMore = true;
                         _errorMessage = null;
                       });
-                      await _loadProducts();
+                      await _loadViewedProducts();
                     },
                     child: _products.isEmpty && !_isLoading
                         ? const Center(
@@ -258,7 +224,6 @@ class _ViewedContentState extends State<ViewedContent> {
                                 );
                               }
                               final product = _products[index];
-                              final isFavorite = _favoriteProductIds.contains(product.id);
 
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 10), // Space between list items
@@ -269,8 +234,10 @@ class _ViewedContentState extends State<ViewedContent> {
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
                                   images: product.photos,
-                                  isFavorite: isFavorite,
-                                  onFavoriteToggle: () => _toggleFavorite(product),
+                                  isFavorite: false, // No favorite logic
+                                  onFavoriteToggle: () {
+                                    // No-op for viewed products
+                                  },
                                   onTap: () {
                                     Navigator.of(context).pushNamed(
                                       '/product-detail',

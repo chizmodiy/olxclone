@@ -18,18 +18,20 @@ class ProductService {
     }
   }
 
-  Future<List<Product>> getProductsByIds(List<String> ids) async {
+  Future<List<Product>> getProductsByIds(List<String> productIds) async {
+    if (productIds.isEmpty) {
+      return [];
+    }
     try {
-      if (ids.isEmpty) return [];
-
       final response = await _supabase
           .from('listings')
           .select()
-          .in_('id', ids);
+          .in_('id', productIds);
       
       return (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Помилка завантаження товарів: $e');
+      print('Error getting products by IDs: $e');
+      return [];
     }
   }
 
