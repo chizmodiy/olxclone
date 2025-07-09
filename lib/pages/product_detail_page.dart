@@ -1269,6 +1269,40 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Дія підтверджена')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF015873),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                    side: const BorderSide(color: Color(0xFF015873), width: 1),
+                  ),
+                  elevation: 4,
+                  shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                ),
+                child: const Text(
+                  'Підтвердити',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Inter',
+                    height: 1.4,
+                    letterSpacing: 0.14,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

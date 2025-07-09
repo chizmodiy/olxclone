@@ -12,7 +12,7 @@ class RegionService {
     try {
       final response = await _supabaseClient
           .from('regions')
-          .select('*, min_lat, max_lat, min_lon, max_lon') // Select new bounding box fields
+          .select('id, name')
           .order('name');
 
       return (response as List<dynamic>)

@@ -20,12 +20,12 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CommonHeader(),
+      appBar: const CommonHeader(),
       body: Padding(
-        padding: EdgeInsets.only(top: 20),
-        child: HomeContent(),
+        padding: const EdgeInsets.only(top: 20),
+        child: HomeContent(key: key),
       ),
     );
   }
@@ -35,10 +35,10 @@ class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  State<HomeContent> createState() => HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class HomeContentState extends State<HomeContent> {
   final ProductService _productService = ProductService();
   final ProfileService _profileService = ProfileService();
   final ScrollController _scrollController = ScrollController();
@@ -155,7 +155,7 @@ class _HomeContentState extends State<HomeContent> {
       _sortBy = newSortBy; // Directly set the sortBy from selected option
       _isSortDropdownOpen = false; // Close dropdown after selection
       _products = [];
-      _currentPage = 1;
+      _currentPage = 0;
       _hasMore = true;
       _errorMessage = null;
     });
@@ -173,7 +173,7 @@ class _HomeContentState extends State<HomeContent> {
       _currentViewMode = mode;
       _isViewDropdownOpen = false; // Close dropdown after selection
       _products = [];
-      _currentPage = 1;
+      _currentPage = 0;
       _hasMore = true;
       _errorMessage = null;
     });
@@ -200,6 +200,16 @@ class _HomeContentState extends State<HomeContent> {
       });
       _loadProducts(); // Reload products with new filters
     }
+  }
+
+  void refreshProducts() {
+    setState(() {
+      _products = [];
+      _currentPage = 0;
+      _hasMore = true;
+      _errorMessage = null;
+    });
+    _loadProducts();
   }
 
   // Helper method to build the dropdown menu for view modes

@@ -1777,8 +1777,6 @@ class _AddListingPageState extends State<AddListingPage> {
       errorMessage = 'Оберіть підкатегорію';
     } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
-    } else if (_selectedCity == null) {
-      errorMessage = 'Оберіть місто';
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
@@ -1871,7 +1869,7 @@ class _AddListingPageState extends State<AddListingPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Оголошення успішно опубліковано!')),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Помилка: $error')),
@@ -2368,6 +2366,29 @@ class _AddListingPageState extends State<AddListingPage> {
             ],
             ),
             const SizedBox(height: 20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 71,
+                child: ElevatedButton(
+                  onPressed: _createListing,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: const BorderSide(color: AppColors.primaryColor, width: 1),
+                    ),
+                    elevation: 4,
+                    shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                  ),
+                  child: Text(
+                    'Підтвердити',
+                    style: AppTextStyles.body2Semibold.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

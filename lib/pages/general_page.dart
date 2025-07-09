@@ -17,9 +17,12 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const FavoritesPage(),    const ViewedPage(),
+  final GlobalKey<HomeContentState> _homeContentKey = GlobalKey<HomeContentState>();
+
+  late final List<Widget> _pages = [
+    HomePage(key: _homeContentKey),
+    const FavoritesPage(),
+    const ViewedPage(),
     const Center(child: Text('Чат')), // Заглушка для чату
   ];
 
@@ -83,8 +86,11 @@ class _GeneralPageState extends State<GeneralPage> {
                 border: Border.all(color: AppColors.primaryColor, width: 1),
               ),
               child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
+                onPressed: () async {
+                  final result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
+                  if (result == true && _selectedIndex == 0) {
+                    _homeContentKey.currentState?.refreshProducts();
+                  }
                 },
                 backgroundColor: Colors.transparent,
                 elevation: 0,

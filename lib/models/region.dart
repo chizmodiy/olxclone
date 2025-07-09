@@ -21,10 +21,10 @@ class Region {
     return Region(
       id: json['id'] as String,
       name: json['name'] as String,
-      minLat: json['min_lat'] as double?,
-      maxLat: json['max_lat'] as double?,
-      minLon: json['min_lon'] as double?,
-      maxLon: json['max_lon'] as double?,
+      minLat: json['min_lat'] != null ? double.tryParse(json['min_lat'].toString()) : null,
+      maxLat: json['max_lat'] != null ? double.tryParse(json['max_lat'].toString()) : null,
+      minLon: json['min_lon'] != null ? double.tryParse(json['min_lon'].toString()) : null,
+      maxLon: json['max_lon'] != null ? double.tryParse(json['max_lon'].toString()) : null,
     );
   }
 
