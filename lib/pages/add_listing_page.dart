@@ -33,6 +33,8 @@ class _AddListingPageState extends State<AddListingPage> {
   final TextEditingController _priceController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _selectedImages = [];
+  final PageController _imagePageController = PageController();
+  final int _currentImagePage = 0;
   final GlobalKey _categoryButtonKey = GlobalKey();
   final GlobalKey _subcategoryButtonKey = GlobalKey();
   final GlobalKey _regionButtonKey = GlobalKey();
@@ -57,7 +59,6 @@ class _AddListingPageState extends State<AddListingPage> {
   String _selectedMessenger = 'phone'; // 'phone', 'whatsapp', 'telegram', 'viber'
   final Map<String, TextEditingController> _extraFieldControllers = {};
   final Map<String, dynamic> _extraFieldValues = {};
-  final Map<String, RangeValues> _rangeValues = {};
   bool _isLoading = false;
   
   // Nominatim City Search
@@ -197,6 +198,7 @@ class _AddListingPageState extends State<AddListingPage> {
     _titleController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _imagePageController.dispose();
     _phoneController.dispose();
     _whatsappController.dispose();
     _telegramController.dispose();
@@ -544,17 +546,14 @@ class _AddListingPageState extends State<AddListingPage> {
       _extraFieldControllers.forEach((_, controller) => controller.dispose());
       _extraFieldControllers.clear();
       _extraFieldValues.clear();
-      _rangeValues.clear();
       
       // Initialize controllers for new extra fields
       for (var field in subcategory.extraFields) {
         if (field.type == 'number') {
           _extraFieldControllers[field.name] = TextEditingController();
         } else if (field.type == 'range') {
-          _rangeValues[field.name] = RangeValues(
-            (field.defaultValue?['min'] ?? 18).toDouble(),
-            (field.defaultValue?['max'] ?? 100).toDouble(),
-          );
+          _extraFieldControllers['${field.name}_min'] = TextEditingController();
+          _extraFieldControllers['${field.name}_max'] = TextEditingController();
         }
       }
     });
@@ -661,42 +660,98 @@ class _AddListingPageState extends State<AddListingPage> {
                 Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'від ${_rangeValues[field.name]?.start.round() ?? field.defaultValue?['min'] ?? 18}',
-                          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.zinc50,
+                              borderRadius: BorderRadius.circular(200),
+                              border: Border.all(color: AppColors.zinc200, width: 1),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: TextField(
+                              controller: _extraFieldControllers['${field.name}_min'],
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              decoration: InputDecoration(
+                                hintText: 'від',
+                                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                                suffixText: field.unit,
+                                suffixStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color8),
+                              ),
+                              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                              onChanged: (value) {
+                                final minValue = int.tryParse(value);
+                                final maxValue = int.tryParse(_extraFieldControllers['${field.name}_max']?.text ?? '');
+                                if (minValue != null) {
+                                  _extraFieldValues[field.name] = {
+                                    'min': minValue,
+                                    'max': maxValue,
+                                  };
+                                }
+                              },
+                            ),
+                          ),
                         ),
+                        const SizedBox(width: 12),
                         Text(
-                          'до ${_rangeValues[field.name]?.end.round() ?? field.defaultValue?['max'] ?? 100}',
-                          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+                          '-',
+                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color8),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.zinc50,
+                              borderRadius: BorderRadius.circular(200),
+                              border: Border.all(color: AppColors.zinc200, width: 1),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: TextField(
+                              controller: _extraFieldControllers['${field.name}_max'],
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              decoration: InputDecoration(
+                                hintText: 'до',
+                                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                                suffixText: field.unit,
+                                suffixStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color8),
+                              ),
+                              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                              onChanged: (value) {
+                                final maxValue = int.tryParse(value);
+                                final minValue = int.tryParse(_extraFieldControllers['${field.name}_min']?.text ?? '');
+                                if (maxValue != null) {
+                                  _extraFieldValues[field.name] = {
+                                    'min': minValue,
+                                    'max': maxValue,
+                                  };
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    RangeSlider(
-                      values: _rangeValues[field.name] ?? RangeValues(
-                        (field.defaultValue?['min'] ?? 18).toDouble(),
-                        (field.defaultValue?['max'] ?? 100).toDouble(),
-                      ),
-                      min: (field.defaultValue?['min'] ?? 18).toDouble(),
-                      max: (field.defaultValue?['max'] ?? 100).toDouble(),
-                      divisions: ((field.defaultValue?['max'] ?? 100) - (field.defaultValue?['min'] ?? 18)).round(),
-                      activeColor: AppColors.primaryColor,
-                      inactiveColor: AppColors.zinc200,
-                      labels: RangeLabels(
-                        '${_rangeValues[field.name]?.start.round() ?? field.defaultValue?['min'] ?? 18}',
-                        '${_rangeValues[field.name]?.end.round() ?? field.defaultValue?['max'] ?? 100}',
-                      ),
-                      onChanged: (RangeValues values) {
-                        setState(() {
-                          _rangeValues[field.name] = values;
-                          _extraFieldValues[field.name] = {
-                            'min': values.start.round(),
-                            'max': values.end.round(),
-                          };
-                        });
-                      },
                     ),
                   ],
                 ),
@@ -803,8 +858,20 @@ class _AddListingPageState extends State<AddListingPage> {
         return 'Рік випуску';
       case 'brand':
         return 'Марка';
+      case 'car_brand':
+        return 'Марка авто';
       case 'engine_hp':
         return 'Потужність двигуна';
+      case 'engine_power_hp':
+        return 'Двигун (к.с.)';
+      case 'area':
+        return 'Площа (м²)';
+      case 'rooms':
+        return 'Кількість кімнат';
+      case 'size':
+        return 'Розмір';
+      case 'condition':
+        return 'Стан';
       default:
         // Convert snake_case to Title Case
         return fieldName
@@ -1833,12 +1900,23 @@ class _AddListingPageState extends State<AddListingPage> {
 
       // Prepare custom attributes, including range values
       Map<String, dynamic> finalCustomAttributes = Map.from(_extraFieldValues);
-      _rangeValues.forEach((key, value) {
-        finalCustomAttributes[key] = {
-          'start': value.start,
-          'end': value.end,
-        };
-      });
+      
+      // Process range fields from text controllers
+      for (var field in _selectedSubcategory!.extraFields) {
+        if (field.type == 'range') {
+          final minController = _extraFieldControllers['${field.name}_min'];
+          final maxController = _extraFieldControllers['${field.name}_max'];
+          final minValue = int.tryParse(minController?.text ?? '');
+          final maxValue = int.tryParse(maxController?.text ?? '');
+          
+          if (minValue != null || maxValue != null) {
+            finalCustomAttributes[field.name] = {
+              'min': minValue,
+              'max': maxValue,
+            };
+          }
+        }
+      }
 
       String locationString = '';
       if (_selectedRegion != null && _selectedCity != null) {
@@ -2342,7 +2420,6 @@ class _AddListingPageState extends State<AddListingPage> {
                         _extraFieldControllers.forEach((_, controller) => controller.dispose());
                         _extraFieldControllers.clear();
                         _extraFieldValues.clear();
-                        _rangeValues.clear();
                       });
                       
                       // Navigate to main page
