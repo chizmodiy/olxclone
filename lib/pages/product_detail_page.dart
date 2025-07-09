@@ -280,28 +280,62 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  controller: _complaintTitleController,
-                  decoration: InputDecoration(
-                    labelText: 'Назва товару',
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF52525B),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Назва товару',
+                      style: TextStyle(
+                        color: Color(0xFF52525B),
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        letterSpacing: 0.14,
+                      ),
                     ),
-                    hintText: 'Введіть назву товару',
-                    hintStyle: const TextStyle(color: Color(0xFFA1A1AA)),
-                    filled: true,
-                    fillColor: const Color(0xFFFAFAFA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(200),
-                      borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _complaintTitleController,
+                      decoration: InputDecoration(
+                        hintText: 'Введіть назву товару',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFFA1A1AA),
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                          letterSpacing: 0.16,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFFAFAFA),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        letterSpacing: 0.16,
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(200),
-                      borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                    ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 const Divider(color: Color(0xFFE4E4E7)),
@@ -319,28 +353,70 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _complaintDescriptionController,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    labelText: 'Опис',
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF52525B),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    hintText: 'Опишіть свою скаргу',
-                    hintStyle: const TextStyle(color: Color(0xFFA1A1AA)),
-                    filled: true,
-                    fillColor: const Color(0xFFFAFAFA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                    ),
+                SizedBox(
+                  height: 160,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Опис',
+                        style: TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                          letterSpacing: 0.14,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: TextField(
+                          controller: _complaintDescriptionController,
+                          maxLines: null,
+                          expands: true,
+                          textAlignVertical: TextAlignVertical.top,
+                          decoration: InputDecoration(
+                            hintText: 'Опишіть свою скаргу',
+                            alignLabelWithHint: false,
+                            hintStyle: const TextStyle(
+                              color: Color(0xFFA1A1AA),
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
+                              letterSpacing: 0.16,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFFAFAFA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                            letterSpacing: 0.16,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 40),
