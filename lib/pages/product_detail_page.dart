@@ -5,7 +5,8 @@ import '../models/user.dart';
 import '../services/product_service.dart';
 import '../services/category_service.dart';
 import '../services/profile_service.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Added for SvgPicture
+import '../services/complaint_service.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -24,6 +25,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late final ProductService _productService;
   late final CategoryService _categoryService;
   late final ProfileService _profileService;
+  late final ComplaintService _complaintService;
   int _currentPage = 0;
   Product? _product;
   UserProfile? _userProfile;
@@ -84,6 +86,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _productService = ProductService();
     _categoryService = CategoryService();
     _profileService = ProfileService();
+    _complaintService = ComplaintService();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProduct();
     _loadFavoriteStatus();
@@ -167,14 +170,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     });
   }
 
-  void _submitComplaint() {
-    // TODO: Implement complaint submission
-    _hideComplaint();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Скаргу надіслано'),
-      ),
-    );
+  Future<void> _submitComplaint() async {
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Будь ласка, увійдіть в систему щоб надіслати скаргу'),
+        ),
+      );
+      return;
+    }
+
+    if (_complaintTitleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Будь ласка, введіть назву товару'),
+        ),
+      );
+      return;
+    }
+
+    if (_complaintDescriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Будь ласка, опишіть проблему'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _complaintService.createComplaint(
+        listingId: widget.productId,
+        title: _complaintTitleController.text,
+        description: _complaintDescriptionController.text,
+        types: [_selectedComplaintType],
+      );
+      
+      _hideComplaint();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Скаргу надіслано'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка при надсиланні скарги: ${e.toString()}'),
+        ),
+      );
+    }
   }
 
   Widget _buildComplaintDialog() {
@@ -302,11 +346,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
+                  height: 44,
                   child: ElevatedButton(
                     onPressed: _submitComplaint,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF015873),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(200),
                       ),
@@ -324,10 +368,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
+                  height: 44,
                   child: OutlinedButton(
                     onPressed: _hideComplaint,
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
                       side: const BorderSide(color: Color(0xFFE4E4E7)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(200),
