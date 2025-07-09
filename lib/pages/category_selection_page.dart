@@ -230,7 +230,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                 padding: EdgeInsets.only(top: 12.0),
                 child: CircularProgressIndicator(),
               ),
-            if (isExpanded && !_isLoadingSubcategories)
+            if (isExpanded && !_isLoadingSubcategories && category.id != 'all') // Added condition to hide subcategories for "All Categories"
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: Column(

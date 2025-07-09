@@ -8,6 +8,9 @@ class AppColors {
   static const Color black = Colors.black; // Explicitly defined black
   static const Color primary = primaryColor; // Alias for primaryColor
   static const Color zinc400 = Color(0xFFA1A1AA); // Explicitly defined Zinc-400
+  static const Color gray500 = Color(0xFF667085); // Added Gray-500
+  static const Color zinc600 = Color(0xFF52525B); // Added Zinc-600
+  static const Color zinc950 = Color(0xFF09090B); // Added Zinc-950
 
   static const Color color1 = Color(0xFF959595);
   static const Color color2 = Color(0xFF353433); // This can be used for active text (similar to Black)

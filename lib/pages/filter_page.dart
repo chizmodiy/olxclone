@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // New import
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../models/category.dart'; // New import
-import '../services/category_service.dart'; // New import
-import '../models/subcategory.dart'; // New import
-import '../services/subcategory_service.dart'; // New import
-import 'package:withoutname/pages/category_selection_page.dart'; // Corrected import
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:withoutname/theme/app_colors.dart';
+import 'package:withoutname/theme/app_text_styles.dart';
+import 'package:withoutname/models/category.dart';
+import 'package:withoutname/services/category_service.dart';
+import 'package:withoutname/models/subcategory.dart';
+import 'package:withoutname/services/subcategory_service.dart';
+import 'package:withoutname/pages/category_selection_page.dart';
+import 'package:withoutname/pages/subcategory_selection_page.dart';
+// import 'package:withoutname/pages/currency_selection_page.dart'; // Removed import
+import 'package:flutter_svg/flutter_svg.dart';
 
 class FilterPage extends StatefulWidget {
   final Map<String, dynamic> initialFilters;
@@ -18,26 +21,35 @@ class FilterPage extends StatefulWidget {
 }
 
 class _FilterPageState extends State<FilterPage> {
-  Category? _selectedCategory; // Changed type
-  Subcategory? _selectedSubcategory; // Changed type
+  Category? _selectedCategory;
+  Subcategory? _selectedSubcategory;
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
-  bool _hasDelivery = false;
+  String _selectedCurrency = 'UAH'; // Default to UAH
+  bool _isPriceModePrice = true; // New state for price mode
 
-  List<Category> _categories = []; // New state variable
-  bool _isLoadingCategories = true; // New state variable
-  List<Subcategory> _subcategories = []; // New state variable (fetched)
-  bool _isLoadingSubcategories = false; // New state variable
+  List<Category> _categories = [];
+  bool _isLoadingCategories = true;
+  List<Subcategory> _subcategories = [];
+  bool _isLoadingSubcategories = false;
 
-  final GlobalKey _subcategoryButtonKey = GlobalKey(); // New state variable
+  final GlobalKey _subcategoryButtonKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _loadCategories(); // Call to load categories
+    _loadCategories();
     _minPriceController.text = (widget.initialFilters['minPrice'] ?? '').toString();
     _maxPriceController.text = (widget.initialFilters['maxPrice'] ?? '').toString();
-    _hasDelivery = widget.initialFilters['hasDelivery'] ?? false;
+    _selectedCurrency = widget.initialFilters['currency'] ?? 'UAH';
+    // Determine initial price mode based on existing filters
+    if (widget.initialFilters['minPrice'] != null || widget.initialFilters['maxPrice'] != null) {
+      _isPriceModePrice = true;
+    } else if (widget.initialFilters['isFree'] == true) {
+      _isPriceModePrice = false;
+    } else {
+      _isPriceModePrice = true; // Default to price mode if no specific filter
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -113,132 +125,189 @@ class _FilterPageState extends State<FilterPage> {
     super.dispose();
   }
 
-  void _clearAllFilters() {
+  void _resetFilters() {
     setState(() {
       _selectedCategory = null;
       _selectedSubcategory = null;
       _minPriceController.clear();
       _maxPriceController.clear();
-      _hasDelivery = false;
+      _selectedCurrency = 'UAH'; // Reset currency
+      _subcategories = []; // Clear subcategories on reset
+      _isPriceModePrice = true; // Reset price mode to price
     });
   }
 
   void _applyFilters() {
     final Map<String, dynamic> filters = {
-      'category': _selectedCategory?.name, // Pass name back
-      'subcategory': _selectedSubcategory?.name, // Pass name back
-      'minPrice': double.tryParse(_minPriceController.text),
-      'maxPrice': double.tryParse(_maxPriceController.text),
-      'hasDelivery': _hasDelivery,
+      'category': _selectedCategory?.name,
+      'subcategory': _selectedSubcategory?.name,
+      'currency': _selectedCurrency,
     };
+
+    if (_isPriceModePrice) {
+      filters['minPrice'] = double.tryParse(_minPriceController.text);
+      filters['maxPrice'] = double.tryParse(_maxPriceController.text);
+    } else {
+      filters['isFree'] = true;
+    }
+
     Navigator.of(context).pop(filters);
   }
 
-  void _showSubcategoryPicker({required Offset position, required Size size}) async {
-    if (_selectedCategory == null) return; // Should not happen if UI is correct
-
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    final Subcategory? selected = await showMenu<Subcategory>(
-      context: context,
-      position: RelativeRect.fromRect(
-        position & size,
-        Offset.zero & overlay.size,
-      ),
-      items: _subcategories.map((subcategory) {
-        return PopupMenuItem<Subcategory>(
-          value: subcategory,
-          child: Text(subcategory.name),
-        );
-      }).toList(),
-      elevation: 8.0,
-    );
-
-    if (selected != null && selected != _selectedSubcategory) {
-      setState(() {
-        _selectedSubcategory = selected;
-      });
-    }
-  }
-
-  // New method to navigate to CategorySelectionPage
   void _navigateToCategorySelection() async {
-    final Category? selectedCategory = await Navigator.push(
+    final Map<String, dynamic>? result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CategorySelectionPage(),
+        builder: (context) => const CategorySelectionPage(),
       ),
     );
 
-    if (selectedCategory != null && selectedCategory != _selectedCategory) {
+    if (result != null) {
+      final Category? category = result['category'];
+      final Subcategory? subcategory = result['subcategory'];
+
       setState(() {
-        _selectedCategory = selectedCategory;
-        _selectedSubcategory = null; // Clear subcategory when category changes
-        _loadSubcategories(selectedCategory.id); // Load subcategories for the newly selected category
+        _selectedCategory = category;
+        _selectedSubcategory = subcategory;
+        if (_selectedCategory != null && _selectedSubcategory == null) {
+          _loadSubcategories(_selectedCategory!.id);
+        } else if (_selectedCategory == null) {
+          _subcategories = [];
+        }
       });
     }
   }
+
+  void _navigateToSubcategorySelection() async {
+    if (_selectedCategory == null) return;
+
+    final Subcategory? selectedSubcategory = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SubcategorySelectionPage(category: _selectedCategory!),
+      ),
+    );
+
+    if (selectedSubcategory != null && selectedSubcategory != _selectedSubcategory) {
+      setState(() {
+        _selectedSubcategory = selectedSubcategory;
+      });
+    }
+  }
+
+  // Removed _navigateToCurrencySelection method
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Фільтр',
-          style: AppTextStyles.heading2Semibold,
-        ),
-        actions: [
-          TextButton(
-            onPressed: _clearAllFilters,
-            child: Text(
-              'Скинути фільтри',
-              style: AppTextStyles.body2Regular.copyWith(
-                color: AppColors.primaryColor,
+      backgroundColor: AppColors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 1 + 20), // 20px padding bottom and border
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.zinc200, // Border color
+                width: 1.0,
               ),
             ),
           ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20.0),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFE4E4E7),
-                  width: 1.0,
+          child: AppBar(
+            backgroundColor: AppColors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: SvgPicture.asset(
+                'assets/icons/chevron-states.svg',
+                colorFilter: ColorFilter.mode(AppColors.black, BlendMode.srcIn),
+                width: 24,
+                height: 24,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            title: Text(
+              'Фільтр',
+              style: AppTextStyles.heading2Semibold,
+            ),
+            centerTitle: false,
+            actions: [
+              TextButton(
+                onPressed: _resetFilters,
+                child: Text(
+                  'Скинути фільтри',
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.gray500),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Категорія',
+              style: AppTextStyles.body1Semibold,
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _navigateToCategorySelection,
+              child: Container(
+                height: 56,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.zinc50,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(200),
+                  border: Border.all(
+                    color: AppColors.zinc200,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedCategory?.name ?? 'Усі категорії',
+                        style: AppTextStyles.body1Regular.copyWith(
+                          color: _selectedCategory == null ? AppColors.zinc400 : AppColors.black,
+                        ),
+                      ),
+                    ),
+                    SvgPicture.asset(
+                      'assets/icons/chevron-down.svg',
+                      colorFilter: ColorFilter.mode(AppColors.gray500, BlendMode.srcIn),
+                      width: 20,
+                      height: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_selectedCategory != null) const SizedBox(height: 12),
+            if (_selectedCategory != null)
               Text(
-                'Категорія',
+                'Підкатегорія',
                 style: AppTextStyles.body1Semibold,
               ),
-              const SizedBox(height: 16),
-              // Category selection widget will go here
+            if (_selectedCategory != null) const SizedBox(height: 16),
+            if (_selectedCategory != null)
               GestureDetector(
-                onTap: _navigateToCategorySelection,
+                onTap: _navigateToSubcategorySelection,
                 child: Container(
                   height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: AppColors.zinc50,
                     boxShadow: const [
                       BoxShadow(
                         color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -246,7 +315,7 @@ class _FilterPageState extends State<FilterPage> {
                         blurRadius: 2,
                       ),
                     ],
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(200),
                     border: Border.all(
                       color: AppColors.zinc200,
                       width: 1,
@@ -254,222 +323,304 @@ class _FilterPageState extends State<FilterPage> {
                   ),
                   child: Row(
                     children: [
-                      // Placeholder for category icon, you might want to use a dynamic icon based on _selectedCategory
-                      Icon(Icons.category, color: AppColors.zinc400),
-                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _selectedCategory?.name ?? 'Виберіть категорію',
-                          style: AppTextStyles.body1Semibold,
+                          _selectedSubcategory?.name ?? 'Усі ${_selectedCategory!.name}',
+                          style: AppTextStyles.body1Regular.copyWith(
+                            color: _selectedSubcategory == null ? AppColors.zinc400 : AppColors.black,
+                          ),
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: AppColors.black), // Chevron icon
+                      SvgPicture.asset(
+                        'assets/icons/chevron-down.svg',
+                        colorFilter: ColorFilter.mode(AppColors.gray500, BlendMode.srcIn),
+                        width: 20,
+                        height: 20,
+                      ),
                     ],
                   ),
                 ),
               ),
-              if (_selectedCategory != null && _subcategories.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'Підкатегорія',
-                  style: AppTextStyles.body1Semibold,
-                ),
-                const SizedBox(height: 16),
-                // Subcategory selection widget will go here
-                GestureDetector(
-                  key: _subcategoryButtonKey,
-                  onTap: () {
-                    if (_isLoadingSubcategories || _selectedCategory == null) return;
-                    final RenderBox? button = _subcategoryButtonKey.currentContext?.findRenderObject() as RenderBox?;
-                    if (button != null) {
-                      final buttonPosition = button.localToGlobal(Offset.zero);
-                      final buttonSize = button.size;
-                      _showSubcategoryPicker(position: buttonPosition, size: buttonSize);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAFAFA),
-                      borderRadius: BorderRadius.circular(200),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color.fromRGBO(16, 24, 40, 0.05),
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
+            const SizedBox(height: 24),
+
+            // New Price/Free and Price Range block
+            Container(
+              // This container will hold the whole price/free block including slider (later)
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Ціна',
+                        style: AppTextStyles.body1Semibold.copyWith(color: AppColors.zinc950),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isPriceModePrice = true;
+                          });
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: _isPriceModePrice ? AppColors.primary : AppColors.zinc50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _isPriceModePrice ? AppColors.primary : AppColors.zinc200, width: 1),
+                            boxShadow: _isPriceModePrice
+                                ? const [
+                                    BoxShadow(
+                                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                                      offset: Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Align(
+                            alignment: _isPriceModePrice ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.all(4.0),
+                              child: CircleAvatar(
+                                radius: 8,
+                                backgroundColor: AppColors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                      ],
-                      border: Border.all(color: const Color(0xFFD0D5DD)),
-                    ),
-                    child: Row(
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isPriceModePrice)
+                    Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            _selectedSubcategory?.name ?? 'Оберіть підкатегорію',
-                            style: AppTextStyles.body1Regular.copyWith(
-                              color: _selectedSubcategory == null ? AppColors.color7 : AppColors.color2,
+                          child: Container(
+                            height: 56,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.zinc50,
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(200),
+                              border: Border.all(
+                                color: AppColors.zinc200,
+                                width: 1,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: _minPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: '0.0₴',
+                                hintStyle: AppTextStyles.body1Regular.copyWith(
+                                  color: AppColors.black,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: AppTextStyles.body1Regular.copyWith(
+                                color: AppColors.black,
+                              ),
                             ),
                           ),
                         ),
-                        _isLoadingSubcategories
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
+                        const SizedBox(width: 12),
+                        Text(
+                          '-',
+                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.zinc400),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            height: 56,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.zinc50,
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(200),
+                              border: Border.all(
+                                color: AppColors.zinc200,
+                                width: 1,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: _maxPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: '100.0₴',
+                                hintStyle: AppTextStyles.body1Regular.copyWith(
+                                  color: AppColors.black,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: AppTextStyles.body1Regular.copyWith(
+                                color: AppColors.black,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
+                  // Placeholder for the slider
+                  if (_isPriceModePrice) const SizedBox(height: 24),
+                  if (_isPriceModePrice)
+                    Container(
+                      height: 24, // Approximate height for slider
+                      color: Colors.transparent, // Placeholder color
+                      child: Center(child: Text('Slider Placeholder', style: TextStyle(color: Colors.grey))), // Placeholder text
+                    ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Безкоштовно',
+                        style: AppTextStyles.body1Semibold.copyWith(color: AppColors.zinc950),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isPriceModePrice = false;
+                          });
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: !_isPriceModePrice ? AppColors.primary : AppColors.zinc50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: !_isPriceModePrice ? AppColors.primary : AppColors.zinc200, width: 1),
+                            boxShadow: !_isPriceModePrice
+                                ? const [
+                                    BoxShadow(
+                                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                                      offset: Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Align(
+                            alignment: !_isPriceModePrice ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.all(4.0),
+                              child: CircleAvatar(
+                                radius: 8,
+                                backgroundColor: AppColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // New Confirm and Cancel buttons
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _applyFilters,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor, // Use primary color for button
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Rounded corners for button
                   ),
                 ),
-              ],
-              const SizedBox(height: 24),
+                child: Text(
+                  'Підтвердити',
+                  style: AppTextStyles.body1Semibold.copyWith(color: AppColors.white), // White text on button
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the filter page without applying
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.white, // White background for cancel button
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Rounded corners for button
+                    side: BorderSide(color: AppColors.zinc200, width: 1), // Border
+                  ),
+                ),
+                child: Text(
+                  'Скасувати',
+                  style: AppTextStyles.body1Semibold.copyWith(color: AppColors.black), // Black text on button
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrencyButton({
+    required String currency,
+    required String iconPath,
+    required String text,
+    required bool isSelected,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedCurrency = currency;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : AppColors.white,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.zinc200,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                iconPath,
+                colorFilter: ColorFilter.mode(
+                  isSelected ? AppColors.white : AppColors.zinc400,
+                  BlendMode.srcIn,
+                ),
+                width: 20,
+                height: 20,
+              ),
+              const SizedBox(width: 8),
               Text(
-                'Ціновий діапазон',
-                style: AppTextStyles.body1Semibold,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Від',
-                          style: AppTextStyles.captionRegular.copyWith(color: AppColors.color7),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFAFAFA), // Zinc-50 background
-                            borderRadius: BorderRadius.circular(200), // Full rounded corners
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color.fromRGBO(16, 24, 40, 0.05), // Shadow color
-                                blurRadius: 2, // Shadow blur
-                                offset: const Offset(0, 1), // Shadow offset
-                              ),
-                            ],
-                            border: Border.all(color: const Color(0xFFD0D5DD)), // Gray-300 border
-                          ),
-                          child: TextField(
-                            controller: _minPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color7),
-                              filled: true,
-                              fillColor: Colors.transparent, // Transparent as container handles fill
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'До',
-                          style: AppTextStyles.captionRegular.copyWith(color: AppColors.color7),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFAFAFA), // Zinc-50 background
-                            borderRadius: BorderRadius.circular(200), // Full rounded corners
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color.fromRGBO(16, 24, 40, 0.05), // Shadow color
-                                blurRadius: 2, // Shadow blur
-                                offset: const Offset(0, 1), // Shadow offset
-                              ),
-                            ],
-                            border: Border.all(color: const Color(0xFFD0D5DD)), // Gray-300 border
-                          ),
-                          child: TextField(
-                            controller: _maxPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: '1000',
-                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color7),
-                              filled: true,
-                              fillColor: Colors.transparent, // Transparent as container handles fill
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(200),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Опції',
-                style: AppTextStyles.body1Semibold,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Доставка',
-                    style: AppTextStyles.body1Regular,
-                  ),
-                  Switch(
-                    value: _hasDelivery,
-                    onChanged: (value) {
-                      setState(() {
-                        _hasDelivery = value;
-                      });
-                    },
-                    activeColor: AppColors.primaryColor,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _applyFilters,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Застосувати фільтри',
-                    style: AppTextStyles.body1Semibold.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
+                text,
+                style: AppTextStyles.body1Semibold.copyWith(
+                  color: isSelected ? AppColors.white : AppColors.zinc600,
                 ),
               ),
             ],
