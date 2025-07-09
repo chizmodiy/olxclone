@@ -657,11 +657,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Image gallery section
-          SizedBox(
+          // First section - Image gallery
+          Container(
             height: imageHeight,
             child: Stack(
               children: [
+                // Image gallery
                 PageView.builder(
                   controller: _pageController,
                   itemCount: _product!.photos.length,
@@ -684,11 +685,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     );
                   },
                 ),
+                // Navigation buttons
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildNavigationButton(
+                        iconPath: 'assets/icons/chevron-states.svg',
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      _buildNavigationButton(
+                        iconPath: 'assets/icons/share-07.svg',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Функція поділитися буде додана незабаром'),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Page indicators
                 if (_product!.photos.length > 1)
                   Positioned(
                     left: 0,
                     right: 0,
-                    bottom: 30, // Changed from 20 to 30 to move up by 10 pixels
+                    bottom: 30,
                     child: Center(
                       child: Container(
                         padding: const EdgeInsets.all(6),
@@ -738,7 +765,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ],
             ),
           ),
-          // Content section
+          // Second section - Content
           Transform.translate(
             offset: const Offset(0, -20),
             child: Container(
@@ -1242,34 +1269,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          // Navigation buttons
-          Positioned(
-            left: 0,
-            right: 0,
-            top: MediaQuery.of(context).padding.top + 16,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildNavigationButton(
-                    icon: Icons.arrow_back,
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildNavigationButton(
-                    icon: Icons.share,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Функція поділитися буде додана незабаром'),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -1294,7 +1293,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _buildNavigationButton({
-    required IconData icon,
+    required String iconPath,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -1318,7 +1317,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             )
           ],
         ),
-        child: Icon(icon),
+        child: SvgPicture.asset(
+          iconPath,
+          width: 20,
+          height: 20,
+        ),
       ),
     );
   }
