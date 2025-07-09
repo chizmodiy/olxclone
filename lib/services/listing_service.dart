@@ -115,4 +115,41 @@ class ListingService {
       throw Exception('Failed to fetch listing: $error');
     }
   }
+
+  Future<Map<String, double>> getMinMaxPrices(String currency) async {
+    try {
+      // Get min price
+      final minResponse = await _client
+          .from('listings')
+          .select('price')
+          .eq('currency', currency)
+          .not('price', 'is', null) // Exclude null prices
+          .order('price', ascending: true)
+          .limit(1)
+          .single();
+
+      final double minPrice = (minResponse['price'] as num?)?.toDouble() ?? 0.0;
+
+      // Get max price
+      final maxResponse = await _client
+          .from('listings')
+          .select('price')
+          .eq('currency', currency)
+          .not('price', 'is', null) // Exclude null prices
+          .order('price', ascending: false)
+          .limit(1)
+          .single();
+
+      final double maxPrice = (maxResponse['price'] as num?)?.toDouble() ?? 100.0; // Default max if no listings
+
+      return {
+        'minPrice': minPrice,
+        'maxPrice': maxPrice,
+      };
+    } catch (error) {
+      print('Error fetching min/max prices: $error');
+      // Return default values in case of an error or no listings
+      return {'minPrice': 0.0, 'maxPrice': 100.0};
+    }
+  }
 } 

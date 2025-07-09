@@ -367,12 +367,6 @@ class _HomeContentState extends State<HomeContent> {
       );
     }
 
-    if (_products.isEmpty && !_isLoading) {
-      return const Center(
-        child: Text('Немає доступних оголошень'),
-      );
-    }
-
     return Stack(
       children: [
         Padding(

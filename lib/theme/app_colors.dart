@@ -27,4 +27,5 @@ class AppColors {
   static const Color zinc50 = Color(0xFFFAFAFA); // Added Zinc-50
   static const Color zinc100 = Color(0xFFF4F4F5); // Added Zinc-100
   static const Color zinc200 = Color(0xFFE4E4E7); // Added Zinc-200
+  static const Color sliderActive = Color(0xFF015873);
 } 
