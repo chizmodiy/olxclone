@@ -6,12 +6,6 @@ import 'package:withoutname/pages/add_listing_page.dart';
 import 'package:withoutname/pages/home_page.dart';
 import 'package:withoutname/pages/viewed_page.dart';
 import 'package:withoutname/pages/favorites_page.dart';
-import '../models/region.dart';
-import '../services/region_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'dart:async';
 import 'chat_page.dart';
 
 class GeneralPage extends StatefulWidget {
