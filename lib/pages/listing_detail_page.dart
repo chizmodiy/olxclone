@@ -122,12 +122,12 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                   style: AppTextStyles.heading1Semibold,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                  Text(
                   listing.formattedPrice,
-                  style: AppTextStyles.heading2Semibold.copyWith(
-                    color: AppColors.primaryColor,
+                    style: AppTextStyles.heading2Semibold.copyWith(
+                      color: AppColors.primaryColor,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 16),
                 Text(
                   listing.description,
