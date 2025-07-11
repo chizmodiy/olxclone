@@ -60,6 +60,9 @@ class _ChatPageState extends State<ChatPage> {
   OverlayEntry? _autocompleteOverlay;
   final LayerLink _autocompleteLayerLink = LayerLink();
   bool _citySelected = false;
+  OverlayEntry? _regionDropdownOverlay;
+  final LayerLink _regionDropdownLayerLink = LayerLink();
+  final GlobalKey _regionFieldKey = GlobalKey();
 
   @override
   void dispose() {
@@ -249,6 +252,106 @@ class _ChatPageState extends State<ChatPage> {
     _autocompleteOverlay = null;
   }
 
+  void _showRegionDropdown(BuildContext context) {
+    _hideRegionDropdown();
+    final renderBox = _regionFieldKey.currentContext?.findRenderObject() as RenderBox?;
+    final size = renderBox?.size ?? Size.zero;
+    final overlay = Overlay.of(context);
+    _regionDropdownOverlay = OverlayEntry(
+      builder: (context) => CompositedTransformFollower(
+        link: _regionDropdownLayerLink,
+        showWhenUnlinked: false,
+        offset: const Offset(0, 4),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: size.width,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Color(0xFFEAECF0), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: _regions.length,
+              itemBuilder: (context, index) {
+                final region = _regions[index];
+                final isSelected = region == _selectedRegion;
+                return GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      _selectedRegion = region;
+                    });
+                    _onCitySearchChanged();
+                    _hideRegionDropdown();
+                    // Центруємо карту на область
+                    if (region != null) {
+                      final regionLatLng = await getLatLngFromRegion(region);
+                      if (regionLatLng != null) {
+                        setState(() {
+                          _mapCenter = regionLatLng;
+                          _selectedLatLng = null;
+                        });
+                        _mapController.move(regionLatLng, 8);
+                      }
+                    }
+                  },
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(left: 8, right: 10, top: 10, bottom: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              region,
+                              style: TextStyle(
+                                color: const Color(0xFF101828),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                          if (isSelected)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Icon(Icons.check, color: Color(0xFF015873), size: 20),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(_regionDropdownOverlay!);
+  }
+
+  void _hideRegionDropdown() {
+    _regionDropdownOverlay?.remove();
+    _regionDropdownOverlay = null;
+  }
+
   // Визначити місцезнаходження
   Future<void> _setToCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -302,72 +405,55 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               // Локація (Dropdown)
               Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: Color(0xFFE4E4E7), width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedRegion,
-                      hint: const Text(
-                        'Локація',
-                        style: TextStyle(
-                          color: Color(0xFFA1A1AA),
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.16,
-                        ),
-                      ),
-                      isExpanded: true,
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
-                      items: _regions.map((region) => DropdownMenuItem(
-                        value: region,
-                        child: Text(region,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: CompositedTransformTarget(
+                  link: _regionDropdownLayerLink,
+                  child: GestureDetector(
+                    onTap: () {
+                      _showRegionDropdown(context);
+                    },
+                    child: Container(
+                      key: _regionFieldKey,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: Color(0xFFE4E4E7), width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
                           ),
-                        ),
-                      )).toList(),
-                      onChanged: (region) async {
-                        setState(() {
-                          _selectedRegion = region;
-                        });
-                        _onCitySearchChanged();
-                        // Центруємо карту на область
-                        if (region != null) {
-                          final regionLatLng = await getLatLngFromRegion(region);
-                          if (regionLatLng != null) {
-                            setState(() {
-                              _mapCenter = regionLatLng;
-                              _selectedLatLng = null;
-                            });
-                            _mapController.move(regionLatLng, 8);
-                          }
-                        }
-                      },
+                        ],
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _selectedRegion ?? 'Локація',
+                              style: TextStyle(
+                                color: _selectedRegion == null ? Color(0xFFA1A1AA) : Color(0xFF101828),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
               // Інпут пошуку
               Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
+                padding: const EdgeInsets.only(bottom: 12.0),
                 child: Container(
+                  height: 44,
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAFAFA),
                     borderRadius: BorderRadius.circular(200),
@@ -421,107 +507,112 @@ class _ChatPageState extends State<ChatPage> {
                 ),
               ),
               // Loading, error, empty state, results
-            if (_isSearchingCities)
-              const Center(child: CircularProgressIndicator()),
-            if (!_isSearchingCities && _apiError != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'Помилка: $_apiError',
-                  style: TextStyle(color: Colors.red),
+              if (_isSearchingCities)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
-              ),
+              if (!_isSearchingCities && _apiError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Text(
+                    'Помилка: $_apiError',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               if (!_isSearchingCities && _apiError == null && _citySearchController.text.isNotEmpty && _cityResults.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
                   child: Text(
                     'Нічого не знайдено',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
-            if (!_isSearchingCities && _cityResults.isNotEmpty && !_citySelected && _citySearchController.text.isNotEmpty)
-              Container(
-                constraints: const BoxConstraints(maxHeight: 200),
-                margin: const EdgeInsets.only(top: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+              if (!_isSearchingCities && _cityResults.isNotEmpty && !_citySelected && _citySearchController.text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _cityResults.length,
-                  itemBuilder: (context, index) {
-                    final cityObj = _cityResults[index];
-                    final city = cityObj['name']!;
-                    final placeId = cityObj['placeId']!;
-                    return ListTile(
-                      title: Text(city),
-                      onTap: () async {
-                        final latLng = await getLatLngFromPlaceId(placeId);
-                        setState(() {
-                          _selectedLatLng = latLng;
-                          _mapCenter = latLng;
-                          _selectedCityName = city;
-                          _selectedPlaceId = placeId;
-                          _citySearchController.text = city;
-                          _citySelected = true;
-                        });
-                        FocusScope.of(context).unfocus();
-                          final zoom = city.contains(',') ? 15.0 : 11.0;
-                          _mapController.move(latLng!, zoom);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Вибрано: $city')),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _cityResults.length,
+                      itemBuilder: (context, index) {
+                        final cityObj = _cityResults[index];
+                        final city = cityObj['name']!;
+                        final placeId = cityObj['placeId']!;
+                        return ListTile(
+                          title: Text(city),
+                          onTap: () async {
+                            final latLng = await getLatLngFromPlaceId(placeId);
+                            setState(() {
+                              _selectedLatLng = latLng;
+                              _mapCenter = latLng;
+                              _selectedCityName = city;
+                              _selectedPlaceId = placeId;
+                              _citySearchController.text = city;
+                              _citySelected = true;
+                            });
+                            FocusScope.of(context).unfocus();
+                            final zoom = city.contains(',') ? 15.0 : 11.0;
+                            _mapController.move(latLng!, zoom);
+                            // SnackBar видалено
+                          },
                         );
                       },
-                    );
-                  },
-                ),
-              ),
-              // Карта
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: SizedBox(
-                height: 300,
-                child: FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                      center: _mapCenter ?? LatLng(49.0, 32.0),
-                    zoom: _selectedLatLng != null ? 11 : 6,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      subdomains: ['a', 'b', 'c'],
                     ),
-                    if (_selectedLatLng != null)
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            width: 40,
-                            height: 40,
-                            point: _selectedLatLng!,
-                            child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                          ),
-                        ],
+                  ),
+                ),
+              // Карта
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: SizedBox(
+                  height: 300,
+                  child: FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      center: _mapCenter ?? LatLng(49.0, 32.0),
+                      zoom: _selectedLatLng != null ? 11 : 6,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        subdomains: ['a', 'b', 'c'],
                       ),
-                  ],
+                      if (_selectedLatLng != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              width: 40,
+                              height: 40,
+                              point: _selectedLatLng!,
+                              child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
               // Кнопка "Моє місцезнаходження"
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.my_location),
-                label: const Text('Моє місцезнаходження'),
+              SizedBox(
+                width: double.infinity,
+                height: 40,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.my_location),
+                  label: const Text('Моє місцезнаходження'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
@@ -537,10 +628,10 @@ class _ChatPageState extends State<ChatPage> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                onPressed: _setToCurrentLocation,
+                  onPressed: _setToCurrentLocation,
+                ),
               ),
-            ),
-          ],
+            ],
           ),
         ),
       ),
