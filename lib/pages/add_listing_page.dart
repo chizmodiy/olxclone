@@ -19,6 +19,7 @@ import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:async'; // Add this import for Timer
+import '../widgets/location_picker.dart';
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -2267,159 +2268,21 @@ class _AddListingPageState extends State<AddListingPage> {
 
             // Category Dropdown
             _buildCategorySection(),
-            if (_selectedCategory != null && _subcategories.isNotEmpty && _isForSale)
-              _buildSubcategorySection(),
-            if (_selectedSubcategory != null && _isForSale)
-              _buildExtraFieldsSection(),
+            // Додаємо LocationPicker після категорії
             const SizedBox(height: 20),
-
-            // Region Dropdown
-            _buildRegionSection(),
-            if (_selectedRegion != null)
-              _buildCitySection(), // Call _buildCitySection here
-              const SizedBox(height: 12),
-            // REMOVE END
-
-            // Map Placeholder
-                Container(
-              width: double.infinity,
-              height: 364,
-                  decoration: BoxDecoration(
-                color: AppColors.zinc200,
-                borderRadius: BorderRadius.circular(12),
-                // Image will be added here later
-              ),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/images/map_placeholder.png', // Placeholder image
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(left: 13, bottom: 13, child: Image.asset('assets/images/google_logo.png', width: 111.11, height: 25)),
-                  Positioned(
-                    right: 16,
-                    top: 192,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: AppColors.zinc200, width: 1),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                        ),
-                    ],
-                  ),
-                  child: SvgPicture.asset(
-                            'assets/icons/mark.svg',
-                    width: 20,
-                    height: 20,
-                            colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                  ),
-                ),
-                        const SizedBox(height: 4),
-                Container(
-                          padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                            color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: AppColors.zinc200, width: 1),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: SvgPicture.asset(
-                            'assets/icons/plus.svg',
-                    width: 20,
-                    height: 20,
-                            colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                  ),
-                ),
-                        const SizedBox(height: 4),
-                Container(
-                          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-                            color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: AppColors.zinc200, width: 1),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: SvgPicture.asset(
-                            'assets/icons/minus.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                  ),
-                ),
-              ],
-            ),
-                  ),
-                  Positioned(
-                    left: 202,
-                    top: 121,
-                    child: SvgPicture.asset(
-                      'assets/icons/pin_marker.svg', // Pin marker
-                      width: 24,
-                      height: 32,
-                      // The fill color in the SVG needs to be adjusted via a custom SvgPicture.builder if dynamic color is needed.
-                      // For now, it's hardcoded in the SVG itself from the design.
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            // My Location Button
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.zinc100,
-                borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: AppColors.zinc100, width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(16, 24, 40, 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
-          ),
-          child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                  SvgPicture.asset(
-                    'assets/icons/marker_pin_04.svg',
-                    width: 21,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Моє місцезнаходження',
-                    style: AppTextStyles.body2Semibold.copyWith(color: AppColors.color2),
-                  ),
-                ],
-              ),
+            LocationPicker(
+              onLocationSelected: (address, latLng) {
+                // TODO: обробка вибраної адреси та координат
+                // Наприклад, збереження у відповідні змінні стану
+              },
             ),
             const SizedBox(height: 20),
+            // Видаляємо стару логіку вибору області/міста/карти:
+            // _buildRegionSection(),
+            // if (_selectedRegion != null)
+            //   _buildCitySection(),
+            //   const SizedBox(height: 12),
+            // Map Placeholde
 
             // Listing Type Toggle
             _buildListingTypeToggle(),
