@@ -7,6 +7,8 @@ import '../services/category_service.dart';
 import '../services/profile_service.dart';
 import '../services/complaint_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -949,154 +951,64 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  
-                  // Location section
-                  SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 24),
+                  // Location block (address, region, map)
+                  if (_product!.address != null && _product!.address!.isNotEmpty) ...[
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: const Icon(
-                                Icons.location_on_outlined,
-                                color: Color(0xFFA1A1AA),
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 7),
-                            Text(
-                              _product!.location,
-                              style: const TextStyle(
-                                color: Color(0xFF101828),
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                height: 1.5,
-                                letterSpacing: 0.16,
-                              ),
-                            ),
-                          ],
+                        SvgPicture.asset(
+                          'assets/icons/addresssdv.svg',
+                          width: 22,
+                          height: 22,
                         ),
-                        const SizedBox(height: 16),
-                        Container(
-                          width: double.infinity,
-                          height: 362,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE4E4E7),
-                            borderRadius: BorderRadius.circular(12),
+                        SizedBox(width: 8),
+                        Expanded(child: Text(_product!.address!)),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                  if (_product!.region != null && _product!.region!.isNotEmpty) ...[
+                    Container(
+                      margin: const EdgeInsets.only(left: 32.0, bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _product!.region!,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                  if (_product!.latitude != null && _product!.longitude != null) ...[
+                    SizedBox(
+                      height: 180,
+                      child: FlutterMap(
+                        options: MapOptions(
+                          center: LatLng(_product!.latitude!, _product!.longitude!),
+                          zoom: 14,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            subdomains: ['a', 'b', 'c'],
                           ),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                right: 16,
-                                top: 190,
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(200),
-                                        border: Border.all(
-                                          color: const Color(0xFFE4E4E7),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF101828).withOpacity(0.05),
-                                            blurRadius: 2,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Icon(
-                                        Icons.gps_fixed,
-                                        size: 20,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Column(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(200),
-                                            border: Border.all(
-                                              color: const Color(0xFFE4E4E7),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFF101828).withOpacity(0.05),
-                                                blurRadius: 2,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.add,
-                                            size: 20,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(200),
-                                            border: Border.all(
-                                              color: const Color(0xFFE4E4E7),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFF101828).withOpacity(0.05),
-                                                blurRadius: 2,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.remove,
-                                            size: 20,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Positioned(
-                                left: 267,
-                                top: 113,
-                                child: Icon(
-                                  Icons.location_on,
-                                  size: 32,
-                                  color: Color(0xFF015873),
-                                ),
-                              ),
-                              Positioned(
-                                left: 13,
-                                bottom: 13,
-                                child: Container(
-                                  width: 111,
-                                  height: 25,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                width: 40,
+                                height: 40,
+                                point: LatLng(_product!.latitude!, _product!.longitude!),
+                                child: const Icon(Icons.location_on, color: Colors.red, size: 40),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
+                  ],
+                  const SizedBox(height: 32),
                   
                   // User section
                   SizedBox(

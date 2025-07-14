@@ -18,6 +18,10 @@ class Product {
   final DateTime updatedAt;
   final List<String> photos;
   final bool isNegotiable;
+  final String? address;
+  final String? region;
+  final double? latitude;
+  final double? longitude;
 
   Product({
     required this.id,
@@ -39,6 +43,10 @@ class Product {
     required this.updatedAt,
     required this.photos,
     this.isNegotiable = false,
+    this.address,
+    this.region,
+    this.latitude,
+    this.longitude,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -64,6 +72,10 @@ class Product {
       updatedAt: DateTime.parse(json['updated_at'] as String),
       photos: (json['photos'] as List<dynamic>?)?.cast<String>() ?? [],
       isNegotiable: json['is_negotiable'] as bool? ?? false,
+      address: json['address'] as String?,
+      region: json['region'] as String?,
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
     );
   }
 
