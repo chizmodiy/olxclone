@@ -30,6 +30,10 @@ class ListingService {
     String? whatsapp,
     String? telegram,
     String? viber,
+    String? address,
+    String? region,
+    double? latitude,
+    double? longitude,
     required Map<String, dynamic> customAttributes,
     required List<XFile> images,
   }) async {
@@ -89,6 +93,10 @@ class ListingService {
         'user_id': user.id,
         'custom_attributes': customAttributes,
         'photos': imageUrls, // Store image URLs directly in the listings table
+        'address': address,
+        'region': region,
+        'latitude': latitude,
+        'longitude': longitude,
       }).select('id').single();
 
       final listingId = response['id'] as String;

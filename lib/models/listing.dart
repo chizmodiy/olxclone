@@ -19,6 +19,10 @@ class Listing {
   final List<String> photos;
   final bool isNegotiable;
   bool isFavorite;
+  final String? address;
+  final String? region;
+  final double? latitude;
+  final double? longitude;
 
   Listing({
     required this.id,
@@ -41,6 +45,10 @@ class Listing {
     required this.photos,
     this.isNegotiable = false,
     this.isFavorite = false,
+    this.address,
+    this.region,
+    this.latitude,
+    this.longitude,
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
@@ -67,6 +75,10 @@ class Listing {
           .toList() ?? [],
       isNegotiable: json['is_negotiable'] as bool? ?? false,
       isFavorite: json['is_favorite'] as bool? ?? false,
+      address: json['address'] as String?,
+      region: json['region'] as String?,
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
     );
   }
 
@@ -92,6 +104,10 @@ class Listing {
       'photos': photos,
       'is_negotiable': isNegotiable,
       'is_favorite': isFavorite,
+      'address': address,
+      'region': region,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 

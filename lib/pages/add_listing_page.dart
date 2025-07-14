@@ -68,6 +68,10 @@ class _AddListingPageState extends State<AddListingPage> {
   bool _isSearchingCities = false;
   City? _selectedCity;
   Timer? _debounceTimer; // Add debounce timer
+  String? _selectedAddress;
+  String? _selectedRegionName;
+  double? _selectedLatitude;
+  double? _selectedLongitude;
 
   @override
   void initState() {
@@ -2009,6 +2013,10 @@ class _AddListingPageState extends State<AddListingPage> {
           viber: _selectedMessenger == 'viber' ? _viberController.text : null,
         customAttributes: _isForSale ? finalCustomAttributes : {}, // Empty attributes for free listings
         images: imagesToUpload,
+        address: _selectedAddress,
+        region: _selectedRegionName,
+        latitude: _selectedLatitude,
+        longitude: _selectedLongitude,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2268,21 +2276,27 @@ class _AddListingPageState extends State<AddListingPage> {
 
             // Category Dropdown
             _buildCategorySection(),
-            // Додаємо LocationPicker після категорії
+            _buildSubcategorySection(),
+            // Додаємо LocationPicker після категорії та підкатегорії
             const SizedBox(height: 20),
             LocationPicker(
-              onLocationSelected: (address, latLng) {
-                // TODO: обробка вибраної адреси та координат
-                // Наприклад, збереження у відповідні змінні стану
+              onLocationSelected: (latLng, address) {
+                setState(() {
+                  _selectedAddress = address;
+                  _selectedLatitude = latLng?.latitude;
+                  _selectedLongitude = latLng?.longitude;
+                  if (address != null && address.isNotEmpty) {
+                    final region = _regions.firstWhere(
+                      (r) => address.contains(r.name),
+                      orElse: () => _regions.first,
+                    );
+                    _selectedRegion = region;
+                    _selectedRegionName = region.name;
+                  }
+                });
               },
             ),
             const SizedBox(height: 20),
-            // Видаляємо стару логіку вибору області/міста/карти:
-            // _buildRegionSection(),
-            // if (_selectedRegion != null)
-            //   _buildCitySection(),
-            //   const SizedBox(height: 12),
-            // Map Placeholde
 
             // Listing Type Toggle
             _buildListingTypeToggle(),
