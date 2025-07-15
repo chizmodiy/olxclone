@@ -4,6 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
+import '../widgets/common_header.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Pin extends StatelessWidget {
   final String count;
@@ -63,6 +65,16 @@ class _MapPageState extends State<MapPage> {
   List<Product> _products = [];
   bool _loading = true;
 
+  void _goHome() {
+    // Знайти GeneralPage в дереві і викликати зміну вкладки
+    // Якщо GeneralPageState доступний через InheritedWidget або Provider, тут можна викликати callback
+    // Для простоти: Navigator.of(context).pop() якщо MapPage відкрито через push
+    // Якщо через таббар — можна використати callback або інший state management
+    // Тут для прикладу: Navigator.of(context).popUntil((route) => route.isFirst);
+    // Але для таббару краще передати callback
+    // TODO: Реалізувати через callback або state management
+  }
+
   @override
   void initState() {
     super.initState();
@@ -92,7 +104,7 @@ class _MapPageState extends State<MapPage> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Карта на весь екран
+          // Карта на всю ширину і висоту
           Positioned.fill(
             child: FlutterMap(
               options: MapOptions(
@@ -120,93 +132,204 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
           ),
-          // Плаваюча панель пошуку та фільтра поверх карти
+          // Градієнтний overlay поверх карти
           Positioned(
-            top: 32,
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 64,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(0.5, 0.0),
+                  end: Alignment(0.5, 1.0),
+                  colors: [
+                    Color(0xFF015873), // 100%
+                    Color(0x80015873), // 50%
+                    Color(0x00015873), // 0%
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Вміст хедера поверх градієнта
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 64,
+              padding: const EdgeInsets.fromLTRB(13, 16, 13, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Лого
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  // Аватар користувача
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[300],
+                      ),
+                      child: const Icon(Icons.person, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Overlay-група: кнопка повернення + пошук/фільтр
+          Positioned(
+            top: 88, // 64px хедер + 24px відступ
             left: 13,
             right: 13,
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(200),
-                      border: Border.all(color: Color(0xFFE4E4E7)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                // Кнопка повернення
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).maybePop();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(200),
+                          ),
+                          shadows: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
+                        child: SvgPicture.asset(
+                          'assets/icons/chevron-states.svg',
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
                     ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.search_rounded, color: Color(0xFF838583), size: 20),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Пошук',
-                              border: InputBorder.none,
-                              hintStyle: TextStyle(
-                                color: Color(0xFF838583),
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w400,
-                                height: 1.5,
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Головна',
+                      style: TextStyle(
+                        color: Color(0xFF161817),
+                        fontSize: 28,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        height: 1.20,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Пошук і фільтр
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(200),
+                          border: Border.all(color: Color(0xFFE4E4E7)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.search_rounded, color: Color(0xFF838583), size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Пошук',
+                                  border: InputBorder.none,
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF838583),
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: Color(0xFFE4E4E7)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Фільтр',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: 14,
                               fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                              letterSpacing: 0.14,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: Color(0xFFE4E4E7)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Фільтр',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                          letterSpacing: 0.14,
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ],
             ),
