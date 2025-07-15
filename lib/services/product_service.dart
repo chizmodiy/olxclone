@@ -159,4 +159,18 @@ class ProductService {
       throw Exception('Помилка завантаження товарів: $e');
     }
   }
-} 
+
+  Future<List<Product>> getAllProductsWithCoordinates() async {
+    try {
+      final response = await _supabase
+          .from('listings')
+          .select()
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null);
+      return (response as List).map((json) => Product.fromJson(json)).toList();
+    } catch (e) {
+      print('Error getting products with coordinates: $e');
+      return [];
+    }
+  }
+}

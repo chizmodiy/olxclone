@@ -9,6 +9,7 @@ import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 import '../pages/filter_page.dart'; // Import FilterPage
 import 'dart:async'; // Add this import for Timer
+import '../pages/map_page.dart'; // Import MapPage
 
 enum ViewMode {
   grid8,
@@ -509,7 +510,9 @@ class HomeContentState extends State<HomeContent> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
-                  // TODO: Implement Map button logic here
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const MapPage()),
+                  );
                 },
                 child: Container(
                   height: 48,
