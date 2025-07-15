@@ -968,16 +968,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     SizedBox(height: 4),
                   ],
                   if (_product!.region != null && _product!.region!.isNotEmpty) ...[
-                    Container(
-                      margin: const EdgeInsets.only(left: 32.0, bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 30.0, bottom: 8),
                       child: Text(
                         _product!.region!,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ],
