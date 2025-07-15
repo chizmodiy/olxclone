@@ -209,26 +209,10 @@ class _MapPageState extends State<MapPage> {
                       onTap: () {
                         Navigator.of(context).maybePop();
                       },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(200),
-                          ),
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: SvgPicture.asset(
-                          'assets/icons/chevron-states.svg',
-                          width: 20,
-                          height: 20,
-                        ),
+                      child: SvgPicture.asset(
+                        'assets/icons/chevron-states.svg',
+                        width: 20,
+                        height: 20,
                       ),
                     ),
                     const SizedBox(width: 12),

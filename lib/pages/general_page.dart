@@ -21,8 +21,7 @@ class _GeneralPageState extends State<GeneralPage> {
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(onMapTap: () => _onItemTapped(1)), // Передаємо callback для кнопки "Карта"
-    const MapPage(),
+    HomePage(),
     const FavoritesPage(),
     const ViewedPage(),
     const ChatPage(),
