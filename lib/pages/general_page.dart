@@ -6,6 +6,7 @@ import 'package:withoutname/pages/add_listing_page.dart';
 import 'package:withoutname/pages/home_page.dart';
 import 'package:withoutname/pages/viewed_page.dart';
 import 'package:withoutname/pages/favorites_page.dart';
+import 'package:withoutname/pages/map_page.dart';
 import 'chat_page.dart';
 
 class GeneralPage extends StatefulWidget {
@@ -18,8 +19,10 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
 
+  // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(),
+    HomePage(onMapTap: () => _onItemTapped(1)), // Передаємо callback для кнопки "Карта"
+    const MapPage(),
     const FavoritesPage(),
     const ViewedPage(),
     const ChatPage(),

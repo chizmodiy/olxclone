@@ -18,7 +18,8 @@ enum ViewMode {
 }
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final VoidCallback? onMapTap;
+  const HomePage({super.key, this.onMapTap});
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +28,15 @@ class HomePage extends StatelessWidget {
       appBar: const CommonHeader(),
       body: Padding(
         padding: const EdgeInsets.only(top: 20),
-        child: HomeContent(key: key),
+        child: HomeContent(key: key, onMapTap: onMapTap),
       ),
     );
   }
 }
 
 class HomeContent extends StatefulWidget {
-  const HomeContent({super.key});
+  final VoidCallback? onMapTap;
+  const HomeContent({super.key, this.onMapTap});
 
   @override
   State<HomeContent> createState() => HomeContentState();
@@ -510,9 +512,9 @@ class HomeContentState extends State<HomeContent> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const MapPage()),
-                  );
+                  if (widget.onMapTap != null) {
+                    widget.onMapTap!();
+                  }
                 },
                 child: Container(
                   height: 48,
