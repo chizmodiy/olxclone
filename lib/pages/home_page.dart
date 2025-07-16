@@ -514,6 +514,7 @@ class HomeContentState extends State<HomeContent> {
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
+                    useRootNavigator: true,
                     builder: (context) => const MapPage(),
                   );
                 },
