@@ -284,6 +284,7 @@ class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
   List<Product> _products = [];
   bool _loading = true;
+  String _searchQuery = '';
 
   void _goHome() {
     // Знайти GeneralPage в дереві і викликати зміну вкладки
@@ -311,7 +312,10 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    final markers = _products.map((product) {
+    final filteredProducts = _searchQuery.isEmpty
+        ? _products
+        : _products.where((p) => p.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    final markers = filteredProducts.map((product) {
       return Marker(
         width: 28,
         height: 32,
@@ -497,12 +501,12 @@ class _MapPageState extends State<MapPage> {
                           ],
                         ),
                         child: Row(
-                          children: const [
-                            Icon(Icons.search_rounded, color: Color(0xFF838583), size: 20),
-                            SizedBox(width: 8),
+                          children: [
+                            const Icon(Icons.search_rounded, color: Color(0xFF838583), size: 20),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   hintText: 'Пошук',
                                   border: InputBorder.none,
                                   hintStyle: TextStyle(
@@ -513,13 +517,18 @@ class _MapPageState extends State<MapPage> {
                                     height: 1.5,
                                   ),
                                 ),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
                                   fontFamily: 'Inter',
                                   fontWeight: FontWeight.w400,
                                   height: 1.5,
                                 ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQuery = value;
+                                  });
+                                },
                               ),
                             ),
                           ],

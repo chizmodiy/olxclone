@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import './active_listings_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -74,17 +76,16 @@ class ProfilePage extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Align(
-                alignment: Alignment.topLeft,
+              Positioned(
+                left: 13,
+                bottom: 20,
                 child: GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.chevron_left, color: Colors.black, size: 20),
+                  child: SvgPicture.asset(
+                    'assets/icons/chevron-states.svg',
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                 ),
               ),
@@ -136,7 +137,11 @@ class ProfilePage extends StatelessWidget {
             _sectionTitle('Мої оголошення'),
             _profileButton(
               text: 'Активні',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ActiveListingsPage()),
+                );
+              },
             ),
             _profileButton(
               text: 'Неактивні',
