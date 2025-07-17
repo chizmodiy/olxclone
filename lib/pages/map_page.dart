@@ -584,37 +584,37 @@ class _MapPageState extends State<MapPage> {
                     GestureDetector(
                       onTap: _showFilterBottomSheet,
                       child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(200),
-                          border: Border.all(color: Color(0xFFE4E4E7)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: Color(0xFFE4E4E7)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Фільтр',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                              letterSpacing: 0.14,
                             ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Фільтр',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                                letterSpacing: 0.14,
-                              ),
-                            ),
-                          ],
+                          ),
+                        ],
                         ),
                       ),
                     ),

@@ -24,7 +24,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _loadChats() async {
-    setState(() {
+        setState(() {
       _loading = true;
     });
     final client = Supabase.instance.client;
@@ -145,7 +145,7 @@ class _ChatPageState extends State<ChatPage> {
             ChatTypeSwitch(
               isBuyerSelected: isBuyerSelected,
               onChanged: (value) {
-                setState(() {
+                      setState(() {
                   isBuyerSelected = value;
                 });
                 _loadChats();
@@ -170,9 +170,9 @@ class _ChatPageState extends State<ChatPage> {
                               time: chat['time'],
                               unreadCount: chat['unreadCount'],
                               onTap: () {},
-                            );
-                          },
-                        ),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -205,10 +205,10 @@ class ChatTypeSwitch extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(200),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
             child: GestureDetector(
               onTap: () => onChanged(true),
               child: Container(
@@ -234,21 +234,21 @@ class ChatTypeSwitch extends StatelessWidget {
                       : [],
                 ),
                 child: const Center(
-                  child: Text(
+                                  child: Text(
                     'Купую',
-                    style: TextStyle(
+                                    style: TextStyle(
                       color: Colors.black,
                       fontSize: 14,
-                      fontFamily: 'Inter',
+                                      fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,
                       height: 1.40,
                       letterSpacing: 0.14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+                                    ),
+                                  ),
+                                ),
+                            ),
+                          ),
+                        ),
           Expanded(
             child: GestureDetector(
               onTap: () => onChanged(false),
@@ -324,7 +324,7 @@ class ChatCard extends StatelessWidget {
         InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Container(
+        child: Container(
             width: double.infinity,
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
@@ -351,9 +351,9 @@ class ChatCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                         Row(
                           children: [
                             Expanded(
@@ -381,9 +381,9 @@ class ChatCard extends StatelessWidget {
                                 height: 1.30,
                                 letterSpacing: 0.24,
                               ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
                         const SizedBox(height: 4),
                         Text(
                           userName,
@@ -446,6 +446,517 @@ class ChatCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ChatDialogPage extends StatefulWidget {
+  final String chatId;
+  final String userName;
+  final String userAvatarUrl;
+  final String listingTitle;
+  final String listingImageUrl;
+  final String listingPrice;
+  final String listingDate;
+  final String listingLocation;
+
+  const ChatDialogPage({
+    Key? key,
+    required this.chatId,
+    required this.userName,
+    required this.userAvatarUrl,
+    required this.listingTitle,
+    required this.listingImageUrl,
+    required this.listingPrice,
+    required this.listingDate,
+    required this.listingLocation,
+  }) : super(key: key);
+
+  @override
+  State<ChatDialogPage> createState() => _ChatDialogPageState();
+}
+
+class _ChatDialogPageState extends State<ChatDialogPage> {
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textController = TextEditingController();
+  List<Map<String, dynamic>> _messages = [];
+  bool _loading = true;
+  String? _currentUserId;
+  RealtimeChannel? _realtimeChannel;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    _loadMessages();
+    _subscribeToNewMessages();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _textController.dispose();
+    _realtimeChannel?.unsubscribe();
+    super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    setState(() => _loading = true);
+    final client = Supabase.instance.client;
+    final messages = await client
+        .from('chat_messages')
+        .select('*')
+        .eq('chat_id', widget.chatId)
+        .order('created_at', ascending: false)
+        .limit(30);
+    setState(() {
+      _messages = List<Map<String, dynamic>>.from(messages.reversed);
+      _loading = false;
+    });
+    _scrollToBottom();
+  }
+
+  void _subscribeToNewMessages() {
+    final client = Supabase.instance.client;
+    _realtimeChannel = client.channel('public:chat_messages')
+      ..on(
+        RealtimeListenTypes.postgresChanges,
+        ChannelFilter(
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: 'chat_id=eq.${widget.chatId}',
+        ),
+        (payload, [ref]) {
+          setState(() {
+            _messages.add(payload['new'] as Map<String, dynamic>);
+          });
+          _scrollToBottom();
+        },
+      )
+      ..subscribe();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty || _currentUserId == null) return;
+    final client = Supabase.instance.client;
+    await client.from('chat_messages').insert({
+      'chat_id': widget.chatId,
+      'sender_id': _currentUserId,
+      'content': text,
+    });
+    _textController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: ChatDialogAppBar(
+          userName: widget.userName,
+          userAvatarUrl: widget.userAvatarUrl,
+          onBack: () => Navigator.of(context).pop(),
+          onMenu: () {},
+        ),
+      ),
+      body: Column(
+        children: [
+          ChatListingCard(
+            imageUrl: widget.listingImageUrl,
+            title: widget.listingTitle,
+            price: widget.listingPrice,
+            date: widget.listingDate,
+            location: widget.listingLocation,
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 13),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      final isMe = msg['sender_id'] == _currentUserId;
+                      final senderName = isMe ? 'Ви' : widget.userName;
+                      final senderAvatarUrl = isMe ? null : widget.userAvatarUrl;
+                      final text = msg['content'] as String?;
+                      final imageUrl = msg['image_url'] as String?;
+                      final createdAt = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
+                      final time = '${_weekdayName(createdAt.weekday)} ${createdAt.hour.toString().padLeft(2, '0')}.${createdAt.minute.toString().padLeft(2, '0')}';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: MessageBubble(
+                          isMe: isMe,
+                          senderName: senderName,
+                          senderAvatarUrl: senderAvatarUrl,
+                          text: text,
+                          imageUrl: imageUrl,
+                          time: time,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.photo, color: Color(0xFF015873)),
+                  onPressed: () {}, // Додати відправку фото пізніше
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _textController,
+                    decoration: const InputDecoration(
+                      hintText: 'Написати повідомлення',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send, color: Color(0xFF015873)),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _weekdayName(int weekday) {
+    const names = [
+      '',
+      'Понеділок',
+      'Вівторок',
+      'Середа',
+      'Четвер',
+      'Пʼятниця',
+      'Субота',
+      'Неділя',
+    ];
+    return names[weekday];
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+  final bool isMe;
+  final String senderName;
+  final String? senderAvatarUrl;
+  final String? text;
+  final String? imageUrl;
+  final String time;
+
+  const MessageBubble({
+    Key? key,
+    required this.isMe,
+    required this.senderName,
+    this.senderAvatarUrl,
+    this.text,
+    this.imageUrl,
+    required this.time,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bubbleColor = isMe ? const Color(0xFF015873) : const Color(0xFFF4F4F5);
+    final textColor = isMe ? Colors.white : Colors.black;
+    final borderRadius = isMe
+        ? const BorderRadius.only(
+            topLeft: Radius.circular(8),
+            bottomLeft: Radius.circular(8),
+            bottomRight: Radius.circular(8),
+          )
+        : const BorderRadius.only(
+            topRight: Radius.circular(8),
+            bottomLeft: Radius.circular(8),
+            bottomRight: Radius.circular(8),
+          );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: [
+        if (!isMe)
+          Container(
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: senderAvatarUrl != null
+                  ? DecorationImage(image: NetworkImage(senderAvatarUrl!), fit: BoxFit.cover)
+                  : null,
+              color: const Color(0xFFE4E4E7),
+            ),
+            child: senderAvatarUrl == null
+                ? const Icon(Icons.person, color: Color(0xFF71717A))
+                : null,
+          ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                children: [
+                  Text(
+                    isMe ? 'Ви' : senderName,
+                    style: const TextStyle(
+                      color: Color(0xFF344053),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      height: 1.43,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    time,
+                    style: const TextStyle(
+                      color: Color(0xFF52525B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
+                      letterSpacing: 0.24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              if (text != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: borderRadius,
+                  ),
+                  child: Text(
+                    text!,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              if (imageUrl != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: borderRadius,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl!,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (isMe) const SizedBox(width: 32),
+      ],
+    );
+  }
+}
+
+class ChatDialogAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String userName;
+  final String userAvatarUrl;
+  final VoidCallback onBack;
+  final VoidCallback? onMenu;
+
+  const ChatDialogAppBar({
+    Key? key,
+    required this.userName,
+    required this.userAvatarUrl,
+    required this.onBack,
+    this.onMenu,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        padding: const EdgeInsets.only(left: 0, right: 0, bottom: 12),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: onBack,
+              splashRadius: 24,
+            ),
+            Container(
+              width: 40,
+              height: 40,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(userAvatarUrl),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Expanded(
+                  child: Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                  letterSpacing: 0.14,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert, size: 20),
+              onPressed: onMenu,
+              splashRadius: 24,
+                        ),
+                      ],
+                    ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+}
+
+class ChatListingCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String price;
+  final String date;
+  final String location;
+
+  const ChatListingCard({
+    Key? key,
+    required this.imageUrl,
+    required this.title,
+    required this.price,
+    required this.date,
+    required this.location,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.40,
+                          letterSpacing: 0.14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        color: Color(0xFF838583),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.30,
+                        letterSpacing: 0.24,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        price,
+                        style: const TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.30,
+                          letterSpacing: 0.24,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      location,
+                      style: const TextStyle(
+                        color: Color(0xFFA1A1AA),
+                        fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                        height: 1.30,
+                        letterSpacing: 0.24,
+                      ),
+                    ),
+                  ],
+              ),
+            ],
+          ),
+        ),
+        ],
+      ),
     );
   }
 } 

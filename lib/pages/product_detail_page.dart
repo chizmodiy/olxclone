@@ -9,6 +9,7 @@ import '../services/complaint_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'chat_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -109,6 +110,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _subcategoryName = subcategoryName;
         _isLoading = false;
       });
+      print('userId: ${product.userId}');
+      print('userProfile: $userProfile');
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -988,6 +991,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         options: MapOptions(
                           center: LatLng(_product!.latitude!, _product!.longitude!),
                           zoom: 14,
+                          interactiveFlags: InteractiveFlag.none,
                         ),
                         children: [
                           TileLayer(
@@ -1187,11 +1191,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               width: double.infinity,
               height: 44,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Дія підтверджена')),
-                  );
-                },
+                onPressed: _startChatWithOwner,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF015873),
                   shape: RoundedRectangleBorder(
@@ -1202,7 +1202,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                 ),
                 child: const Text(
-                  'Підтвердити',
+                  'Написати',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -1267,6 +1267,77 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           iconPath,
           width: 20,
           height: 20,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startChatWithOwner() async {
+    if (_currentUserId == null || _product == null || _userProfile == null) return;
+    final ownerId = _product!.userId;
+    if (ownerId == _currentUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Це ваше оголошення.')),
+      );
+      return;
+    }
+    final client = Supabase.instance.client;
+    // 1. Перевірити, чи вже існує чат між цими двома користувачами по цьому оголошенню
+    final existingChats = await client
+        .from('chats')
+        .select('id')
+        .eq('listing_id', _product!.id);
+    String? chatId;
+    if (existingChats.isNotEmpty) {
+      // Перевірити, чи обидва користувачі є учасниками
+      for (final chat in existingChats) {
+        final participants = await client
+            .from('chat_participants')
+            .select('user_id')
+            .eq('chat_id', chat['id']);
+        final userIds = participants.map((p) => p['user_id'] as String).toSet();
+        if (userIds.contains(_currentUserId) && userIds.contains(ownerId)) {
+          chatId = chat['id'] as String;
+          break;
+        }
+      }
+    }
+    if (chatId == null) {
+      // Створити новий чат
+      final chatInsert = await client
+          .from('chats')
+          .insert({
+            'is_group': false,
+            'listing_id': _product!.id,
+          })
+          .select()
+          .single();
+      chatId = chatInsert['id'] as String;
+      // Додати обох учасників
+      await client.from('chat_participants').insert([
+        {
+          'chat_id': chatId,
+          'user_id': _currentUserId,
+        },
+        {
+          'chat_id': chatId,
+          'user_id': ownerId,
+        },
+      ]);
+    }
+    // Перейти на сторінку чату, передавши всі потрібні дані
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatDialogPage(
+          chatId: chatId!,
+          userName: _userProfile!.fullName,
+          userAvatarUrl: _userProfile!.avatarUrl ?? '',
+          listingTitle: _product!.title,
+          listingImageUrl: _product!.photos.isNotEmpty ? _product!.photos.first : '',
+          listingPrice: _product!.formattedPrice,
+          listingDate: _product!.formattedDate,
+          listingLocation: _product!.location,
         ),
       ),
     );
