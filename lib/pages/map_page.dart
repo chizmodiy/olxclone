@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/profile_service.dart';
+import '../pages/filter_page.dart'; // Додаю імпорт FilterPage
 
 class Pin extends StatelessWidget {
   final String count;
@@ -285,6 +286,7 @@ class _MapPageState extends State<MapPage> {
   List<Product> _products = [];
   bool _loading = true;
   String _searchQuery = '';
+  Map<String, dynamic> _currentFilters = {}; // Додаю збереження фільтрів
 
   void _goHome() {
     // Знайти GeneralPage в дереві і викликати зміну вкладки
@@ -303,11 +305,53 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _loadProducts() async {
-    final products = await _productService.getAllProductsWithCoordinates();
     setState(() {
-      _products = products;
+      _loading = true;
+    });
+    // Використовуємо getProducts з фільтрами, потім залишаємо тільки продукти з координатами
+    final products = await _productService.getProducts(
+      searchQuery: _searchQuery,
+      categoryId: _currentFilters['category'],
+      subcategoryId: _currentFilters['subcategory'],
+      minPrice: _currentFilters['minPrice'],
+      maxPrice: _currentFilters['maxPrice'],
+      hasDelivery: _currentFilters['hasDelivery'],
+      isFree: _currentFilters['isFree'],
+      minArea: _currentFilters['minArea'],
+      maxArea: _currentFilters['maxArea'],
+      minYear: _currentFilters['minYear'],
+      maxYear: _currentFilters['maxYear'],
+      brand: _currentFilters['car_brand'],
+      minEngineHp: _currentFilters['minEnginePowerHp'],
+      maxEngineHp: _currentFilters['maxEnginePowerHp'],
+      size: _currentFilters['size'],
+      condition: _currentFilters['condition'],
+      // Можна додати інші фільтри за потреби
+      limit: 1000, // Щоб завантажити всі продукти для карти
+      offset: 0,
+    );
+    final productsWithCoords = products.where((p) => p.latitude != null && p.longitude != null).toList();
+    setState(() {
+      _products = productsWithCoords;
       _loading = false;
     });
+  }
+
+  Future<void> _showFilterBottomSheet() async {
+    final Map<String, dynamic>? newFilters = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterPage(
+          initialFilters: _currentFilters,
+        ),
+      ),
+    );
+    if (newFilters != null) {
+      setState(() {
+        _currentFilters = newFilters;
+      });
+      _loadProducts();
+    }
   }
 
   @override
@@ -528,6 +572,7 @@ class _MapPageState extends State<MapPage> {
                                   setState(() {
                                     _searchQuery = value;
                                   });
+                                  _loadProducts();
                                 },
                               ),
                             ),
@@ -536,38 +581,41 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: Color(0xFFE4E4E7)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Фільтр',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                              letterSpacing: 0.14,
+                    GestureDetector(
+                      onTap: _showFilterBottomSheet,
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(200),
+                          border: Border.all(color: Color(0xFFE4E4E7)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Фільтр',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                                letterSpacing: 0.14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
