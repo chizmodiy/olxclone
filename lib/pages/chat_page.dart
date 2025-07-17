@@ -205,10 +205,10 @@ class ChatTypeSwitch extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(200),
         ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
+      ),
+      child: Row(
+        children: [
+          Expanded(
             child: GestureDetector(
               onTap: () => onChanged(true),
               child: Container(
@@ -234,21 +234,21 @@ class ChatTypeSwitch extends StatelessWidget {
                       : [],
                 ),
                 child: const Center(
-                                  child: Text(
+                  child: Text(
                     'Купую',
-                                    style: TextStyle(
+                    style: TextStyle(
                       color: Colors.black,
                       fontSize: 14,
-                                      fontFamily: 'Inter',
+                      fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,
                       height: 1.40,
                       letterSpacing: 0.14,
-                                    ),
-                                  ),
-                                ),
-                            ),
-                          ),
-                        ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: GestureDetector(
               onTap: () => onChanged(false),
@@ -324,7 +324,7 @@ class ChatCard extends StatelessWidget {
         InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-        child: Container(
+          child: Container(
             width: double.infinity,
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
@@ -351,9 +351,9 @@ class ChatCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Row(
                           children: [
                             Expanded(
@@ -381,9 +381,9 @@ class ChatCard extends StatelessWidget {
                                 height: 1.30,
                                 letterSpacing: 0.24,
                               ),
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           userName,
@@ -528,7 +528,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           filter: 'chat_id=eq.${widget.chatId}',
         ),
         (payload, [ref]) {
-          setState(() {
+                        setState(() {
             _messages.add(payload['new'] as Map<String, dynamic>);
           });
           _scrollToBottom();
@@ -538,7 +538,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
@@ -560,9 +560,10 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(64),
-        child: ChatDialogAppBar(
+        preferredSize: const Size.fromHeight(56),
+        child: ChatAppBar(
           userName: widget.userName,
           userAvatarUrl: widget.userAvatarUrl,
           onBack: () => Navigator.of(context).pop(),
@@ -570,7 +571,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         ),
       ),
       body: Column(
-        children: [
+            children: [
           ChatListingCard(
             imageUrl: widget.listingImageUrl,
             title: widget.listingTitle,
@@ -578,58 +579,100 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
             date: widget.listingDate,
             location: widget.listingLocation,
           ),
-          const Divider(height: 1),
+          // Видалити Divider над полем для введення повідомлення
+          // const Divider(height: 1),
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 13),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = _messages[index];
-                      final isMe = msg['sender_id'] == _currentUserId;
-                      final senderName = isMe ? 'Ви' : widget.userName;
-                      final senderAvatarUrl = isMe ? null : widget.userAvatarUrl;
-                      final text = msg['content'] as String?;
-                      final imageUrl = msg['image_url'] as String?;
-                      final createdAt = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
-                      final time = '${_weekdayName(createdAt.weekday)} ${createdAt.hour.toString().padLeft(2, '0')}.${createdAt.minute.toString().padLeft(2, '0')}';
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: MessageBubble(
-                          isMe: isMe,
-                          senderName: senderName,
-                          senderAvatarUrl: senderAvatarUrl,
-                          text: text,
-                          imageUrl: imageUrl,
-                          time: time,
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.photo, color: Color(0xFF015873)),
-                  onPressed: () {}, // Додати відправку фото пізніше
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Написати повідомлення',
-                      border: InputBorder.none,
+                : Container(
+                    color: Color(0xFFFAFAFA),
+                    child: ListView.builder(
+                      key: ValueKey(_messages.length),
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 13),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = _messages[index];
+                        final isMe = msg['sender_id'] == _currentUserId;
+                        final senderName = isMe ? 'Ви' : widget.userName;
+                        final senderAvatarUrl = isMe ? null : widget.userAvatarUrl;
+                        final text = msg['content'] as String?;
+                        final imageUrl = msg['image_url'] as String?;
+                        final createdAt = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
+                        final time = '${_weekdayName(createdAt.weekday)} ${createdAt.hour.toString().padLeft(2, '0')}.${createdAt.minute.toString().padLeft(2, '0')}';
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: MessageBubble(
+                            isMe: isMe,
+                            senderName: senderName,
+                            senderAvatarUrl: senderAvatarUrl,
+                            text: text,
+                            imageUrl: imageUrl,
+                            time: time,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF015873)),
-                  onPressed: _sendMessage,
+          ),
+          // Прибрати Divider або border в самому низу сторінки відкритого чату
+          // const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 36, top: 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Поле введення з іконкою фото
+                Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                      color: Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        child: Row(
+                          children: [
+                        IconButton(
+                          icon: const Icon(Icons.photo, color: Color(0xFF52525B)),
+                          onPressed: () {},
+                          splashRadius: 20,
+                        ),
+                            Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            decoration: const InputDecoration(
+                              hintText: 'Написати повідомлення',
+                              hintStyle: TextStyle(
+                                color: Color(0xFFA1A1AA),
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                  letterSpacing: 0.16,
+                                ),
+                              border: InputBorder.none,
+                              ),
+                            minLines: 1,
+                            maxLines: 4,
+                            ),
+                        ),
+                          ],
+                        ),
+                      ),
+                    ),
+                const SizedBox(width: 12),
+                // Кнопка відправки: прибрати border
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF015873),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: _sendMessage,
+                    splashRadius: 24,
+                    padding: const EdgeInsets.all(12),
+                  ),
                 ),
               ],
             ),
@@ -679,116 +722,135 @@ class MessageBubble extends StatelessWidget {
     final borderRadius = isMe
         ? const BorderRadius.only(
             topLeft: Radius.circular(8),
-            bottomLeft: Radius.circular(8),
             bottomRight: Radius.circular(8),
+            bottomLeft: Radius.circular(8),
           )
         : const BorderRadius.only(
             topRight: Radius.circular(8),
-            bottomLeft: Radius.circular(8),
             bottomRight: Radius.circular(8),
+            bottomLeft: Radius.circular(8),
           );
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        if (!isMe)
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: senderAvatarUrl != null
-                  ? DecorationImage(image: NetworkImage(senderAvatarUrl!), fit: BoxFit.cover)
-                  : null,
-              color: const Color(0xFFE4E4E7),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isMe)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: senderAvatarUrl != null && senderAvatarUrl!.isNotEmpty
+                  ? CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(senderAvatarUrl!),
+                    )
+                  : Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFFB1010),
+                      ),
+                    ),
             ),
-            child: senderAvatarUrl == null
-                ? const Icon(Icons.person, color: Color(0xFF71717A))
-                : null,
-          ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                children: [
-                  Text(
-                    isMe ? 'Ви' : senderName,
-                    style: const TextStyle(
-                      color: Color(0xFF344053),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      height: 1.43,
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment:
+                      isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      isMe ? 'Ви' : senderName,
+                      style: const TextStyle(
+                        color: Color(0xFF344054),
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        height: 1.43,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    time,
-                    style: const TextStyle(
-                      color: Color(0xFF52525B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      height: 1.3,
-                      letterSpacing: 0.24,
+                    const SizedBox(width: 8),
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        color: Color(0xFF52525B),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.3,
+                        letterSpacing: 0.24,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              if (text != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: borderRadius,
-                  ),
-                  child: Text(
-                    text!,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
+                  ],
+                ),
+                const SizedBox(height: 6),
+                if (text != null)
+                  Align(
+                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.8,
+                        minWidth: 0,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: bubbleColor,
+                          borderRadius: borderRadius,
+                        ),
+                        child: Text(
+                          text!,
+                          style: TextStyle(
+                            color: textColor,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                        ),
                     ),
                   ),
                 ),
-              if (imageUrl != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: borderRadius,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      imageUrl!,
-                      height: 200,
-                      fit: BoxFit.cover,
+                if (imageUrl != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: bubbleColor,
+                      borderRadius: borderRadius,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl!,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        if (isMe) const SizedBox(width: 32),
-      ],
+          if (isMe) const SizedBox(width: 40),
+        ],
+      ),
     );
   }
 }
 
-class ChatDialogAppBar extends StatelessWidget implements PreferredSizeWidget {
+class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String userName;
   final String userAvatarUrl;
   final VoidCallback onBack;
   final VoidCallback? onMenu;
 
-  const ChatDialogAppBar({
+  const ChatAppBar({
     Key? key,
     required this.userName,
     required this.userAvatarUrl,
@@ -798,56 +860,78 @@ class ChatDialogAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: const EdgeInsets.only(left: 0, right: 0, bottom: 12),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              onPressed: onBack,
-              splashRadius: 24,
-            ),
-            Container(
-              width: 40,
-              height: 40,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(userAvatarUrl),
-                  fit: BoxFit.cover,
+    return Material(
+      color: Colors.white,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // Back button
+              IconButton(
+                onPressed: onBack,
+                icon: const Icon(Icons.chevron_left, size: 28, color: Colors.black),
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(10),
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.transparent,
                 ),
               ),
-            ),
-            Expanded(
-                  child: Text(
-                userName,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
-                  letterSpacing: 0.14,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert, size: 20),
-              onPressed: onMenu,
-              splashRadius: 24,
+              // Avatar and name
+              Expanded(
+                child: Row(
+                  children: [
+                    // Avatar
+                    userAvatarUrl.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 20,
+                            backgroundImage: NetworkImage(userAvatarUrl),
+                          )
+                        : const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Color(0xFFE4E4E7),
+                            child: Icon(Icons.person, color: Color(0xFF71717A)),
+                          ),
+                    const SizedBox(width: 8),
+                    // Name
+                    Expanded(
+                      child: Text(
+                        userName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                          color: Colors.black,
+                          letterSpacing: 0.14,
+                          height: 1.4,
                         ),
-                      ],
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              // Menu button
+              IconButton(
+                onPressed: onMenu,
+                icon: const Icon(Icons.more_vert, color: Colors.black),
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(10),
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(56);
 }
 
 class ChatListingCard extends StatelessWidget {
@@ -868,95 +952,104 @@ class ChatListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(height: 1, color: Color(0xFFE4E4E7)),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Фото оголошення або заглушка (без заокруглень)
+              imageUrl.isNotEmpty
+                  ? Image.network(
+                      imageUrl,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 40,
+                      height: 40,
+                      color: Color(0xFFED3131),
+                      child: Icon(Icons.image, color: Colors.white),
                     ),
-                  ),
-                ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          height: 1.40,
-                          letterSpacing: 0.14,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500, // medium
+                              height: 1.4,
+                              letterSpacing: 0.14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 16),
+                        Text(
+                          date,
+                          style: const TextStyle(
+                            color: Color(0xFF838583),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
+                            letterSpacing: 0.24,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      date,
-                      style: const TextStyle(
-                        color: Color(0xFF838583),
-                        fontSize: 12,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                        height: 1.30,
-                        letterSpacing: 0.24,
-                      ),
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            price,
+                            style: const TextStyle(
+                              color: Color(0xFF52525B),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500, // medium
+                              height: 1.3,
+                              letterSpacing: 0.24,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          location,
+                          style: const TextStyle(
+                            color: Color(0xFFA1A1AA),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500, // medium
+                            height: 1.3,
+                            letterSpacing: 0.24,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        price,
-                        style: const TextStyle(
-                          color: Color(0xFF52525B),
-                          fontSize: 12,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          height: 1.30,
-                          letterSpacing: 0.24,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      location,
-                      style: const TextStyle(
-                        color: Color(0xFFA1A1AA),
-                        fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                        height: 1.30,
-                        letterSpacing: 0.24,
-                      ),
-                    ),
-                  ],
               ),
             ],
           ),
         ),
-        ],
-      ),
+        Container(height: 1, color: Color(0xFFE4E4E7)),
+      ],
     );
   }
 } 
