@@ -3,6 +3,9 @@ import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import './active_listings_page.dart';
+import './inactive_listings_page.dart';
+import './favorite_listings_page.dart';
+import './personal_data_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -115,7 +118,11 @@ class ProfilePage extends StatelessWidget {
             _sectionTitle('Головне'),
             _profileButton(
               text: 'Особисті данні',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const PersonalDataPage()),
+                );
+              },
             ),
             _profileButton(
               text: 'Вийти з облікового запису',
@@ -145,11 +152,19 @@ class ProfilePage extends StatelessWidget {
             ),
             _profileButton(
               text: 'Неактивні',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => InactiveListingsPage()),
+                );
+              },
             ),
             _profileButton(
               text: 'Улюблені оголошення',
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => FavoriteListingsPage()),
+                );
+              },
             ),
             const SizedBox(height: 40),
           ],

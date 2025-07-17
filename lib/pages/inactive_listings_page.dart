@@ -8,14 +8,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:developer';
 import '../services/listing_service.dart';
 
-class ActiveListingsPage extends StatefulWidget {
-  const ActiveListingsPage({Key? key}) : super(key: key);
+class InactiveListingsPage extends StatefulWidget {
+  const InactiveListingsPage({Key? key}) : super(key: key);
 
   @override
-  State<ActiveListingsPage> createState() => _ActiveListingsPageState();
+  State<InactiveListingsPage> createState() => _InactiveListingsPageState();
 }
 
-class _ActiveListingsPageState extends State<ActiveListingsPage> {
+class _InactiveListingsPageState extends State<InactiveListingsPage> {
   final ProductService _productService = ProductService();
   final TextEditingController _searchController = TextEditingController();
   List<Product> _products = [];
@@ -51,10 +51,9 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       final products = await _productService.getProducts(
         limit: 100,
         offset: 0,
-        // Додаємо фільтр по userId та status
       );
-      // Фільтруємо по userId та status == 'active' (якщо поле status є)
-      final filtered = products.where((p) => p.userId == _currentUserId && (p.customAttributes?['status'] == 'active' || p.customAttributes?['status'] == null)).toList();
+      // Фільтруємо по userId та status == 'inactive'
+      final filtered = products.where((p) => p.userId == _currentUserId && (p.customAttributes?['status'] == 'inactive')).toList();
       setState(() {
         _products = filtered;
         _filteredProducts = filtered;
@@ -74,7 +73,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       _filteredProducts = query.isEmpty
           ? _products
           : _products.where((p) => p.title.toLowerCase().contains(query)).toList();
-      log('Filtered products count:  [32m${_filteredProducts.length} [0m');
+      log('Filtered products count:  [32m[32m${_filteredProducts.length} [0m');
     });
   }
 
@@ -103,7 +102,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    'Активні',
+                    'Неактивні',
                     style: TextStyle(
                       color: Color(0xFF161817),
                       fontSize: 24,
@@ -163,7 +162,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                     : _errorMessage != null
                         ? Center(child: Text('Помилка: $_errorMessage'))
                         : _filteredProducts.isEmpty
-                            ? const Center(child: Text('Немає активних оголошень'))
+                            ? const Center(child: Text('Немає неактивних оголошень'))
                             : ListView.builder(
                                 itemCount: _filteredProducts.length,
                                 itemBuilder: (context, index) {
@@ -171,7 +170,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                   final isOpened = _openedActionIndex == index;
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
-                                    child: _SwipeableCard(
+                                    child: _InactiveSwipeableCard(
                                       isOpened: isOpened,
                                       onOpen: () => setState(() => _openedActionIndex = index),
                                       onClose: _closeAction,
@@ -189,11 +188,9 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                         title: product.title,
                                         price: product.formattedPrice,
                                         images: product.photos,
-                                        isFavorite: false, // Можна додати логіку улюбленого
+                                        isFavorite: false,
                                         onFavoriteToggle: null,
-                                        onTap: () {
-                                          // TODO: Перехід до деталей оголошення
-                                        },
+                                        onTap: () {},
                                       ),
                                     ),
                                   );
@@ -208,8 +205,8 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
   }
 }
 
-// SwipeableCard widget
-class _SwipeableCard extends StatefulWidget {
+// SwipeableCard для неактивних оголошень
+class _InactiveSwipeableCard extends StatefulWidget {
   final Widget child;
   final bool isOpened;
   final VoidCallback onOpen;
@@ -218,7 +215,7 @@ class _SwipeableCard extends StatefulWidget {
   final String productTitle;
   final VoidCallback? onRemove;
   final ListingService listingService;
-  const _SwipeableCard({
+  const _InactiveSwipeableCard({
     required this.child,
     required this.isOpened,
     required this.onOpen,
@@ -230,16 +227,16 @@ class _SwipeableCard extends StatefulWidget {
   });
 
   @override
-  State<_SwipeableCard> createState() => _SwipeableCardState();
+  State<_InactiveSwipeableCard> createState() => _InactiveSwipeableCardState();
 }
 
-class _SwipeableCardState extends State<_SwipeableCard> {
+class _InactiveSwipeableCardState extends State<_InactiveSwipeableCard> {
   bool _actionVisible = false;
   static const double overlayWidth = 364.0;
   static const double cardHeight = 85.0;
 
   @override
-  void didUpdateWidget(covariant _SwipeableCard oldWidget) {
+  void didUpdateWidget(covariant _InactiveSwipeableCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!widget.isOpened && _actionVisible) {
       setState(() {
@@ -334,14 +331,14 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                                 ),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    await widget.listingService.updateListingStatus(widget.productId, 'inactive');
+                                    await widget.listingService.updateListingStatus(widget.productId, 'active');
                                     setState(() {
                                       _actionVisible = false;
                                       widget.onClose();
                                     });
                                     if (widget.onRemove != null) widget.onRemove!();
                                   },
-                                  child: _trySvgOrIcon('assets/icons/slash-circle-01.svg', Icons.block),
+                                  child: const _CheckIcon(),
                                 ),
                               ),
                               Container(
@@ -391,20 +388,56 @@ class _SwipeableCardState extends State<_SwipeableCard> {
   }
 }
 
-Widget _trySvgOrIcon(String asset, IconData fallback) {
+Widget _trySvgOrIcon(String asset, IconData fallback, {Color color = const Color(0xFF27272A)}) {
   try {
     return SvgPicture.asset(
       asset,
       width: 20,
       height: 20,
-      colorFilter: const ColorFilter.mode(Color(0xFF27272A), BlendMode.srcIn),
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
     );
   } catch (e) {
-    return Icon(fallback, color: const Color(0xFF27272A), size: 20);
+    return Icon(fallback, color: color, size: 20);
   }
-} 
+}
 
-// Модальне вікно підтвердження видалення
+// Додаю кастомний Widget для галочки
+class _CheckIcon extends StatelessWidget {
+  const _CheckIcon({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 20,
+      height: 20,
+      child: CustomPaint(
+        painter: _CheckPainter(),
+      ),
+    );
+  }
+}
+
+class _CheckPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF27272A)
+      ..strokeWidth = 1.66667
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path();
+    path.moveTo(size.width * 0.8333, size.height * 0.25); // 16.6668, 5
+    path.lineTo(size.width * 0.375, size.height * 0.7083); // 7.5, 14.1667
+    path.lineTo(size.width * 0.1667, size.height * 0.5); // 3.3335, 10
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Модальне вікно підтвердження видалення (копія)
 class _DeleteConfirmModal extends StatelessWidget {
   final String title;
   const _DeleteConfirmModal({required this.title});

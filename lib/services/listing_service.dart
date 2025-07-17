@@ -160,4 +160,35 @@ class ListingService {
       return {'minPrice': 0.0, 'maxPrice': 100.0};
     }
   }
+
+  // Оновлений метод для оновлення статусу оголошення з merge custom_attributes
+  Future<void> updateListingStatus(String listingId, String status) async {
+    try {
+      // Отримати поточні custom_attributes
+      final response = await _client
+          .from('listings')
+          .select('custom_attributes')
+          .eq('id', listingId)
+          .single();
+      final Map<String, dynamic> currentAttributes =
+          (response['custom_attributes'] as Map<String, dynamic>? ?? {});
+      // Оновити статус, зберігаючи інші атрибути
+      final updatedAttributes = Map<String, dynamic>.from(currentAttributes)
+        ..['status'] = status;
+      await _client.from('listings').update({
+        'custom_attributes': updatedAttributes,
+      }).eq('id', listingId);
+    } catch (e) {
+      throw Exception('Не вдалося оновити статус оголошення: $e');
+    }
+  }
+
+  // Додаємо метод для видалення оголошення
+  Future<void> deleteListing(String listingId) async {
+    try {
+      await _client.from('listings').delete().eq('id', listingId);
+    } catch (e) {
+      throw Exception('Не вдалося видалити оголошення: $e');
+    }
+  }
 } 
