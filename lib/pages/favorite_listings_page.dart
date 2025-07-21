@@ -6,7 +6,7 @@ import '../widgets/product_card_list_item.dart';
 import '../services/profile_service.dart';
 
 class FavoriteListingsPage extends StatefulWidget {
-  const FavoriteListingsPage({Key? key}) : super(key: key);
+  const FavoriteListingsPage({super.key});
 
   @override
   State<FavoriteListingsPage> createState() => _FavoriteListingsPageState();

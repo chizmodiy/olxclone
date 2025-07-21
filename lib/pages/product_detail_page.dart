@@ -43,6 +43,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   String _selectedComplaintType = 'Товар не відповідає опису'; // Add this line
   final TextEditingController _complaintTitleController = TextEditingController(); // Add this line
   final TextEditingController _complaintDescriptionController = TextEditingController(); // Add this line
+  // Додаємо стан для показу інпуту повідомлення
+  bool _showMessageInput = false;
+  final TextEditingController _messageController = TextEditingController();
+  bool _sendingMessage = false;
 
   // Мапа категорій
   final Map<String, String> _categories = {
@@ -157,6 +161,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _pageController.dispose();
     _complaintTitleController.dispose(); // Add this line
     _complaintDescriptionController.dispose(); // Add this line
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -513,15 +518,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     bool isPrimary = false,
   }) {
     final bool isSocialIcon = type == 'whatsapp' || type == 'telegram' || type == 'viber';
+    final bool isActive = _activeContactMethod == type;
     
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: isPrimary ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
+        color: isActive ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
         borderRadius: BorderRadius.circular(200),
         border: Border.all(
-          color: isPrimary ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
+          color: isActive ? const Color(0xFF015873) : const Color(0xFFF4F4F5),
         ),
       ),
       child: IconButton(
@@ -532,11 +538,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           colorFilter: isSocialIcon 
               ? null 
               : ColorFilter.mode(
-                  isPrimary ? Colors.white : Colors.black,
+                  isActive ? Colors.white : Colors.black,
                   BlendMode.srcIn,
                 ),
         ),
-        onPressed: onPressed,
+        onPressed: () {
+          setState(() {
+            _activeContactMethod = type;
+            _showMessageInput = type == 'message';
+          });
+        },
       ),
     );
   }
@@ -601,6 +612,176 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         fontWeight: FontWeight.w600,
         height: 1.5,
         letterSpacing: 0.16,
+      ),
+    );
+  }
+
+  Widget _buildMessageInput() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Повідомлення',
+            style: TextStyle(
+              color: Color(0xFF52525B),
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              height: 1.4,
+              letterSpacing: 0.14,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            decoration: BoxDecoration(
+              color: Color(0xFFFAFAFA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Color(0xFFE4E4E7)),
+              boxShadow: [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: TextField(
+              controller: _messageController,
+              minLines: 1,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Опишіть ваше повідомлення тут',
+                border: InputBorder.none,
+                hintStyle: TextStyle(
+                  color: Color(0xFFA1A1AA),
+                  fontSize: 16,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  letterSpacing: 0.16,
+                ),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _messageController.text.trim().isEmpty || _sendingMessage
+                  ? null
+                  : _sendFirstMessage,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF015873),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  side: const BorderSide(color: Color(0xFF015873), width: 1),
+                ),
+                elevation: 4,
+                shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+              ),
+              child: _sendingMessage
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text(
+                      'Написати',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Inter',
+                        height: 1.4,
+                        letterSpacing: 0.14,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendFirstMessage() async {
+    if (_currentUserId == null || _product == null || _userProfile == null) return;
+    setState(() => _sendingMessage = true);
+    final ownerId = _product!.userId;
+    final client = Supabase.instance.client;
+    String? chatId;
+    // 1. Перевірити, чи вже існує чат між цими двома користувачами по цьому оголошенню
+    final existingChats = await client
+        .from('chats')
+        .select('id')
+        .eq('listing_id', _product!.id);
+    if (existingChats.isNotEmpty) {
+      // Перевірити, чи обидва користувачі є учасниками
+      for (final chat in existingChats) {
+        final participants = await client
+            .from('chat_participants')
+            .select('user_id')
+            .eq('chat_id', chat['id']);
+        final userIds = participants.map((p) => p['user_id'] as String).toSet();
+        if (userIds.contains(_currentUserId) && userIds.contains(ownerId)) {
+          chatId = chat['id'] as String;
+          break;
+        }
+      }
+    }
+    if (chatId == null) {
+      // Створити новий чат
+      final chatInsert = await client
+          .from('chats')
+          .insert({
+            'is_group': false,
+            'listing_id': _product!.id,
+          })
+          .select()
+          .single();
+      chatId = chatInsert['id'] as String;
+      // Додати обох учасників
+      await client.from('chat_participants').insert([
+        {
+          'chat_id': chatId,
+          'user_id': _currentUserId,
+        },
+        {
+          'chat_id': chatId,
+          'user_id': ownerId,
+        },
+      ]);
+    }
+    // Відправити перше повідомлення
+    final text = _messageController.text.trim();
+    if (text.isNotEmpty) {
+      await client.from('chat_messages').insert({
+        'chat_id': chatId,
+        'sender_id': _currentUserId,
+        'content': text,
+      });
+    }
+    setState(() => _sendingMessage = false);
+    _messageController.clear();
+    setState(() => _showMessageInput = false);
+    // Перейти на сторінку чату
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatDialogPage(
+          chatId: chatId!,
+          userName: _userProfile!.fullName,
+          userAvatarUrl: _userProfile!.avatarUrl ?? '',
+          listingTitle: _product!.title,
+          listingImageUrl: _product!.photos.isNotEmpty ? _product!.photos.first : '',
+          listingPrice: _product!.formattedPrice,
+          listingDate: _product!.formattedDate,
+          listingLocation: _product!.location,
+        ),
       ),
     );
   }
@@ -1149,7 +1330,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     child: _buildContactButton(
                                       'message',
                                       'assets/icons/message-circle-01.svg',
-                                      () => _handleContactPress('message'),
+                                      () => setState(() => _showMessageInput = true),
                                       isPrimary: _activeContactMethod == 'message',
                                     ),
                                   ),
@@ -1157,30 +1338,34 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                           const SizedBox(height: 16),
                           // Contact info display
-                          if (_activeContactMethod == 'phone')
-                            _buildContactInfo(
-                              'assets/icons/phone.svg',
-                              _product?.phoneNumber ?? 'Відсутнє',
-                            ),
-                          if (_activeContactMethod == 'whatsapp')
-                            _buildContactInfo(
-                              'assets/icons/whatsapp.svg',
-                              _product?.whatsapp ?? 'Відсутнє',
-                            ),
-                          if (_activeContactMethod == 'telegram')
-                            _buildContactInfo(
-                              'assets/icons/telegram.svg',
-                              _product?.telegram ?? 'Відсутнє',
-                            ),
-                          if (_activeContactMethod == 'viber')
-                            _buildContactInfo(
-                              'assets/icons/viber.svg',
-                              _product?.viber ?? 'Відсутнє',
-                            ),
+                          if (_activeContactMethod == 'message' && _showMessageInput)
+                            _buildMessageInput(),
+                          if (_activeContactMethod != 'message')
+                            if (_activeContactMethod == 'phone')
+                              _buildContactInfo(
+                                'assets/icons/phone.svg',
+                                _product?.phoneNumber ?? 'Відсутнє',
+                              ),
+                            if (_activeContactMethod == 'whatsapp')
+                              _buildContactInfo(
+                                'assets/icons/whatsapp.svg',
+                                _product?.whatsapp ?? 'Відсутнє',
+                              ),
+                            if (_activeContactMethod == 'telegram')
+                              _buildContactInfo(
+                                'assets/icons/telegram.svg',
+                                _product?.telegram ?? 'Відсутнє',
+                              ),
+                            if (_activeContactMethod == 'viber')
+                              _buildContactInfo(
+                                'assets/icons/viber.svg',
+                                _product?.viber ?? 'Відсутнє',
+                              ),
                         ],
                       ),
                     ],
                   ),
+                  if (_showMessageInput) _buildMessageInput(),
                 ],
               ),
             ),

@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class PersonalDataPage extends StatefulWidget {
-  const PersonalDataPage({Key? key}) : super(key: key);
+  const PersonalDataPage({super.key});
 
   @override
   State<PersonalDataPage> createState() => _PersonalDataPageState();

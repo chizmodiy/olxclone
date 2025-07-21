@@ -9,7 +9,7 @@ import 'dart:developer';
 import '../services/listing_service.dart';
 
 class InactiveListingsPage extends StatefulWidget {
-  const InactiveListingsPage({Key? key}) : super(key: key);
+  const InactiveListingsPage({super.key});
 
   @override
   State<InactiveListingsPage> createState() => _InactiveListingsPageState();
@@ -403,7 +403,7 @@ Widget _trySvgOrIcon(String asset, IconData fallback, {Color color = const Color
 
 // Додаю кастомний Widget для галочки
 class _CheckIcon extends StatelessWidget {
-  const _CheckIcon({Key? key}) : super(key: key);
+  const _CheckIcon({super.key});
 
   @override
   Widget build(BuildContext context) {

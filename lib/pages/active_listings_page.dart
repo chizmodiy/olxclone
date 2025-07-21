@@ -9,7 +9,7 @@ import 'dart:developer';
 import '../services/listing_service.dart';
 
 class ActiveListingsPage extends StatefulWidget {
-  const ActiveListingsPage({Key? key}) : super(key: key);
+  const ActiveListingsPage({super.key});
 
   @override
   State<ActiveListingsPage> createState() => _ActiveListingsPageState();

@@ -12,11 +12,11 @@ import '../pages/filter_page.dart'; // Додаю імпорт FilterPage
 
 class Pin extends StatelessWidget {
   final String count;
-  const Pin({Key? key, required this.count}) : super(key: key);
+  const Pin({super.key, required this.count});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 28,
       height: 32,
       child: Stack(
@@ -58,7 +58,7 @@ class Pin extends StatelessWidget {
 
 class Comments extends StatefulWidget {
   final List<Product> products;
-  const Comments({Key? key, required this.products}) : super(key: key);
+  const Comments({super.key, required this.products});
 
   @override
   State<Comments> createState() => _CommentsState();
@@ -274,7 +274,7 @@ class _CommentsState extends State<Comments> {
 }
 
 class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+  const MapPage({super.key});
 
   @override
   State<MapPage> createState() => _MapPageState();

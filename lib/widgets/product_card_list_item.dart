@@ -125,7 +125,7 @@ class ProductCardListItem extends StatelessWidget {
 
 // Додаю кастомний Widget для сердечка
 class _HeartRoundedIcon extends StatelessWidget {
-  const _HeartRoundedIcon({Key? key}) : super(key: key);
+  const _HeartRoundedIcon({super.key});
 
   @override
   Widget build(BuildContext context) {

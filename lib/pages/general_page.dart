@@ -6,7 +6,6 @@ import 'package:withoutname/pages/add_listing_page.dart';
 import 'package:withoutname/pages/home_page.dart';
 import 'package:withoutname/pages/viewed_page.dart';
 import 'package:withoutname/pages/favorites_page.dart';
-import 'package:withoutname/pages/map_page.dart';
 import 'chat_page.dart';
 
 class GeneralPage extends StatefulWidget {
@@ -26,6 +25,17 @@ class _GeneralPageState extends State<GeneralPage> {
     const ViewedPage(),
     const ChatPage(),
   ];
+
+  // У GeneralPage: визначити, чи є непрочитані повідомлення
+  // Додати змінну hasUnreadMessages, яка визначається на основі ChatPage або глобального стану
+  // Для прикладу, якщо є доступ до ChatPage._chats:
+  bool get hasUnreadMessages {
+    // Тут має бути логіка перевірки наявності непрочитаних повідомлень
+    // Наприклад, якщо є глобальний провайдер або можна отримати список чатів
+    // Псевдокод:
+    // return chats.any((chat) => chat['unreadCount'] > 0);
+    return false; // TODO: замінити на реальну перевірку
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -119,7 +129,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 iconPath: 'assets/icons/message-circle-01.svg',
                 label: 'Чат',
                 index: 3,
-                hasNotification: true,
+                hasNotification: hasUnreadMessages,
               ),
             ),
           ],

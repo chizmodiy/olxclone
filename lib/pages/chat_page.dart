@@ -3,7 +3,7 @@ import '../widgets/common_header.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({super.key});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -103,6 +103,7 @@ class _ChatPageState extends State<ChatPage> {
         }
       }
       chatCards.add({
+        'chatId': chat['id'],
         'listingTitle': listing?['title'] ?? 'Оголошення',
         'imageUrl': (listing?['photos'] != null && (listing?['photos'] as List).isNotEmpty)
             ? (listing?['photos'] as List).first
@@ -169,10 +170,25 @@ class _ChatPageState extends State<ChatPage> {
                               lastMessage: chat['lastMessage'],
                               time: chat['time'],
                               unreadCount: chat['unreadCount'],
-                              onTap: () {},
-                  );
-                },
-              ),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatDialogPage(
+                                      chatId: chat['chatId'] ?? '',
+                                      userName: chat['userName'] ?? '',
+                                      userAvatarUrl: chat['userAvatarUrl'] ?? '',
+                                      listingTitle: chat['listingTitle'] ?? '',
+                                      listingImageUrl: chat['imageUrl'] ?? '',
+                                      listingPrice: chat['listingPrice'] ?? '',
+                                      listingDate: chat['listingDate'] ?? '',
+                                      listingLocation: chat['listingLocation'] ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -186,10 +202,10 @@ class ChatTypeSwitch extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   const ChatTypeSwitch({
-    Key? key,
+    super.key,
     required this.isBuyerSelected,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +323,7 @@ class ChatCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ChatCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.listingTitle,
     required this.userName,
@@ -315,7 +331,7 @@ class ChatCard extends StatelessWidget {
     required this.time,
     this.unreadCount = 0,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -461,7 +477,7 @@ class ChatDialogPage extends StatefulWidget {
   final String listingLocation;
 
   const ChatDialogPage({
-    Key? key,
+    super.key,
     required this.chatId,
     required this.userName,
     required this.userAvatarUrl,
@@ -470,7 +486,7 @@ class ChatDialogPage extends StatefulWidget {
     required this.listingPrice,
     required this.listingDate,
     required this.listingLocation,
-  }) : super(key: key);
+  });
 
   @override
   State<ChatDialogPage> createState() => _ChatDialogPageState();
@@ -514,6 +530,18 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
       _loading = false;
     });
     _scrollToBottom();
+    await _markMessagesAsRead();
+  }
+
+  Future<void> _markMessagesAsRead() async {
+    if (_currentUserId == null) return;
+    final client = Supabase.instance.client;
+    await client
+        .from('chat_messages')
+        .update({'is_read': true})
+        .eq('chat_id', widget.chatId)
+        .eq('is_read', false)
+        .neq('sender_id', _currentUserId);
   }
 
   void _subscribeToNewMessages() {
@@ -549,12 +577,24 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     final text = _textController.text.trim();
     if (text.isEmpty || _currentUserId == null) return;
     final client = Supabase.instance.client;
-    await client.from('chat_messages').insert({
+    final response = await client.from('chat_messages').insert({
       'chat_id': widget.chatId,
       'sender_id': _currentUserId,
       'content': text,
-    });
+    }).select().single();
     _textController.clear();
+
+    // Додаємо повідомлення одразу після відправки
+    setState(() {
+      _messages.add({
+        'chat_id': widget.chatId,
+        'sender_id': _currentUserId,
+        'content': text,
+        'created_at': response['created_at'] ?? DateTime.now().toIso8601String(),
+        // додай інші потрібні поля, якщо треба
+      });
+    });
+    _scrollToBottom();
   }
 
   @override
@@ -706,14 +746,14 @@ class MessageBubble extends StatelessWidget {
   final String time;
 
   const MessageBubble({
-    Key? key,
+    super.key,
     required this.isMe,
     required this.senderName,
     this.senderAvatarUrl,
     this.text,
     this.imageUrl,
     required this.time,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -745,13 +785,10 @@ class MessageBubble extends StatelessWidget {
                       radius: 20,
                       backgroundImage: NetworkImage(senderAvatarUrl!),
                     )
-                  : Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFFB1010),
-                      ),
+                  : const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Color(0xFFE4E4E7),
+                      child: Icon(Icons.person, color: Color(0xFF71717A)),
                     ),
             ),
           Expanded(
@@ -837,7 +874,6 @@ class MessageBubble extends StatelessWidget {
               ],
             ),
           ),
-          if (isMe) const SizedBox(width: 40),
         ],
       ),
     );
@@ -851,12 +887,12 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onMenu;
 
   const ChatAppBar({
-    Key? key,
+    super.key,
     required this.userName,
     required this.userAvatarUrl,
     required this.onBack,
     this.onMenu,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -942,13 +978,13 @@ class ChatListingCard extends StatelessWidget {
   final String location;
 
   const ChatListingCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.price,
     required this.date,
     required this.location,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

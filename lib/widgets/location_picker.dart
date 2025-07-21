@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationPicker extends StatefulWidget {
   final void Function(LatLng? latLng, String? address)? onLocationSelected;
-  const LocationPicker({Key? key, this.onLocationSelected}) : super(key: key);
+  const LocationPicker({super.key, this.onLocationSelected});
 
   @override
   State<LocationPicker> createState() => _LocationPickerState();
@@ -286,17 +286,15 @@ class _LocationPickerState extends State<LocationPicker> {
                           });
                           _onCitySearchChanged();
                           _hideRegionDropdown();
-                          if (region != null) {
-                            final regionLatLng = await getLatLngFromRegion(region);
-                            if (regionLatLng != null) {
-                              setState(() {
-                                _mapCenter = regionLatLng;
-                                _selectedLatLng = null;
-                              });
-                              _mapController.move(regionLatLng, 8);
-                            }
+                          final regionLatLng = await getLatLngFromRegion(region);
+                          if (regionLatLng != null) {
+                            setState(() {
+                              _mapCenter = regionLatLng;
+                              _selectedLatLng = null;
+                            });
+                            _mapController.move(regionLatLng, 8);
                           }
-                        },
+                                                },
                         child: Container(
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
