@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_header.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -573,24 +574,77 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     });
   }
 
-  Future<void> _sendMessage() async {
-    final text = _textController.text.trim();
-    if (text.isEmpty || _currentUserId == null) return;
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    // Pick an image
+    final XFile? imageFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+    );
+
+    if (imageFile == null || _currentUserId == null) {
+      return;
+    }
+
     final client = Supabase.instance.client;
-    final response = await client.from('chat_messages').insert({
+    final imageExtension = imageFile.name.split('.').last.toLowerCase();
+    final imageBytes = await imageFile.readAsBytes();
+    final imagePath =
+        '$_currentUserId/${DateTime.now().millisecondsSinceEpoch}.$imageExtension';
+
+    try {
+      await client.storage.from('chat_images').uploadBinary(
+            imagePath,
+            imageBytes,
+            fileOptions: FileOptions(
+              upsert: false,
+              contentType: imageFile.mimeType,
+            ),
+          );
+
+      final imageUrl =
+          client.storage.from('chat_images').getPublicUrl(imagePath);
+      await _sendMessage(imageUrl: imageUrl);
+    } catch (e) {
+      // ignore: avoid_print
+      print('!!!!!!!!!!!!!!!!! SUPABASE STORAGE ERROR: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Помилка завантаження фото: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendMessage({String? imageUrl}) async {
+    final text = _textController.text.trim();
+    if ((text.isEmpty && imageUrl == null) || _currentUserId == null) return;
+
+    final client = Supabase.instance.client;
+
+    final messageData = {
       'chat_id': widget.chatId,
       'sender_id': _currentUserId,
-      'content': text,
-    }).select().single();
-    _textController.clear();
+      'content': text.isNotEmpty ? text : null,
+      'image_url': imageUrl,
+    };
+
+    final response =
+        await client.from('chat_messages').insert(messageData).select().single();
+
+    if (imageUrl == null) {
+      _textController.clear();
+    }
 
     // Додаємо повідомлення одразу після відправки
     setState(() {
       _messages.add({
         'chat_id': widget.chatId,
         'sender_id': _currentUserId,
-        'content': text,
-        'created_at': response['created_at'] ?? DateTime.now().toIso8601String(),
+        'content': text.isNotEmpty ? text : null,
+        'image_url': imageUrl,
+        'created_at':
+            response['created_at'] ?? DateTime.now().toIso8601String(),
         // додай інші потрібні поля, якщо треба
       });
     });
@@ -674,7 +728,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                           children: [
                         IconButton(
                           icon: const Icon(Icons.photo, color: Color(0xFF52525B)),
-                          onPressed: () {},
+                          onPressed: _pickAndUploadImage,
                           splashRadius: 20,
                         ),
                             Expanded(
@@ -709,7 +763,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
+                    onPressed: () => _sendMessage(),
                     splashRadius: 24,
                     padding: const EdgeInsets.all(12),
                   ),
@@ -854,20 +908,25 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ),
                 if (imageUrl != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: bubbleColor,
-                      borderRadius: borderRadius,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                      minWidth: 0,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl!,
-                        height: 200,
-                        fit: BoxFit.cover,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: bubbleColor,
+                        borderRadius: borderRadius,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          imageUrl!,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
