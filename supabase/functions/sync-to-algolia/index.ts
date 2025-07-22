@@ -1,7 +1,8 @@
+// @deno-types="npm:@types/deno@latest"
 // supabase/functions/sync-to-algolia/index.ts
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import * as algoliasearch from "npm:algoliasearch";
+import algoliasearch from "npm:algoliasearch";
 
 // Ініціалізація клієнта Algolia
 // Ці секрети ми додамо в налаштуваннях проєкту Supabase
@@ -9,9 +10,7 @@ const ALGOLIA_APP_ID = Deno.env.get("ALGOLIA_APP_ID")!;
 const ALGOLIA_ADMIN_KEY = Deno.env.get("ALGOLIA_ADMIN_KEY")!;
 const ALGOLIA_INDEX_NAME = "products";
 
-const client = algoliasearch.default
-  ? algoliasearch.default(ALGOLIA_APP_ID, ALGOLIA_ADMIN_KEY)
-  : algoliasearch(ALGOLIA_APP_ID, ALGOLIA_ADMIN_KEY);
+const client = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_ADMIN_KEY);
 const index = client.initIndex(ALGOLIA_INDEX_NAME);
 
 console.log("Функція синхронізації з Algolia запущена.");
