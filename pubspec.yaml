@@ -46,6 +46,7 @@ dependencies:
   latlong2: ^0.9.0
   geolocator: ^10.1.0
   flutter_map_marker_cluster: ^1.2.0
+  algoliasearch: ^1.34.1
 
 dev_dependencies:
   flutter_test:
