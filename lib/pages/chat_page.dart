@@ -633,7 +633,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         await client.from('chat_messages').insert(messageData).select().single();
 
     if (imageUrl == null) {
-      _textController.clear();
+    _textController.clear();
     }
 
     // Додаємо повідомлення одразу після відправки
@@ -914,18 +914,18 @@ class MessageBubble extends StatelessWidget {
                       minWidth: 0,
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: bubbleColor,
-                        borderRadius: borderRadius,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          imageUrl!,
-                          height: 200,
-                          fit: BoxFit.cover,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: bubbleColor,
+                      borderRadius: borderRadius,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl!,
+                        height: 200,
+                        fit: BoxFit.cover,
                         ),
                       ),
                     ),
