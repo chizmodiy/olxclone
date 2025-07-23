@@ -2077,68 +2077,70 @@ class _AddListingPageState extends State<AddListingPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Divider
-            Container(
-              height: 1,
-              color: AppColors.zinc200,
-            ),
-            const SizedBox(height: 20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Divider
+              Container(
+                height: 1,
+                color: AppColors.zinc200,
+              ),
+              const SizedBox(height: 20),
 
-            // Add Photo Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Додайте фото',
-                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-                ),
-                Text(
-                  '${_selectedImages.length}/7',
-                  style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              onTap: _pickImage,
-              borderRadius: BorderRadius.circular(12), // Apply borderRadius to InkWell for visual feedback
-              child: CustomPaint(
-                painter: DashedBorderPainter(
-                  color: AppColors.zinc200, // Replace with your desired color
-                  strokeWidth: 1.0,
-                  dashWidth: 13.0, // Length of dashes
-                  gapWidth: 13.0, // Length of gaps
-                  borderRadius: 12.0,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.zinc50,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
+              // Add Photo Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Додайте фото',
+                    style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
                   ),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/Featured icon.svg',
-                          width: 40,
-                          height: 40,
+                  Text(
+                    '${_selectedImages.length}/7',
+                    style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              InkWell(
+                onTap: _pickImage,
+                borderRadius: BorderRadius.circular(12), // Apply borderRadius to InkWell for visual feedback
+                child: CustomPaint(
+                  painter: DashedBorderPainter(
+                    color: AppColors.zinc200, // Replace with your desired color
+                    strokeWidth: 1.0,
+                    dashWidth: 13.0, // Length of dashes
+                    gapWidth: 13.0, // Length of gaps
+                    borderRadius: 12.0,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.zinc50,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(16, 24, 40, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Перемістіть зображення',
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: SvgPicture.asset(
+                            'assets/icons/Featured icon.svg',
+                            width: 40,
+                            height: 40,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Перемістіть зображення',
                   style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
                 ),
                 const SizedBox(height: 4),
@@ -2150,67 +2152,69 @@ class _AddListingPageState extends State<AddListingPage> {
             ),
                 ),
               ),
-            ),
-            if (_selectedImages.isNotEmpty)
+              ...(_selectedImages.isNotEmpty
+                  ? [
                       Padding(
-                padding: const EdgeInsets.only(top: 6.0),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: List.generate(_selectedImages.length, (index) {
-                    final imagePath = _selectedImages[index].path;
-                    return SizedBox(
-                      width: 92,
-                      height: 92,
-                      child: Stack(
-              children: [
-                          Positioned.fill(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: _buildImageWidget(imagePath),
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                setState(() {
-                  _selectedImages.removeAt(index);
-                });
-              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(200),
-                                  color: const Color.fromARGB(0, 255, 255, 255),
-                                ),
-                                child: SvgPicture.asset(
-                                  'assets/icons/x-close.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
-                                ),
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: List.generate(_selectedImages.length, (index) {
+                            final imagePath = _selectedImages[index].path;
+                            return SizedBox(
+                              width: 92,
+                              height: 92,
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: _buildImageWidget(imagePath),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedImages.removeAt(index);
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(200),
+                                          color: const Color.fromARGB(0, 255, 255, 255),
+                                        ),
+                                        child: SvgPicture.asset(
+                                          'assets/icons/x-close.svg',
+                                          width: 20,
+                                          height: 20,
+                                          colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-                        ],
+                            );
+                          }),
+                        ),
                       ),
-                    );
-                  }),
-                ),
-            ),
-            const SizedBox(height: 20),
+                    ]
+                  : []),
+              const SizedBox(height: 20),
 
-            // Title Input Field
-            Text(
-              'Заголовок',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-            ),
-            const SizedBox(height: 6),
-                Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
+              // Title Input Field
+              Text(
+                'Заголовок',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+                      Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
                 color: AppColors.zinc50,
                     borderRadius: BorderRadius.circular(200),
                 border: Border.all(color: AppColors.zinc200, width: 1),
@@ -2223,29 +2227,29 @@ class _AddListingPageState extends State<AddListingPage> {
                     ],
                   ),
                         child: TextField(
-              controller: _titleController,
-                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                          decoration: InputDecoration(
-                  hintText: 'Введіть текст',
-                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                controller: _titleController,
+                            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                            decoration: InputDecoration(
+                    hintText: 'Введіть текст',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Description Input Field
-            Text(
-              'Опис',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-            ),
-            const SizedBox(height: 6),
-                Container(
-              height: 180,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
+              // Description Input Field
+              Text(
+                'Опис',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+                      Container(
+                height: 180,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
                 color: AppColors.zinc50,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.zinc200, width: 1),
