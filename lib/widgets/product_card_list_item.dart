@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart'; // Assuming AppColors is defined here
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductCardListItem extends StatelessWidget {
   final String id; // Add this line
@@ -45,15 +46,14 @@ class ProductCardListItem extends StatelessWidget {
                 width: 80,
                 height: 80,
                 child: images.isNotEmpty
-                    ? Image.network(
-                        images.first,
+                    ? CachedNetworkImage(
+                        imageUrl: images.first,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: AppColors.zinc200,
-                            child: Icon(Icons.broken_image, color: AppColors.color5),
-                          );
-                        },
+                        errorWidget: (context, url, error) => Container(
+                          color: AppColors.zinc200,
+                          child: Icon(Icons.broken_image, color: AppColors.color5),
+                        ),
+                        placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
                       )
                     : Container(
                         color: AppColors.zinc200, // Placeholder color

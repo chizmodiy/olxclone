@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../services/profile_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductCard extends StatelessWidget {
   final String id;
@@ -14,9 +15,8 @@ class ProductCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onTap;
-  final ProfileService _profileService;
 
-  ProductCard({
+  const ProductCard({
     super.key,
     required this.id,
     required this.title,
@@ -29,13 +29,13 @@ class ProductCard extends StatelessWidget {
     this.isFavorite = false,
     this.onFavoriteToggle,
     this.onTap,
-  }) : _profileService = ProfileService();
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        _profileService.addToViewedList(id);
+        ProfileService().addToViewedList(id);
         if (onTap != null) onTap!();
       },
       borderRadius: BorderRadius.circular(12),
@@ -57,15 +57,14 @@ class ProductCard extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                     child: images.isNotEmpty
-                        ? Image.network(
-                            images.first,
+                        ? CachedNetworkImage(
+                            imageUrl: images.first,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: AppColors.zinc200,
-                                child: Icon(Icons.broken_image, color: AppColors.color5),
-                              );
-                            },
+                            errorWidget: (context, url, error) => Container(
+                              color: AppColors.zinc200,
+                              child: Icon(Icons.broken_image, color: AppColors.color5),
+                            ),
+                            placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
                           )
                         : Container(
                             color: AppColors.zinc200, // Placeholder color

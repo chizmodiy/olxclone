@@ -95,7 +95,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
             children: [
               Text(
                 'Поскаржитись на оголошення',
-                style: AppTextStyles.headlineMedium,
+                style: AppTextStyles.headlineMedium(),
               ),
               const SizedBox(height: 16),
               Text(
