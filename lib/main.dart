@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/pages/auth_page.dart';
 import 'package:withoutname/pages/general_page.dart';
 import 'package:withoutname/pages/product_detail_page.dart';
+import 'package:withoutname/pages/admin_login_page.dart';
 import 'pages/profile_page.dart';
 
 Future<void> main() async {
@@ -32,6 +33,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => const AuthPage(),
         '/general': (context) => const GeneralPage(),
         '/profile': (context) => const ProfilePage(),
+        '/admin': (context) => const AdminLoginPage(),
+        // '/admin/dashboard': (context) => const AdminDashboardPage(), // додамо після створення
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/product-detail') {
