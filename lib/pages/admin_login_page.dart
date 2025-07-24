@@ -9,12 +9,15 @@ class AdminLoginPage extends StatefulWidget {
 }
 
 class _AdminLoginPageState extends State<AdminLoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String? _error;
 
   Future<void> _login() async {
+    FocusScope.of(context).unfocus();
+    if (!_formKey.currentState!.validate()) return;
     setState(() { _isLoading = true; _error = null; });
     try {
       final res = await Supabase.instance.client.auth.signInWithPassword(
@@ -22,9 +25,23 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
         password: _passwordController.text.trim(),
       );
       if (res.user != null) {
-        Navigator.of(context).pushReplacementNamed('/admin/dashboard');
+        final profileRes = await Supabase.instance.client
+            .from('profiles')
+            .select('role')
+            .eq('id', res.user!.id)
+            .maybeSingle();
+        print('Profile: ' + profileRes.toString());
+        if (profileRes != null && profileRes['role'] == 'admin') {
+          Navigator.of(context).pushReplacementNamed('/admin/dashboard');
+        } else if (profileRes != null) {
+          setState(() { _error = 'Немає доступу'; });
+        } else {
+          setState(() { _error = 'Профіль не знайдено'; });
+        }
+      } else {
+        setState(() { _error = 'Невірний email або пароль'; });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() { _error = 'Невірний email або пароль'; });
     } finally {
       setState(() { _isLoading = false; });
@@ -35,9 +52,9 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 32),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(top: 120, left: 32, right: 32, bottom: 48),
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -56,115 +73,124 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFF015873),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Увійдіть в акаунт',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'З поверненням! Введіть свої дані.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF52525B),
-                            fontFamily: 'Inter',
-                            letterSpacing: 0.16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text('Email', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF52525B), letterSpacing: 0.14, fontFamily: 'Inter')),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            hintText: 'Введіть свій Email',
-                            filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(200),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(200),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF015873),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text('Пароль', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF52525B), letterSpacing: 0.14, fontFamily: 'Inter')),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(200),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(200),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Увійдіть в акаунт',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                              fontFamily: 'Inter',
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        if (_error != null) ...[
-                          Text(_error!, style: const TextStyle(color: Colors.red)),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'З поверненням! Введіть свої дані.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF52525B),
+                              fontFamily: 'Inter',
+                              letterSpacing: 0.16,
+                            ),
+                          ),
                         ],
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF015873),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
+                      ),
+                      const SizedBox(height: 24),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text('Email', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF52525B), letterSpacing: 0.14, fontFamily: 'Inter')),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _emailController,
+                            autofocus: true,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              hintText: 'Введіть свій Email',
+                              filled: true,
+                              fillColor: const Color(0xFFFAFAFA),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(200),
-                                side: const BorderSide(color: Color(0xFF015873)),
+                                borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 0.16, fontFamily: 'Inter'),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(200),
+                                borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                              ),
                             ),
-                            child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Увійти'),
+                            validator: (v) => v == null || v.isEmpty ? 'Введіть email' : null,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 20),
+                          const Text('Пароль', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF52525B), letterSpacing: 0.14, fontFamily: 'Inter')),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              hintText: '••••••••',
+                              filled: true,
+                              fillColor: const Color(0xFFFAFAFA),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(200),
+                                borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(200),
+                                borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                              ),
+                            ),
+                            validator: (v) => v == null || v.isEmpty ? 'Введіть пароль' : null,
+                            onFieldSubmitted: (_) => _login(),
+                          ),
+                          const SizedBox(height: 20),
+                          if (_error != null) ...[
+                            Text(_error!, style: const TextStyle(color: Colors.red)),
+                            const SizedBox(height: 8),
+                          ],
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF015873),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(200),
+                                  side: const BorderSide(color: Color(0xFF015873)),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                minimumSize: const Size.fromHeight(48),
+                                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 0.16, fontFamily: 'Inter'),
+                              ),
+                              child: _isLoading ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Увійти'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
