@@ -27,13 +27,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   final CategoryService _categoryService = CategoryService();
   final Map<String, String> _categoryNameCache = {};
+  Map<String, String> _allCategories = {};
 
   Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
+    _initCategoriesAndProducts();
+  }
+
+  Future<void> _initCategoriesAndProducts() async {
+    await _fetchAllCategories();
+    await _fetchProducts();
+  }
+
+  Future<void> _fetchAllCategories() async {
+    final cats = await _categoryService.getCategories();
+    setState(() {
+      _allCategories = {for (var c in cats) c.id: c.name};
+    });
   }
 
   @override
@@ -354,86 +367,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                         : Column(
                                             children: [
                                               for (final ad in _products)
-                                                Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Row(
-                                                          children: [
-                                                            if (ad.photos.isNotEmpty)
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(8),
-                                                                child: Image.network(ad.photos.first, width: 40, height: 40, fit: BoxFit.cover),
-                                                              )
-                                                            else
-                                                              Container(width: 40, height: 40, color: const Color(0xFFE4E4E7)),
-                                                            const SizedBox(width: 8),
-                                                            Expanded(
-                                                              child: Text(ad.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 3,
-                                                        child: Text(ad.description ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Text(_formatDate(ad.createdAt)),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Text(_formatPrice(ad)),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Text(ad.location ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: FutureBuilder<String>(
-                                                          future: _getCategoryName(ad.categoryId),
-                                                          builder: (context, snapshot) {
-                                                            if (snapshot.connectionState == ConnectionState.waiting) {
-                                                              return const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2));
-                                                            }
-                                                            return Text(snapshot.data ?? '', maxLines: 1, overflow: TextOverflow.ellipsis);
-                                                          },
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Align(
-                                                          alignment: Alignment.centerLeft,
-                                                          child: Container(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                                            decoration: BoxDecoration(
-                                                              color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
-                                                              borderRadius: BorderRadius.circular(100),
-                                                            ),
-                                                            child: Text(
-                                                              (ad.customAttributes?['status'] ?? 'active') == 'active' ? 'Активний' : 'Неактивний',
-                                                              style: TextStyle(
-                                                                color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
-                                                                fontWeight: FontWeight.w500,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 40,
-                                                        child: IconButton(
-                                                          icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
-                                                          onPressed: () {},
-                                                          tooltip: 'Видалити',
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                AdminAdTableRow(
+                                                  ad: ad,
+                                                  categoryName: _allCategories[ad.categoryId] ?? '',
+                                                  formatDate: _formatDate,
+                                                  formatPrice: _formatPrice,
                                                 ),
                                               const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                               const Spacer(),
@@ -495,5 +433,91 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     if (ad.price == null) return '';
     final currency = ad.currency ?? '₴';
     return '$currency${ad.price?.toStringAsFixed(2) ?? ''}';
+  }
+}
+
+// Додаю віджет для рядка таблиці
+class AdminAdTableRow extends StatelessWidget {
+  final Product ad;
+  final String categoryName;
+  final String Function(DateTime?) formatDate;
+  final String Function(Product) formatPrice;
+  const AdminAdTableRow({Key? key, required this.ad, required this.categoryName, required this.formatDate, required this.formatPrice}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                if (ad.photos.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(ad.photos.first, width: 40, height: 40, fit: BoxFit.cover),
+                  )
+                else
+                  Container(width: 40, height: 40, color: const Color(0xFFE4E4E7)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(ad.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(ad.description ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(formatDate(ad.createdAt)),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(formatPrice(ad)),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(ad.location ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(categoryName, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  (ad.customAttributes?['status'] ?? 'active') == 'active' ? 'Активний' : 'Неактивний',
+                  style: TextStyle(
+                    color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
+              onPressed: () {},
+              tooltip: 'Видалити',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 
