@@ -209,10 +209,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               ),
                             ),
                             const SizedBox(height: 40),
-                            // Блок для таблиці оголошень (заглушка)
+                            // Блок для таблиці оголошень
                             Container(
                               width: double.infinity,
-                              height: 400,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
@@ -224,8 +223,128 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                   ),
                                 ],
                               ),
-                              child: const Center(
-                                child: Text('Тут буде таблиця оголошень', style: TextStyle(fontSize: 20)),
+                              child: Column(
+                                children: [
+                                  // Заголовки колонок
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    child: Row(
+                                      children: const [
+                                        SizedBox(width: 120, child: Text('Назва', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Опис', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 90, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 90, child: Text('Ціна', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 100, child: Text('Локація', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 100, child: Text('Категорія', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 90, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        SizedBox(width: 40), // Для іконки видалення
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
+                                  // Рядки з даними
+                                  ..._mockAds.map((ad) => Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    child: Row(
+                                      children: [
+                                        // Назва + зображення
+                                        SizedBox(
+                                          width: 120,
+                                          child: Row(
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.network(ad['image'], width: 40, height: 40, fit: BoxFit.cover),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(ad['title'], maxLines: 2, overflow: TextOverflow.ellipsis),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Опис
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(ad['desc'], maxLines: 2, overflow: TextOverflow.ellipsis),
+                                        ),
+                                        // Дата
+                                        SizedBox(
+                                          width: 90,
+                                          child: Text(ad['date']),
+                                        ),
+                                        // Ціна
+                                        SizedBox(
+                                          width: 90,
+                                          child: Text(ad['price']),
+                                        ),
+                                        // Локація
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(ad['location'], maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        ),
+                                        // Категорія
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(ad['category'], maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        ),
+                                        // Статус
+                                        SizedBox(
+                                          width: 90,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: ad['status'] == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
+                                                borderRadius: BorderRadius.circular(100),
+                                              ),
+                                              child: Text(
+                                                ad['status'] == 'active' ? 'Активний' : 'Неактивний',
+                                                style: TextStyle(
+                                                  color: ad['status'] == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        // Дія (видалення)
+                                        SizedBox(
+                                          width: 40,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
+                                            onPressed: () {},
+                                            tooltip: 'Видалити',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )),
+                                  const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
+                                  // Пагінація
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text('Сторінка 1 із 10', style: TextStyle(fontSize: 14)),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.chevron_left),
+                                              onPressed: () {},
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.chevron_right),
+                                              onPressed: () {},
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -246,4 +365,88 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final parts = email.split('@').first.split('.');
     return parts.map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').join();
   }
-} 
+}
+
+// Додаю мок-дані для оголошень
+final List<Map<String, dynamic>> _mockAds = [
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Нова повсякденна сукня',
+    'desc': 'XL, біла, 100% бавовна',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Харків',
+    'category': 'Одяг',
+    'status': 'active',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Худі, нове',
+    'desc': 'Легка, дихаюча тканина',
+    'date': '12.05 16:00',
+    'price': '€12.00',
+    'location': 'Київ',
+    'category': 'Одяг',
+    'status': 'inactive',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Футболка, біла, брендова',
+    'desc': 'Тонкий дизайн із зручним кроєм',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Харків',
+    'category': 'Одяг',
+    'status': 'inactive',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Кросівки, Нові',
+    'desc': 'Легка, дихаюча тканина',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Миколаїв',
+    'category': 'Взуття',
+    'status': 'active',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Шкіряний гаманець',
+    'desc': 'Тонкий дизайн із захистом RFID',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Львів',
+    'category': 'Аксесуари',
+    'status': 'active',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Кросівки для бігу',
+    'desc': 'Легка, дихаюча тканина',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Харків',
+    'category': 'Взуття',
+    'status': 'inactive',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Навушники Bluetooth',
+    'desc': 'Шумопоглинаючі, з кейсом',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Харків',
+    'category': 'Електроніка',
+    'status': 'inactive',
+  },
+  {
+    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'title': 'Павербанк',
+    'desc': '10000 mah, type-c',
+    'date': '12.05 16:00',
+    'price': '₴290.00',
+    'location': 'Харків',
+    'category': 'Електроніка',
+    'status': 'inactive',
+  },
+]; 
