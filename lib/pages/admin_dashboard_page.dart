@@ -113,9 +113,129 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
           // TODO: Далі контент сторінки відповідно до _selectedTab
           Expanded(
-            child: Center(
-              child: Text('Сторінка: ${_tabs[_selectedTab]}', style: const TextStyle(fontSize: 24)),
-            ),
+            child: _selectedTab == 0
+                ? SingleChildScrollView(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 36),
+                        child: Column(
+                          children: [
+                            // Блок заголовку з пошуком і фільтром
+                            Container(
+                              width: double.infinity,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Оголошення',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'Inter',
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      // Поле пошуку
+                                      Container(
+                                        width: 320,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF3F3F3),
+                                          borderRadius: BorderRadius.circular(200),
+                                          border: Border.all(color: const Color(0xFFE4E4E7)),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color.fromRGBO(16, 24, 40, 0.05),
+                                              blurRadius: 2,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 12),
+                                              child: Icon(Icons.search, color: Color(0xFF52525B), size: 20),
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                decoration: InputDecoration(
+                                                  hintText: 'Пошук',
+                                                  border: InputBorder.none,
+                                                  hintStyle: TextStyle(
+                                                    color: Color(0xFFA1A1AA),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontFamily: 'Inter',
+                                                    letterSpacing: 0.16,
+                                                  ),
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Кнопка фільтра
+                                      OutlinedButton.icon(
+                                        onPressed: () {},
+                                        icon: const Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                                        label: const Text(
+                                          'Фільтр',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'Inter',
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          side: const BorderSide(color: Color(0xFFE4E4E7)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(200)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            // Блок для таблиці оголошень (заглушка)
+                            Container(
+                              width: double.infinity,
+                              height: 400,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.03),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Center(
+                                child: Text('Тут буде таблиця оголошень', style: TextStyle(fontSize: 20)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text('Сторінка: ${_tabs[_selectedTab]}', style: const TextStyle(fontSize: 24)),
+                  ),
           ),
         ],
       ),
