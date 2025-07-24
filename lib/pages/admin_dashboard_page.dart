@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/product_service.dart';
+import '../models/product.dart';
+import '../services/category_service.dart';
+import 'dart:async';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({Key? key}) : super(key: key);
@@ -11,8 +15,79 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _selectedTab = 0; // 0 - Оголошення, 1 - Скарги, 2 - Користувачі
   bool _showMenu = false;
-
   final List<String> _tabs = ['Оголошення', 'Скарги', 'Користувачі'];
+
+  final ProductService _productService = ProductService();
+  List<Product> _products = [];
+  bool _isLoadingProducts = false;
+  String _searchQuery = '';
+  int _currentPage = 1;
+  int _totalPages = 1;
+  static const int _pageSize = 8;
+
+  final CategoryService _categoryService = CategoryService();
+  final Map<String, String> _categoryNameCache = {};
+
+  Timer? _searchDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchProducts() async {
+    setState(() => _isLoadingProducts = true);
+    final products = await _productService.getProducts(
+      limit: _pageSize,
+      offset: (_currentPage - 1) * _pageSize,
+      searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+    );
+    // Підрахунок загальної кількості сторінок (отримуємо count окремо)
+    final countResp = await Supabase.instance.client
+        .from('listings')
+        .select('id', const FetchOptions(count: CountOption.exact));
+    final totalCount = countResp.count ?? products.length;
+    setState(() {
+      _products = products;
+      _isLoadingProducts = false;
+      _totalPages = (totalCount / _pageSize).ceil().clamp(1, 9999);
+    });
+  }
+
+  void _onPageChanged(int newPage) {
+    if (newPage < 1 || newPage > _totalPages) return;
+    setState(() => _currentPage = newPage);
+    _fetchProducts();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      setState(() {
+        _searchQuery = value;
+        _currentPage = 1;
+      });
+      _fetchProducts();
+    });
+  }
+
+  Future<String> _getCategoryName(String categoryId) async {
+    if (_categoryNameCache.containsKey(categoryId)) {
+      return _categoryNameCache[categoryId]!;
+    }
+    final name = await _categoryService.getCategoryNameCached(categoryId);
+    setState(() {
+      _categoryNameCache[categoryId] = name;
+    });
+    return name;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,19 +236,41 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                               child: Icon(Icons.search, color: Color(0xFF52525B), size: 20),
                                             ),
                                             Expanded(
-                                              child: TextField(
-                                                decoration: InputDecoration(
-                                                  hintText: 'Пошук',
-                                                  border: InputBorder.none,
-                                                  hintStyle: TextStyle(
-                                                    color: Color(0xFFA1A1AA),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w400,
-                                                    fontFamily: 'Inter',
-                                                    letterSpacing: 0.16,
+                                              child: Theme(
+                                                data: Theme.of(context).copyWith(
+                                                  hoverColor: Colors.transparent,
+                                                  focusColor: Colors.transparent,
+                                                  splashColor: Colors.transparent,
+                                                  highlightColor: Colors.transparent,
+                                                ),
+                                                child: TextField(
+                                                  onChanged: _onSearchChanged,
+                                                  decoration: InputDecoration(
+                                                    hintText: 'Пошук',
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(200),
+                                                      borderSide: BorderSide.none,
+                                                    ),
+                                                    enabledBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(200),
+                                                      borderSide: BorderSide.none,
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(200),
+                                                      borderSide: BorderSide.none,
+                                                    ),
+                                                    filled: true,
+                                                    fillColor: const Color(0xFFF3F3F3),
+                                                    hintStyle: TextStyle(
+                                                      color: Color(0xFFA1A1AA),
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w400,
+                                                      fontFamily: 'Inter',
+                                                      letterSpacing: 0.16,
+                                                    ),
+                                                    isDense: true,
+                                                    contentPadding: EdgeInsets.symmetric(vertical: 10),
                                                   ),
-                                                  isDense: true,
-                                                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                                                 ),
                                               ),
                                             ),
@@ -212,6 +309,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             // Блок для таблиці оголошень
                             Container(
                               width: double.infinity,
+                              constraints: const BoxConstraints(
+                                minHeight: 80 + 8 * 64 + 56, // заголовки + 8 рядків + пагінація
+                                maxHeight: 80 + 8 * 64 + 56,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
@@ -226,118 +327,135 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               child: Column(
                                 children: [
                                   // Заголовки колонок
-                                  Padding(
+                                  Container(
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFFAFAFA),
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                    ),
                                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                     child: Row(
                                       children: const [
-                                        SizedBox(width: 120, child: Text('Назва', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        Expanded(flex: 2, child: Text('Опис', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        SizedBox(width: 90, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        SizedBox(width: 90, child: Text('Ціна', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        SizedBox(width: 100, child: Text('Локація', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        SizedBox(width: 100, child: Text('Категорія', style: TextStyle(fontWeight: FontWeight.w600))),
-                                        SizedBox(width: 90, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Назва', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 3, child: Text('Опис', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Ціна', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Локація', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Категорія', style: TextStyle(fontWeight: FontWeight.w600))),
+                                        Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
                                         SizedBox(width: 40), // Для іконки видалення
                                       ],
                                     ),
                                   ),
                                   const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
-                                  // Рядки з даними
-                                  ..._mockAds.map((ad) => Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                    child: Row(
-                                      children: [
-                                        // Назва + зображення
-                                        SizedBox(
-                                          width: 120,
-                                          child: Row(
+                                  // Рядки з реальними даними (без скролу)
+                                  Expanded(
+                                    child: _isLoadingProducts
+                                        ? const Center(child: CircularProgressIndicator())
+                                        : Column(
                                             children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: Image.network(ad['image'], width: 40, height: 40, fit: BoxFit.cover),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(ad['title'], maxLines: 2, overflow: TextOverflow.ellipsis),
-                                              ),
+                                              for (final ad in _products)
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Row(
+                                                          children: [
+                                                            if (ad.photos.isNotEmpty)
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(8),
+                                                                child: Image.network(ad.photos.first, width: 40, height: 40, fit: BoxFit.cover),
+                                                              )
+                                                            else
+                                                              Container(width: 40, height: 40, color: const Color(0xFFE4E4E7)),
+                                                            const SizedBox(width: 8),
+                                                            Expanded(
+                                                              child: Text(ad.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 3,
+                                                        child: Text(ad.description ?? '', maxLines: 2, overflow: TextOverflow.ellipsis),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Text(_formatDate(ad.createdAt)),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Text(_formatPrice(ad)),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Text(ad.location ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: FutureBuilder<String>(
+                                                          future: _getCategoryName(ad.categoryId),
+                                                          builder: (context, snapshot) {
+                                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                                              return const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2));
+                                                            }
+                                                            return Text(snapshot.data ?? '', maxLines: 1, overflow: TextOverflow.ellipsis);
+                                                          },
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Align(
+                                                          alignment: Alignment.centerLeft,
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                            decoration: BoxDecoration(
+                                                              color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
+                                                              borderRadius: BorderRadius.circular(100),
+                                                            ),
+                                                            child: Text(
+                                                              (ad.customAttributes?['status'] ?? 'active') == 'active' ? 'Активний' : 'Неактивний',
+                                                              style: TextStyle(
+                                                                color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
+                                                                fontWeight: FontWeight.w500,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 40,
+                                                        child: IconButton(
+                                                          icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
+                                                          onPressed: () {},
+                                                          tooltip: 'Видалити',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
+                                              const Spacer(),
                                             ],
                                           ),
-                                        ),
-                                        // Опис
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(ad['desc'], maxLines: 2, overflow: TextOverflow.ellipsis),
-                                        ),
-                                        // Дата
-                                        SizedBox(
-                                          width: 90,
-                                          child: Text(ad['date']),
-                                        ),
-                                        // Ціна
-                                        SizedBox(
-                                          width: 90,
-                                          child: Text(ad['price']),
-                                        ),
-                                        // Локація
-                                        SizedBox(
-                                          width: 100,
-                                          child: Text(ad['location'], maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        ),
-                                        // Категорія
-                                        SizedBox(
-                                          width: 100,
-                                          child: Text(ad['category'], maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        ),
-                                        // Статус
-                                        SizedBox(
-                                          width: 90,
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: ad['status'] == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
-                                                borderRadius: BorderRadius.circular(100),
-                                              ),
-                                              child: Text(
-                                                ad['status'] == 'active' ? 'Активний' : 'Неактивний',
-                                                style: TextStyle(
-                                                  color: ad['status'] == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // Дія (видалення)
-                                        SizedBox(
-                                          width: 40,
-                                          child: IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
-                                            onPressed: () {},
-                                            tooltip: 'Видалити',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )),
-                                  const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
-                                  // Пагінація
+                                  ),
+                                  // Пагінація (завжди внизу)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text('Сторінка 1 із 10', style: TextStyle(fontSize: 14)),
+                                        Text('Сторінка $_currentPage із $_totalPages', style: const TextStyle(fontSize: 14)),
                                         Row(
                                           children: [
                                             IconButton(
                                               icon: const Icon(Icons.chevron_left),
-                                              onPressed: () {},
+                                              onPressed: _currentPage > 1 ? () => _onPageChanged(_currentPage - 1) : null,
                                             ),
                                             IconButton(
                                               icon: const Icon(Icons.chevron_right),
-                                              onPressed: () {},
+                                              onPressed: _currentPage < _totalPages ? () => _onPageChanged(_currentPage + 1) : null,
                                             ),
                                           ],
                                         ),
@@ -365,88 +483,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final parts = email.split('@').first.split('.');
     return parts.map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').join();
   }
-}
 
-// Додаю мок-дані для оголошень
-final List<Map<String, dynamic>> _mockAds = [
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Нова повсякденна сукня',
-    'desc': 'XL, біла, 100% бавовна',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Харків',
-    'category': 'Одяг',
-    'status': 'active',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Худі, нове',
-    'desc': 'Легка, дихаюча тканина',
-    'date': '12.05 16:00',
-    'price': '€12.00',
-    'location': 'Київ',
-    'category': 'Одяг',
-    'status': 'inactive',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Футболка, біла, брендова',
-    'desc': 'Тонкий дизайн із зручним кроєм',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Харків',
-    'category': 'Одяг',
-    'status': 'inactive',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Кросівки, Нові',
-    'desc': 'Легка, дихаюча тканина',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Миколаїв',
-    'category': 'Взуття',
-    'status': 'active',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Шкіряний гаманець',
-    'desc': 'Тонкий дизайн із захистом RFID',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Львів',
-    'category': 'Аксесуари',
-    'status': 'active',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Кросівки для бігу',
-    'desc': 'Легка, дихаюча тканина',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Харків',
-    'category': 'Взуття',
-    'status': 'inactive',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Навушники Bluetooth',
-    'desc': 'Шумопоглинаючі, з кейсом',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Харків',
-    'category': 'Електроніка',
-    'status': 'inactive',
-  },
-  {
-    'image': 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
-    'title': 'Павербанк',
-    'desc': '10000 mah, type-c',
-    'date': '12.05 16:00',
-    'price': '₴290.00',
-    'location': 'Харків',
-    'category': 'Електроніка',
-    'status': 'inactive',
-  },
-]; 
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    final d = date;
+    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatPrice(Product ad) {
+    if (ad.isFree == true) return 'Безкоштовно';
+    if (ad.price == null) return '';
+    final currency = ad.currency ?? '₴';
+    return '$currency${ad.price?.toStringAsFixed(2) ?? ''}';
+  }
+} 
