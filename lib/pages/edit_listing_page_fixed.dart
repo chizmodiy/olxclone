@@ -1208,7 +1208,7 @@ class _EditListingPageState extends State<EditListingPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Оголошення успішно оновлено!')),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true); // Передаємо true як результат
       } catch (e) {
         print('Error updating listing: $e');
         ScaffoldMessenger.of(context).showSnackBar(

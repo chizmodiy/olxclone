@@ -910,13 +910,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           const SizedBox(width: 12), // 12px gap
                           _buildNavigationButton(
                             iconPath: 'assets/icons/edit-03.svg',
-                            onTap: () {
+                            onTap: () async {
                               if (_product != null) {
-                                Navigator.of(context).push(
+                                final result = await Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => EditListingPage(listing: _product!.toListing()),
                                   ),
                                 );
+                                
+                                // Якщо редагування було успішним, оновлюємо дані
+                                if (result == true) {
+                                  setState(() {
+                                    // Оновлюємо дані продукту
+                                    _loadProduct();
+                                  });
+                                }
                               }
                             },
                           ),

@@ -71,12 +71,20 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       tooltip: 'Редагувати',
-                      onPressed: () {
-                        Navigator.of(context).push(
+                      onPressed: () async {
+                        final result = await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => EditListingPage(listing: snapshot.data!),
                           ),
                         );
+                        
+                        // Якщо редагування було успішним, оновлюємо дані
+                        if (result == true) {
+                          setState(() {
+                            // Оновлюємо Future для перезавантаження даних
+                            _loadListing();
+                          });
+                        }
                       },
                     ),
                     IconButton(
