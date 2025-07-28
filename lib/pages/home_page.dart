@@ -731,10 +731,14 @@ class HomeContentState extends State<HomeContent> {
                                     isFavorite: _favoriteProductIds.contains(product.id),
                                     onFavoriteToggle: () => _toggleFavorite(product),
                                     onTap: () {
-                                      Navigator.of(context).pushNamed(
-                                        '/product-detail',
-                                        arguments: {'id': product.id},
-                                      );
+                                      if (_currentUserId == null) {
+                                        _showAuthBottomSheet();
+                                      } else {
+                                        Navigator.of(context).pushNamed(
+                                          '/product-detail',
+                                          arguments: {'id': product.id},
+                                        );
+                                      }
                                     },
                                   ),
                                 );
@@ -765,10 +769,14 @@ class HomeContentState extends State<HomeContent> {
                                   isFavorite: _favoriteProductIds.contains(product.id),
                                   onFavoriteToggle: () => _toggleFavorite(product),
                                   onTap: () {
-                                    Navigator.of(context).pushNamed(
-                                      '/product-detail',
-                                      arguments: {'id': product.id},
-                                    );
+                                    if (_currentUserId == null) {
+                                      _showAuthBottomSheet();
+                                    } else {
+                                      Navigator.of(context).pushNamed(
+                                        '/product-detail',
+                                        arguments: {'id': product.id},
+                                      );
+                                    }
                                   },
                                 );
                               },
