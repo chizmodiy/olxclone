@@ -68,6 +68,7 @@ class _LocationPickerState extends State<LocationPicker> {
   OverlayEntry? _autocompleteOverlay;
   final LayerLink _autocompleteLayerLink = LayerLink();
   bool _citySelected = false;
+  bool _isInitializing = true;
   OverlayEntry? _regionDropdownOverlay;
   final LayerLink _regionDropdownLayerLink = LayerLink();
   final GlobalKey _regionFieldKey = GlobalKey();
@@ -80,6 +81,9 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   void _onCitySearchChanged() {
+    // Не запускаємо пошук під час ініціалізації
+    if (_isInitializing) return;
+    
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
       final query = _citySearchController.text.trim();
@@ -194,6 +198,9 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   void _showAutocompleteOverlay(BuildContext context) {
+    // Не показуємо автодоповнення під час ініціалізації
+    if (_isInitializing) return;
+    
     _hideAutocompleteOverlay();
     if (_cityResults.isEmpty || _citySearchController.text.isEmpty) return;
     final renderBox = context.findRenderObject() as RenderBox?;
@@ -252,6 +259,9 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   void _showRegionDropdown(BuildContext context) {
+    // Не показуємо випадаюче вікно під час ініціалізації
+    if (_isInitializing) return;
+    
     _hideRegionDropdown();
     final renderBox = _regionFieldKey.currentContext?.findRenderObject() as RenderBox?;
     final size = renderBox?.size ?? Size.zero;
@@ -413,6 +423,9 @@ class _LocationPickerState extends State<LocationPicker> {
       _selectedLatLng = widget.initialLatLng;
       _mapCenter = widget.initialLatLng;
     }
+    
+    // Позначаємо, що ініціалізація завершена
+    _isInitializing = false;
   }
 
   @override
