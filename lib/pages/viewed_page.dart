@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/common_header.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
@@ -7,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 import 'dart:async'; // Import Timer
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class ViewedPage extends StatelessWidget {
   const ViewedPage({super.key});
@@ -216,7 +219,7 @@ class _ViewedContentState extends State<ViewedContent> {
                 ? Center(
                     child: Text('Помилка завантаження товарів: $_errorMessage'),
                   )
-                : filteredProducts.isEmpty
+                : _currentUserId == null
                     ? Column(
                         children: [
                           Container(
@@ -227,60 +230,114 @@ class _ViewedContentState extends State<ViewedContent> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  child: Stack(
-                                    children: [
-                                      Positioned(
-                                        left: 0,
-                                        top: 0,
-                                        child: Container(
-                                          width: 52,
-                                          height: 52,
-                                          decoration: const ShapeDecoration(
-                                            color: Color(0xFFFAFAFA),
-                                            shape: OvalBorder(),
+                                // Content
+                                Column(
+                                  children: [
+                                    // Featured icon with book
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.zinc100,
+                                        borderRadius: BorderRadius.circular(28),
+                                        border: Border.all(
+                                          color: AppColors.zinc50,
+                                          width: 8,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          'assets/icons/book-open-01.svg',
+                                          width: 24,
+                                          height: 24,
+                                          colorFilter: const ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // Text content
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'Історія переглядів',
+                                          textAlign: TextAlign.center,
+                                          style: AppTextStyles.heading1Semibold.copyWith(
+                                            color: Colors.black,
+                                            fontSize: 24,
+                                            height: 28.8 / 24,
                                           ),
                                         ),
-                                      ),
-                                      const Positioned(
-                                        left: 14,
-                                        top: 14,
-                                        child: Icon(
-                                          Icons.list,
-                                          size: 24,
-                                          color: Color(0xFF52525B),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Container(
-                                  width: double.infinity,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: const Text(
-                                          'Список пустий',
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Увійдіть або створіть профіль, щоб бачити історію переглянутих товарів.',
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Color(0xFF667084),
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.40,
+                                          style: AppTextStyles.body1Regular.copyWith(
+                                            color: AppColors.color7,
+                                            height: 22.4 / 16,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 40),
+                                // Buttons
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed('/auth');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primaryColor,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                          elevation: 0,
+                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                                        ),
+                                        child: Text(
+                                          'Увійти',
+                                          style: AppTextStyles.body1Medium.copyWith(
+                                            color: Colors.white,
                                             letterSpacing: 0.16,
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed('/auth');
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Colors.black,
+                                          side: const BorderSide(color: AppColors.zinc200, width: 1),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                          elevation: 0,
+                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                                        ),
+                                        child: Text(
+                                          'Створити акаунт',
+                                          style: AppTextStyles.body1Medium.copyWith(
+                                            color: Colors.black,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -288,6 +345,78 @@ class _ViewedContentState extends State<ViewedContent> {
                           const Spacer(),
                         ],
                       )
+                    : filteredProducts.isEmpty
+                        ? Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 52,
+                                      height: 52,
+                                      child: Stack(
+                                        children: [
+                                          Positioned(
+                                            left: 0,
+                                            top: 0,
+                                            child: Container(
+                                              width: 52,
+                                              height: 52,
+                                              decoration: const ShapeDecoration(
+                                                color: Color(0xFFFAFAFA),
+                                                shape: OvalBorder(),
+                                              ),
+                                            ),
+                                          ),
+                                          const Positioned(
+                                            left: 14,
+                                            top: 14,
+                                            child: Icon(
+                                              Icons.list,
+                                              size: 24,
+                                              color: Color(0xFF52525B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Container(
+                                      width: double.infinity,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: const Text(
+                                              'Список пустий',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                color: Color(0xFF667084),
+                                                fontSize: 16,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.40,
+                                                letterSpacing: 0.16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                            ],
+                          )
                     : ListView.builder(
                         controller: _scrollController,
                         itemCount: filteredProducts.length,

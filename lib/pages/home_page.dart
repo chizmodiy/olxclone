@@ -10,6 +10,7 @@ import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
 import '../pages/filter_page.dart'; // Import FilterPage
 import 'dart:async'; // Add this import for Timer
 import '../pages/map_page.dart'; // Import MapPage
+import '../widgets/auth_bottom_sheet.dart'; // Import AuthBottomSheet
 
 enum ViewMode {
   grid8,
@@ -68,6 +69,13 @@ class HomeContentState extends State<HomeContent> {
     _loadProducts();
     _loadFavorites();
     _scrollController.addListener(_onScroll);
+    
+    // Показуємо bottom sheet для розлогінених користувачів після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_currentUserId == null) {
+        _showAuthBottomSheet();
+      }
+    });
   }
 
   @override
@@ -136,9 +144,26 @@ class HomeContentState extends State<HomeContent> {
     }
   }
 
+  void _showAuthBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AuthBottomSheet(
+        onLoginPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+          Navigator.of(context).pushNamed('/auth');
+        },
+        onCancelPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+        },
+      ),
+    );
+  }
+
   Future<void> _toggleFavorite(Product product) async {
     if (_currentUserId == null) {
-      print('User not logged in. Cannot toggle favorite.');
+      _showAuthBottomSheet();
       return;
     }
 

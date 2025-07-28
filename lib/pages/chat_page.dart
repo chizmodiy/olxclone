@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/common_header.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -157,7 +160,7 @@ class _ChatPageState extends State<ChatPage> {
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
-                  : _chats.isEmpty
+                  : _currentUserId == null
                       ? Column(
                           children: [
                             Container(
@@ -168,60 +171,114 @@ class _ChatPageState extends State<ChatPage> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Container(
-                                    width: 52,
-                                    height: 52,
-                                    child: Stack(
-                                      children: [
-                                        Positioned(
-                                          left: 0,
-                                          top: 0,
-                                          child: Container(
-                                            width: 52,
-                                            height: 52,
-                                            decoration: const ShapeDecoration(
-                                              color: Color(0xFFFAFAFA),
-                                              shape: OvalBorder(),
+                                  // Content
+                                  Column(
+                                    children: [
+                                      // Featured icon with message
+                                      Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.zinc100,
+                                          borderRadius: BorderRadius.circular(28),
+                                          border: Border.all(
+                                            color: AppColors.zinc50,
+                                            width: 8,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: SvgPicture.asset(
+                                            'assets/icons/message-circle-01.svg',
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: const ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Text content
+                                      Column(
+                                        children: [
+                                          Text(
+                                            'Обмінюйтесь повідомленями',
+                                            textAlign: TextAlign.center,
+                                            style: AppTextStyles.heading1Semibold.copyWith(
+                                              color: Colors.black,
+                                              fontSize: 24,
+                                              height: 28.8 / 24,
                                             ),
                                           ),
-                                        ),
-                                        const Positioned(
-                                          left: 14,
-                                          top: 14,
-                                          child: Icon(
-                                            Icons.chat_bubble_outline,
-                                            size: 24,
-                                            color: Color(0xFF52525B),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Container(
-                                    width: double.infinity,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: const Text(
-                                            'Немає повідомлень',
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'Увійдіть або створіть профіль для обміну повідомленнями з іншими користувачами нашої платформи.',
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: Color(0xFF667084),
-                                              fontSize: 16,
-                                              fontFamily: 'Inter',
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.40,
+                                            style: AppTextStyles.body1Regular.copyWith(
+                                              color: AppColors.color7,
+                                              height: 22.4 / 16,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 40),
+                                  // Buttons
+                                  Column(
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pushNamed('/auth');
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primaryColor,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(200),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                            elevation: 0,
+                                            shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                                          ),
+                                          child: Text(
+                                            'Увійти',
+                                            style: AppTextStyles.body1Medium.copyWith(
+                                              color: Colors.white,
                                               letterSpacing: 0.16,
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: OutlinedButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pushNamed('/auth');
+                                          },
+                                          style: OutlinedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.black,
+                                            side: const BorderSide(color: AppColors.zinc200, width: 1),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(200),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                            elevation: 0,
+                                            shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                                          ),
+                                          child: Text(
+                                            'Створити акаунт',
+                                            style: AppTextStyles.body1Medium.copyWith(
+                                              color: Colors.black,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -229,6 +286,78 @@ class _ChatPageState extends State<ChatPage> {
                             const Spacer(),
                           ],
                         )
+                      : _chats.isEmpty
+                          ? Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.only(top: 40),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 52,
+                                        height: 52,
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              left: 0,
+                                              top: 0,
+                                              child: Container(
+                                                width: 52,
+                                                height: 52,
+                                                decoration: const ShapeDecoration(
+                                                  color: Color(0xFFFAFAFA),
+                                                  shape: OvalBorder(),
+                                                ),
+                                              ),
+                                            ),
+                                            const Positioned(
+                                              left: 14,
+                                              top: 14,
+                                              child: Icon(
+                                                Icons.chat_bubble_outline,
+                                                size: 24,
+                                                color: Color(0xFF52525B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Container(
+                                        width: double.infinity,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: const Text(
+                                                'Немає повідомлень',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Color(0xFF667084),
+                                                  fontSize: 16,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                  height: 1.40,
+                                                  letterSpacing: 0.16,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Spacer(),
+                              ],
+                            )
                       : ListView.separated(
                           itemCount: _chats.length,
                           separatorBuilder: (context, index) => const SizedBox(height: 20),

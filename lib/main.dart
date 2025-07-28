@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/pages/auth_page.dart';
 import 'package:withoutname/pages/general_page.dart';
+import 'package:withoutname/pages/home_page.dart';
 import 'package:withoutname/pages/product_detail_page.dart';
 import 'package:withoutname/pages/admin_login_page.dart';
 import 'package:withoutname/pages/admin_dashboard_page.dart';
@@ -31,8 +32,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const AuthPage(),
-        '/general': (context) => const GeneralPage(),
+        '/': (context) => const GeneralPage(),
+        '/auth': (context) => const AuthPage(),
         '/profile': (context) => const ProfilePage(),
         '/admin': (context) => const AdminLoginPage(),
         '/admin/dashboard': (context) => const AdminDashboardPage(),
