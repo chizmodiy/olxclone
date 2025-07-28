@@ -908,8 +908,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             },
                           ),
                           const SizedBox(width: 12), // 12px gap
-                          _buildNavigationButton(
-                            iconPath: 'assets/icons/edit-03.svg',
+                          GestureDetector(
                             onTap: () async {
                               if (_product != null) {
                                 final result = await Navigator.of(context).push(
@@ -927,6 +926,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 }
                               }
                             },
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE4E4E7),
+                                  ),
+                                  borderRadius: BorderRadius.circular(200),
+                                ),
+                                shadows: const [
+                                  BoxShadow(
+                                    color: Color(0x0C101828),
+                                    blurRadius: 2,
+                                    offset: Offset(0, 1),
+                                  )
+                                ],
+                              ),
+                              child: SvgPicture.asset(
+                                'assets/icons/edit-0333.svg',
+                                width: 20,
+                                height: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),
