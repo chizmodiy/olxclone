@@ -158,7 +158,77 @@ class _ChatPageState extends State<ChatPage> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _chats.isEmpty
-                      ? const Center(child: Text('Немає чатів'))
+                      ? Column(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(top: 40),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    child: Stack(
+                                      children: [
+                                        Positioned(
+                                          left: 0,
+                                          top: 0,
+                                          child: Container(
+                                            width: 52,
+                                            height: 52,
+                                            decoration: const ShapeDecoration(
+                                              color: Color(0xFFFAFAFA),
+                                              shape: OvalBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const Positioned(
+                                          left: 14,
+                                          top: 14,
+                                          child: Icon(
+                                            Icons.chat_bubble_outline,
+                                            size: 24,
+                                            color: Color(0xFF52525B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: double.infinity,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: const Text(
+                                            'Немає повідомлень',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Color(0xFF667084),
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.40,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                          ],
+                        )
                       : ListView.separated(
                           itemCount: _chats.length,
                           separatorBuilder: (context, index) => const SizedBox(height: 20),
@@ -678,7 +748,81 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : Container(
+                : _messages.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(top: 40),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    child: Stack(
+                                      children: [
+                                        Positioned(
+                                          left: 0,
+                                          top: 0,
+                                          child: Container(
+                                            width: 52,
+                                            height: 52,
+                                            decoration: const ShapeDecoration(
+                                              color: Color(0xFFFAFAFA),
+                                              shape: OvalBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const Positioned(
+                                          left: 14,
+                                          top: 14,
+                                          child: Icon(
+                                            Icons.chat_bubble_outline,
+                                            size: 24,
+                                            color: Color(0xFF52525B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: double.infinity,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: const Text(
+                                            'Немає повідомлень',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Color(0xFF667084),
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.40,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
                     color: Color(0xFFFAFAFA),
                     child: ListView.builder(
                       key: ValueKey(_messages.length),

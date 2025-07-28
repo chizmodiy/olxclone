@@ -613,8 +613,76 @@ class HomeContentState extends State<HomeContent> {
                     await _loadProducts();
                   },
                   child: _products.isEmpty && !_isLoading
-                      ? const Center(
-                          child: Text('Наразі оголошень немає.'),
+                      ? Column(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(top: 40),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    child: Stack(
+                                      children: [
+                                        Positioned(
+                                          left: 0,
+                                          top: 0,
+                                          child: Container(
+                                            width: 52,
+                                            height: 52,
+                                            decoration: const ShapeDecoration(
+                                              color: Color(0xFFFAFAFA),
+                                              shape: OvalBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const Positioned(
+                                          left: 14,
+                                          top: 14,
+                                          child: Icon(
+                                            Icons.list,
+                                            size: 24,
+                                            color: Color(0xFF52525B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: double.infinity,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: const Text(
+                                            'Список пустий',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Color(0xFF667084),
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.40,
+                                              letterSpacing: 0.16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                          ],
                         )
                       : _currentViewMode == ViewMode.list
                           ? ListView.builder(
