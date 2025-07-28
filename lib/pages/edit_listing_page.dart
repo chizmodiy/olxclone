@@ -22,11 +22,12 @@ import 'dart:async'; // Add this import for Timer
 import '../widgets/location_picker.dart';
 import '../models/product.dart'; // Import Product model
 import '../services/product_service.dart'; // Import ProductService
+import '../models/listing.dart';
 
 class EditListingPage extends StatefulWidget {
-  final String listingId; // New parameter for editing
+  final Listing listing;
 
-  const EditListingPage({super.key, required this.listingId});
+  const EditListingPage({super.key, required this.listing});
 
   @override
   State<EditListingPage> createState() => _EditListingPageState();
@@ -139,7 +140,7 @@ class _EditListingPageState extends State<EditListingPage> {
     setState(() => _isLoading = true);
     try {
       final productService = ProductService();
-      final product = await productService.getProductById(widget.listingId);
+      final product = await productService.getProductById(widget.listing.id);
       _product = product;
 
       _titleController.text = product.title;
@@ -2044,7 +2045,7 @@ class _EditListingPageState extends State<EditListingPage> {
       }
 
       await listingService.updateListing(
-        listingId: widget.listingId,
+        listingId: widget.listing.id,
         title: _titleController.text,
         description: _descriptionController.text,
         categoryId: _selectedCategory!.id,
