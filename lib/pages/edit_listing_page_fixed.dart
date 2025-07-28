@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/category.dart';
 import '../services/category_service.dart';
@@ -23,6 +22,8 @@ import '../widgets/location_picker.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../models/listing.dart';
+import 'package:latlong2/latlong.dart' as latlong;
+import 'dart:ui';
 
 class EditListingPage extends StatefulWidget {
   final Listing listing;
@@ -375,6 +376,10 @@ class _EditListingPageState extends State<EditListingPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
+
+                    // Photos Section
+                    _buildPhotosSection(),
+                    const SizedBox(height: 20),
                     
                     // Category Section
                     _buildCategorySection(),
@@ -386,6 +391,11 @@ class _EditListingPageState extends State<EditListingPage> {
 
                     // LocationPicker
                     LocationPicker(
+                      initialLatLng: _selectedLatitude != null && _selectedLongitude != null 
+                          ? latlong.LatLng(_selectedLatitude!, _selectedLongitude!)
+                          : null,
+                      initialAddress: _selectedAddress,
+                      initialRegion: _selectedRegionName,
                       onLocationSelected: (latLng, address) {
                         setState(() {
                           _selectedAddress = address;
@@ -939,11 +949,198 @@ class _EditListingPageState extends State<EditListingPage> {
     );
   }
 
+  Future<void> _pickImage() async {
+    try {
+      if (_selectedImages.length >= 7) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Можна вибрати максимум 7 зображень.')),
+        );
+        return;
+      }
+      
+      final List<XFile> images = await _picker.pickMultiImage();
+      if (images.isNotEmpty) {
+        final currentImageCount = _selectedImages.length;
+        final remainingSlots = 7 - currentImageCount;
+        
+        for (var i = 0; i < math.min(images.length, remainingSlots); i++) {
+          _selectedImages.add(images[i]);
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Помилка вибору зображень. Спробуйте ще раз.')),
+      );
+    }
+  }
+
+  Widget _buildImageWidget(dynamic imageSource) {
+    if (imageSource is String) {
+      return Image.network(
+        imageSource,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.zinc200,
+            child: Icon(Icons.error, color: AppColors.color5),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+      );
+    } else if (imageSource is XFile) {
+      return Image.file(
+        File(imageSource.path),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.zinc200,
+            child: Icon(Icons.error, color: AppColors.color5),
+          );
+        },
+      );
+    } else {
+      return Container(
+        color: AppColors.zinc200,
+        child: Icon(Icons.broken_image, color: AppColors.color5),
+      );
+    }
+  }
+
+  Widget _buildPhotosSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Додайте фото',
+              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+            ),
+            Text(
+              '${_selectedImages.length}/7',
+              style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: _pickImage,
+          borderRadius: BorderRadius.circular(12),
+          child: CustomPaint(
+            painter: DashedBorderPainter(
+              color: AppColors.zinc200,
+              strokeWidth: 1.0,
+              dashWidth: 13.0,
+              gapWidth: 13.0,
+              borderRadius: 12.0,
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.zinc50,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(16, 24, 40, 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Center(
+                    child: SvgPicture.asset(
+                      'assets/icons/Featured icon.svg',
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Перемістіть зображення',
+                    style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'PNG, JPG (max. 200MB)',
+                    style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (_selectedImages.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: List.generate(_selectedImages.length, (index) {
+                final imageSource = _selectedImages[index];
+                return SizedBox(
+                  width: 92,
+                  height: 92,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: _buildImageWidget(imageSource),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedImages.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(200),
+                              color: const Color.fromARGB(0, 255, 255, 255),
+                            ),
+                            child: SvgPicture.asset(
+                              'assets/icons/x-close.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
+    );
+  }
+
   Future<void> _updateListing() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        final productService = ProductService();
+        final listingService = ListingService(Supabase.instance.client);
 
         // Підготовка customAttributes
         Map<String, dynamic>? customAttributes;
@@ -970,13 +1167,28 @@ class _EditListingPageState extends State<EditListingPage> {
           }
         }
 
-        await productService.updateProduct(
-          id: widget.listing.id,
+        // Розділяємо існуючі та нові фотографії
+        final List<String> existingImageUrls = _selectedImages.whereType<String>().toList();
+        final List<XFile> newImagesToUpload = _selectedImages.whereType<XFile>().toList();
+
+        String locationString = '';
+        if (_selectedRegion != null && _selectedCity != null) {
+          locationString = '${_selectedRegion!.name}, ${_selectedCity!.name}';
+        } else if (_selectedRegion != null) {
+          locationString = _selectedRegion!.name;
+        } else if (_selectedCity != null) {
+          locationString = _selectedCity!.name;
+        } else {
+          locationString = widget.listing.location;
+        }
+
+        await listingService.updateListing(
+          listingId: widget.listing.id,
           title: _titleController.text,
           description: _descriptionController.text,
           categoryId: _selectedCategory?.id ?? widget.listing.categoryId,
           subcategoryId: _selectedSubcategory?.id ?? widget.listing.subcategoryId,
-          location: widget.listing.location,
+          location: locationString,
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
           price: _isForSale ? double.tryParse(_priceController.text) : null,
@@ -984,11 +1196,13 @@ class _EditListingPageState extends State<EditListingPage> {
           whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
           telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
           viber: _selectedMessenger == 'viber' ? _viberController.text : null,
+          customAttributes: customAttributes ?? {},
+          newImages: newImagesToUpload,
+          existingImageUrls: existingImageUrls,
           address: _selectedAddress,
           region: _selectedRegion?.name,
           latitude: _selectedLatitude,
           longitude: _selectedLongitude,
-          customAttributes: customAttributes,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1005,4 +1219,60 @@ class _EditListingPageState extends State<EditListingPage> {
       }
     }
   }
-} 
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double gapWidth;
+  final double borderRadius;
+
+  DashedBorderPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.gapWidth,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final RRect rRect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(borderRadius),
+    );
+
+    final Path path = Path();
+    path.addRRect(rRect);
+
+    PathMetrics pathMetrics = path.computeMetrics();
+    for (PathMetric pathMetric in pathMetrics) {
+      double distance = 0.0;
+      while (distance < pathMetric.length) {
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + gapWidth;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    if (oldDelegate is DashedBorderPainter) {
+      return oldDelegate.color != color ||
+          oldDelegate.strokeWidth != strokeWidth ||
+          oldDelegate.dashWidth != dashWidth ||
+          oldDelegate.gapWidth != gapWidth ||
+          oldDelegate.borderRadius != borderRadius;
+    }
+    return true;
+  }
+}

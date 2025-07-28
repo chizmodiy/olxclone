@@ -3,12 +3,22 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
 
 class LocationPicker extends StatefulWidget {
-  final void Function(LatLng? latLng, String? address)? onLocationSelected;
-  const LocationPicker({super.key, this.onLocationSelected});
+  final void Function(latlong.LatLng? latLng, String? address)? onLocationSelected;
+  final latlong.LatLng? initialLatLng;
+  final String? initialAddress;
+  final String? initialRegion;
+  
+  const LocationPicker({
+    super.key, 
+    this.onLocationSelected,
+    this.initialLatLng,
+    this.initialAddress,
+    this.initialRegion,
+  });
 
   @override
   State<LocationPicker> createState() => _LocationPickerState();
@@ -50,8 +60,8 @@ class _LocationPickerState extends State<LocationPicker> {
   List<Map<String, String>> _cityResults = [];
   bool _isSearchingCities = false;
   String? _apiError;
-  LatLng? _selectedLatLng;
-  LatLng? _mapCenter;
+  latlong.LatLng? _selectedLatLng;
+  latlong.LatLng? _mapCenter;
   String? _selectedCityName;
   String? _selectedPlaceId;
   final MapController _mapController = MapController();
@@ -144,20 +154,20 @@ class _LocationPickerState extends State<LocationPicker> {
     };
   }
 
-  Future<LatLng?> getLatLngFromPlaceId(String placeId) async {
+  Future<latlong.LatLng?> getLatLngFromPlaceId(String placeId) async {
     final url = Uri.parse('http://localhost:3000/place_details?place_id=$placeId');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
         final loc = data['result']['geometry']['location'];
-        return LatLng(loc['lat'], loc['lng']);
+        return latlong.LatLng(loc['lat'], loc['lng']);
       }
     }
     return null;
   }
 
-  Future<String?> getCityNameFromLatLng(LatLng latLng) async {
+  Future<String?> getCityNameFromLatLng(latlong.LatLng latLng) async {
     final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${latLng.latitude}&lon=${latLng.longitude}&zoom=10&addressdetails=1');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -167,7 +177,7 @@ class _LocationPickerState extends State<LocationPicker> {
     return null;
   }
 
-  Future<LatLng?> getLatLngFromRegion(String regionName) async {
+  Future<latlong.LatLng?> getLatLngFromRegion(String regionName) async {
     final url = Uri.parse('https://nominatim.openstreetmap.org/search?country=Україна&state=${Uri.encodeComponent(regionName)}&format=json&limit=1');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -176,7 +186,7 @@ class _LocationPickerState extends State<LocationPicker> {
         final lat = double.tryParse(data[0]['lat'].toString());
         final lon = double.tryParse(data[0]['lon'].toString());
         if (lat != null && lon != null) {
-          return LatLng(lat, lon);
+          return latlong.LatLng(lat, lon);
         }
       }
     }
@@ -371,7 +381,7 @@ class _LocationPickerState extends State<LocationPicker> {
     }
     if (permission == LocationPermission.deniedForever) return;
     final pos = await Geolocator.getCurrentPosition();
-    final latLng = LatLng(pos.latitude, pos.longitude);
+    final latLng = latlong.LatLng(pos.latitude, pos.longitude);
     final cityName = await getCityNameFromLatLng(latLng);
     setState(() {
       _selectedLatLng = latLng;
@@ -389,6 +399,20 @@ class _LocationPickerState extends State<LocationPicker> {
   void initState() {
     super.initState();
     _citySearchController.addListener(_onCitySearchChanged);
+    
+    // Встановлюємо початкові значення
+    if (widget.initialRegion != null) {
+      _selectedRegion = widget.initialRegion;
+    }
+    
+    if (widget.initialAddress != null) {
+      _citySearchController.text = widget.initialAddress!;
+    }
+    
+    if (widget.initialLatLng != null) {
+      _selectedLatLng = widget.initialLatLng;
+      _mapCenter = widget.initialLatLng;
+    }
   }
 
   @override
@@ -595,7 +619,7 @@ class _LocationPickerState extends State<LocationPicker> {
               child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  center: _mapCenter ?? LatLng(49.0, 32.0),
+                  center: _mapCenter ?? latlong.LatLng(49.0, 32.0),
                   zoom: _selectedLatLng != null ? 11 : 6,
                 ),
                 children: [
