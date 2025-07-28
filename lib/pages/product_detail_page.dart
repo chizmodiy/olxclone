@@ -894,15 +894,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         iconPath: 'assets/icons/chevron-states.svg',
                         onTap: () => Navigator.pop(context),
                       ),
-                      _buildNavigationButton(
-                        iconPath: 'assets/icons/share-07.svg',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Функція поділитися буде додана незабаром'),
-                            ),
-                          );
-                        },
+                      Row( // Group share and edit buttons
+                        children: [
+                          _buildNavigationButton(
+                            iconPath: 'assets/icons/share-07.svg',
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Функція поділитися буде додана незабаром'),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 12), // 12px gap
+                          _buildNavigationButton(
+                            iconPath: 'assets/icons/edit-03.svg',
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Функція редагування буде додана незабаром'),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
