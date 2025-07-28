@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/complaint_modal.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../pages/edit_listing_page.dart';
 
 class ListingDetailPage extends StatefulWidget {
   final String listingId;
@@ -65,10 +66,25 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             future: _listingFuture,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return IconButton(
-                  icon: const Icon(Icons.flag_outlined),
-                  onPressed: () => _showComplaintModal(snapshot.data!),
-                  tooltip: 'Поскаржитись',
+                return Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Редагувати',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => EditListingPage(listing: snapshot.data!),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.flag_outlined),
+                      onPressed: () => _showComplaintModal(snapshot.data!),
+                      tooltip: 'Поскаржитись',
+                    ),
+                  ],
                 );
               }
               return const SizedBox.shrink();
