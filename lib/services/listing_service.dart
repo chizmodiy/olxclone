@@ -191,4 +191,101 @@ class ListingService {
       throw Exception('Не вдалося видалити оголошення: $e');
     }
   }
+
+  // Додаємо метод для оновлення оголошення
+  Future<void> updateListing({
+    required String listingId,
+    required String title,
+    required String description,
+    required String categoryId,
+    required String subcategoryId,
+    required String location,
+    required bool isFree,
+    String? currency,
+    double? price,
+    String? phoneNumber,
+    String? whatsapp,
+    String? telegram,
+    String? viber,
+    String? address,
+    String? region,
+    double? latitude,
+    double? longitude,
+    required Map<String, dynamic> customAttributes,
+    List<XFile>? newImages,
+    List<String>? existingImageUrls,
+  }) async {
+    try {
+      print('=== Starting updateListing process ===');
+      
+      // Validate price and currency based on isFree
+      if (isFree) {
+        if (price != null || currency != null) {
+          throw Exception('Free listings cannot have price or currency');
+        }
+      } else {
+        if (price == null || currency == null) {
+          throw Exception('Non-free listings must have price and currency');
+        }
+        if (price < 0) {
+          throw Exception('Price cannot be negative');
+        }
+      }
+
+      // Get current user
+      final user = _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be logged in to update a listing');
+      }
+      print('Current user ID: ${user.id}');
+
+      // Upload new images if any
+      final List<String> imageUrls = [];
+      if (existingImageUrls != null) {
+        imageUrls.addAll(existingImageUrls);
+      }
+      
+      if (newImages != null && newImages.isNotEmpty) {
+        print('Uploading ${newImages.length} new images');
+        for (var image in newImages) {
+          print('Uploading image: ${image.name}');
+          final imageUrl = await _storageService.uploadImage(image);
+          print('Image uploaded successfully: $imageUrl');
+          imageUrls.add(imageUrl);
+        }
+        print('All new images uploaded successfully');
+      }
+
+      // Update the listing
+      print('Updating listing record...');
+      await _client.from('listings').update({
+        'title': title,
+        'description': description,
+        'category_id': categoryId,
+        'subcategory_id': subcategoryId,
+        'location': location,
+        'is_free': isFree,
+        'currency': currency,
+        'price': price,
+        'phone_number': phoneNumber,
+        'whatsapp': whatsapp,
+        'telegram': telegram,
+        'viber': viber,
+        'custom_attributes': customAttributes,
+        'photos': imageUrls,
+        'address': address,
+        'region': region,
+        'latitude': latitude,
+        'longitude': longitude,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', listingId);
+
+      print('Listing updated successfully');
+    } catch (error) {
+      print('=== Error in updateListing ===');
+      print('Error type: ${error.runtimeType}');
+      print('Error details: $error');
+      throw Exception('Failed to update listing: $error');
+    }
+  }
 } 

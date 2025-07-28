@@ -194,4 +194,50 @@ class ProductService {
       return [];
     }
   }
+
+  Future<void> updateProduct({
+    required String id,
+    required String title,
+    String? description,
+    required String categoryId,
+    required String subcategoryId,
+    required String location,
+    required bool isFree,
+    String? currency,
+    double? price,
+    String? phoneNumber,
+    String? whatsapp,
+    String? telegram,
+    String? viber,
+    String? address,
+    String? region,
+    double? latitude,
+    double? longitude,
+    Map<String, dynamic>? customAttributes,
+  }) async {
+    try {
+      await _supabase.from('listings').update({
+        'title': title,
+        'description': description,
+        'category_id': categoryId,
+        'subcategory_id': subcategoryId,
+        'location': location,
+        'is_free': isFree,
+        'currency': currency,
+        'price': price,
+        'phone_number': phoneNumber,
+        'whatsapp': whatsapp,
+        'telegram': telegram,
+        'viber': viber,
+        'address': address,
+        'region': region,
+        'latitude': latitude,
+        'longitude': longitude,
+        'custom_attributes': customAttributes,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', id);
+    } catch (e) {
+      throw Exception('Помилка оновлення товару: $e');
+    }
+  }
 }

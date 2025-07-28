@@ -1,3 +1,5 @@
+import '../models/listing.dart';
+
 class Product {
   final String id;
   final String title;
@@ -122,5 +124,34 @@ class Product {
   double get priceValue {
     if (isFree) return 0.0;
     return price ?? 0.0;
+  }
+
+  Listing toListing() {
+    return Listing(
+      id: id,
+      title: title,
+      description: description ?? '',
+      categoryId: categoryId,
+      subcategoryId: subcategoryId,
+      location: location,
+      isFree: isFree,
+      currency: currency,
+      price: price,
+      phoneNumber: phoneNumber,
+      whatsapp: whatsapp,
+      telegram: telegram,
+      viber: viber,
+      userId: userId,
+      customAttributes: customAttributes ?? {},
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      photos: photos,
+      isNegotiable: isNegotiable,
+      isFavorite: false,
+      address: address,
+      region: region,
+      latitude: latitude,
+      longitude: longitude,
+    );
   }
 } 

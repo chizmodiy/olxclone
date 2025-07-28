@@ -144,7 +144,7 @@ class _EditListingPageState extends State<EditListingPage> {
       _product = product;
 
       _titleController.text = product.title;
-      _descriptionController.text = product.description;
+      _descriptionController.text = product.description ?? '';
       _isForSale = !product.isFree;
       _selectedCurrency = product.currency ?? 'UAH';
       _isNegotiablePrice = product.isNegotiable;
@@ -225,6 +225,9 @@ class _EditListingPageState extends State<EditListingPage> {
 
     } catch (e) {
       print('Error loading listing for editing: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Помилка завантаження оголошення: $e')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -2126,6 +2129,7 @@ class _EditListingPageState extends State<EditListingPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
               child: Form(
                 key: _formKey,
@@ -2322,9 +2326,6 @@ class _EditListingPageState extends State<EditListingPage> {
                           }
                         });
                       },
-                      initialAddress: _selectedAddress,
-                      initialLatitude: _selectedLatitude,
-                      initialLongitude: _selectedLongitude,
                     ),
                     const SizedBox(height: 20),
 

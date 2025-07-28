@@ -6,7 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/complaint_modal.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../pages/edit_listing_page.dart';
+import '../pages/edit_listing_page_fixed.dart';
 
 class ListingDetailPage extends StatefulWidget {
   final String listingId;
