@@ -95,7 +95,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _productService = ProductService();
     _categoryService = CategoryService();
     _profileService = ProfileService();
-    _complaintService = ComplaintService();
+    _complaintService = ComplaintService(Supabase.instance.client);
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProduct();
     _loadFavoriteStatus();

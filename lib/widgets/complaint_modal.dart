@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/complaint_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ComplaintModal extends StatefulWidget {
   final String productId;
@@ -52,7 +53,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
     setState(() => _isLoading = true);
 
     try {
-      final complaintService = ComplaintService();
+      final complaintService = ComplaintService(Supabase.instance.client);
       await complaintService.createComplaint(
         listingId: widget.productId,
         title: _titleController.text,

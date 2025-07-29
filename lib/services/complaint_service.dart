@@ -1,7 +1,34 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ComplaintService {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient _client;
+
+  ComplaintService(this._client);
+
+  Future<List<Map<String, dynamic>>> getComplaints() async {
+    try {
+      final response = await _client
+          .from('complaints')
+          .select('''
+            *,
+            listings!inner(
+              id,
+              title,
+              description
+            ),
+            profiles!inner(
+              id,
+              full_name,
+              email
+            )
+          ''')
+          .order('created_at', ascending: false);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Не вдалося отримати скарги: $e');
+    }
+  }
 
   Future<void> createComplaint({
     required String listingId,
@@ -21,5 +48,13 @@ class ComplaintService {
       'description': description,
       'types': types,
     });
+  }
+
+  Future<void> deleteComplaint(String complaintId) async {
+    try {
+      await _client.from('complaints').delete().eq('id', complaintId);
+    } catch (e) {
+      throw Exception('Не вдалося видалити скаргу: $e');
+    }
   }
 } 
