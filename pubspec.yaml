@@ -63,6 +63,10 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+# Override problematic dependencies
+dependency_overrides:
+  sign_in_with_apple: ^6.0.0
+
 # The following section is specific to Flutter packages.
 flutter:
 
