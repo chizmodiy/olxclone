@@ -47,134 +47,7 @@ const String _chevronLeftSvg = '''<svg width="20" height="20" viewBox="0 0 20 20
 
 const String _chevronRightSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.74408 4.41073C8.06951 4.0853 8.59715 4.0853 8.92259 4.41073L13.9226 9.41073C14.248 9.73617 14.248 10.2638 13.9226 10.5892L8.92259 15.5892C8.59715 15.9147 8.06951 15.9147 7.74408 15.5892C7.41864 15.2638 7.41864 14.7362 7.74408 14.4107L12.1548 9.99999L7.74408 5.58925C7.41864 5.26381 7.41864 4.73617 7.74408 4.41073Z" fill="currentColor"/></svg>''';
 
-// Функція для показу діалогу блокування оголошення
-Future<void> showBlockListingDialog({
-  required BuildContext context,
-  required VoidCallback onBlock,
-}) async {
-  return showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(
-          width: 390,
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Заголовок
-                    Text(
-                      'Блокувати оголошення',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Lato',
-                        color: Colors.black,
-                        height: 1.2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    // Пояснення
-                    Text(
-                      'Ви впевнені що бажаєте заблокувати це оголошення?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Inter',
-                        color: Color(0xFF667085),
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.16,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              side: const BorderSide(color: Color(0xFFE4E4E7)),
-                              backgroundColor: Colors.white,
-                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
-                              elevation: 1,
-                            ),
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text(
-                              'Скасувати',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              backgroundColor: Color(0xFFB42318),
-                              side: const BorderSide(color: Color(0xFFB42318)),
-                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
-                              elevation: 1,
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              onBlock();
-                            },
-                            child: const Text(
-                              'Заблокувати',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Кнопка закриття (іконка)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(200),
-                      color: Colors.transparent,
-                    ),
-                    child: Icon(Icons.close, color: Color(0xFF27272A), size: 20),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
+
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({Key? key}) : super(key: key);
@@ -730,31 +603,7 @@ class AdminAdTableRow extends StatelessWidget {
                 svg: _slashCircleSvg,
                 tooltip: 'Заблокувати',
                 onTap: () {
-                  showBlockListingDialog(
-                    context: context,
-                    onBlock: () async {
-                      try {
-                        await listingService.updateListingStatus(ad.id, 'blocked');
-                        // Закриваємо тільки діалог, не всю адмін панель
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                          // Невелика затримка для оновлення бази даних
-                          await Future.delayed(const Duration(milliseconds: 500));
-                          // Оновлюємо список продуктів для відображення змін
-                          onStatusChanged?.call();
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Помилка: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  );
+                  // Поки що без дії
                 },
               ),
               const SizedBox(width: 8),
@@ -775,18 +624,18 @@ class AdminAdTableRow extends StatelessWidget {
     switch (status) {
       case 'active':
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
             color: const Color(0xFFB6E6F2),
-            borderRadius: BorderRadius.circular(100),
-          ),
+                  borderRadius: BorderRadius.circular(100),
+                ),
           child: const Text(
             'Активний',
-            style: TextStyle(
+                  style: TextStyle(
               color: Color(0xFF015873),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
         );
       case 'inactive':
         return Container(
@@ -865,8 +714,8 @@ class _PaginationButton extends StatelessWidget {
               color: const Color.fromRGBO(16, 24, 40, 0.05),
               blurRadius: 2,
               offset: const Offset(0, 1),
-            ),
-          ],
+          ),
+        ],
         ),
         child: SvgPicture.string(
           isLeft ? _chevronLeftSvg : _chevronRightSvg,
