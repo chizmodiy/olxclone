@@ -175,8 +175,28 @@ class ListingService {
   // Додаємо метод для видалення оголошення
   Future<void> deleteListing(String listingId) async {
     try {
-      await _client.from('listings').delete().eq('id', listingId);
+      print('=== ПОЧАТОК ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
+      print('Видалення оголошення з ID: $listingId');
+      
+      // Перевіряємо поточного користувача
+      final user = _client.auth.currentUser;
+      print('Поточний користувач: ${user?.id}');
+      print('Email користувача: ${user?.email}');
+      
+      if (user == null) {
+        throw Exception('Користувач не авторизований');
+      }
+      
+      print('Виконуємо запит видалення...');
+      final response = await _client.from('listings').delete().eq('id', listingId);
+      print('Відповідь від бази даних: $response');
+      print('Оголошення успішно видалено з бази даних');
+      print('=== КІНЕЦЬ ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
     } catch (e) {
+      print('=== ПОМИЛКА ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
+      print('Помилка видалення оголошення: $e');
+      print('Тип помилки: ${e.runtimeType}');
+      print('=== КІНЕЦЬ ПОМИЛКИ ===');
       throw Exception('Не вдалося видалити оголошення: $e');
     }
   }
