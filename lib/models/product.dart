@@ -16,6 +16,7 @@ class Product {
   final String? viber;
   final String userId;
   final Map<String, dynamic>? customAttributes;
+  final String? status;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<String> photos;
@@ -41,6 +42,7 @@ class Product {
     this.viber,
     required this.userId,
     this.customAttributes,
+    this.status,
     required this.createdAt,
     required this.updatedAt,
     required this.photos,
@@ -70,6 +72,7 @@ class Product {
       customAttributes: json['custom_attributes'] != null 
         ? Map<String, dynamic>.from(json['custom_attributes'] as Map)
         : null,
+      status: json['status'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       photos: (json['photos'] as List<dynamic>?)?.cast<String>() ?? [],

@@ -3,7 +3,178 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
 import '../services/category_service.dart';
+import '../services/listing_service.dart';
 import 'dart:async';
+import 'package:flutter_svg/flutter_svg.dart';
+
+// Додаю ActionIconButton і SVG одразу після імпортів
+class _ActionIconButton extends StatelessWidget {
+  final String svg;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final Color? color;
+  const _ActionIconButton({required this.svg, required this.tooltip, this.onTap, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.transparent,
+          ),
+          child: SvgPicture.string(
+            svg,
+            width: 20,
+            height: 20,
+            color: color,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+const String _slashCircleSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_2001_505)"><path d="M4.10866 4.10832L15.892 15.8917M18.3337 9.99999C18.3337 14.6024 14.6027 18.3333 10.0003 18.3333C5.39795 18.3333 1.66699 14.6024 1.66699 9.99999C1.66699 5.39762 5.39795 1.66666 10.0003 1.66666C14.6027 1.66666 18.3337 5.39762 18.3337 9.99999Z" stroke="#27272A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_2001_505"><rect width="20" height="20" fill="white"/></clipPath></defs></svg>''';
+
+const String _trashSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3333 4.99999V4.33332C13.3333 3.3999 13.3333 2.93319 13.1517 2.57667C12.9919 2.26307 12.7369 2.0081 12.4233 1.84831C12.0668 1.66666 11.6001 1.66666 10.6667 1.66666H9.33333C8.39991 1.66666 7.9332 1.66666 7.57668 1.84831C7.26308 2.0081 7.00811 2.26307 6.84832 2.57667C6.66667 2.93319 6.66667 3.3999 6.66667 4.33332V4.99999M8.33333 9.58332V13.75M11.6667 9.58332V13.75M2.5 4.99999H17.5M15.8333 4.99999V14.3333C15.8333 15.7335 15.8333 16.4335 15.5608 16.9683C15.3212 17.4387 14.9387 17.8212 14.4683 18.0608C13.9335 18.3333 13.2335 18.3333 11.8333 18.3333H8.16667C6.76654 18.3333 6.06647 18.3333 5.53169 18.0608C5.06129 17.8212 4.67883 17.4387 4.43915 16.9683C4.16667 16.4335 4.16667 15.7335 4.16667 14.3333V4.99999" stroke="#B42318" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>''';
+
+const String _chevronLeftSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.2556 4.41073C12.581 4.73617 12.581 5.26381 12.2556 5.58925L7.84485 9.99999L12.2556 14.4107C12.581 14.7362 12.581 15.2638 12.2556 15.5892C11.9302 15.9147 11.4025 15.9147 11.0771 15.5892L6.07709 10.5892C5.75165 10.2638 5.75165 9.73617 6.07709 9.41073L11.0771 4.41073C11.4025 4.0853 11.9302 4.0853 12.2556 4.41073Z" fill="currentColor"/></svg>''';
+
+const String _chevronRightSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.74408 4.41073C8.06951 4.0853 8.59715 4.0853 8.92259 4.41073L13.9226 9.41073C14.248 9.73617 14.248 10.2638 13.9226 10.5892L8.92259 15.5892C8.59715 15.9147 8.06951 15.9147 7.74408 15.5892C7.41864 15.2638 7.41864 14.7362 7.74408 14.4107L12.1548 9.99999L7.74408 5.58925C7.41864 5.26381 7.41864 4.73617 7.74408 4.41073Z" fill="currentColor"/></svg>''';
+
+// Функція для показу діалогу блокування оголошення
+Future<void> showBlockListingDialog({
+  required BuildContext context,
+  required VoidCallback onBlock,
+}) async {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 390,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Заголовок
+                    Text(
+                      'Блокувати оголошення',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Lato',
+                        color: Colors.black,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    // Пояснення
+                    Text(
+                      'Ви впевнені що бажаєте заблокувати це оголошення?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.16,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
+                              side: const BorderSide(color: Color(0xFFE4E4E7)),
+                              backgroundColor: Colors.white,
+                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
+                              elevation: 1,
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text(
+                              'Скасувати',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
+                              backgroundColor: Color(0xFFB42318),
+                              side: const BorderSide(color: Color(0xFFB42318)),
+                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
+                              elevation: 1,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              onBlock();
+                            },
+                            child: const Text(
+                              'Заблокувати',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Кнопка закриття (іконка)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(200),
+                      color: Colors.transparent,
+                    ),
+                    child: Icon(Icons.close, color: Color(0xFF27272A), size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({Key? key}) : super(key: key);
@@ -18,6 +189,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   final List<String> _tabs = ['Оголошення', 'Скарги', 'Користувачі'];
 
   final ProductService _productService = ProductService();
+  final ListingService _listingService = ListingService(Supabase.instance.client);
   List<Product> _products = [];
   bool _isLoadingProducts = false;
   String _searchQuery = '';
@@ -57,21 +229,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   Future<void> _fetchProducts() async {
     setState(() => _isLoadingProducts = true);
-    final products = await _productService.getProducts(
-      limit: _pageSize,
-      offset: (_currentPage - 1) * _pageSize,
-      searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-    );
-    // Підрахунок загальної кількості сторінок (отримуємо count окремо)
-    final countResp = await Supabase.instance.client
-        .from('listings')
-        .select('id', const FetchOptions(count: CountOption.exact));
-    final totalCount = countResp.count ?? products.length;
-    setState(() {
-      _products = products;
-      _isLoadingProducts = false;
-      _totalPages = (totalCount / _pageSize).ceil().clamp(1, 9999);
-    });
+    
+    try {
+      // Використовуємо Supabase напряму для адмін панелі, щоб отримати актуальні дані
+      dynamic query = Supabase.instance.client
+          .from('listings')
+          .select()
+          .order('created_at', ascending: false);
+      
+      // Додаємо пошук якщо є запит
+      if (_searchQuery.isNotEmpty) {
+        query = query.ilike('title', '%$_searchQuery%');
+      }
+      
+      // Додаємо пагінацію
+      query = query.range((_currentPage - 1) * _pageSize, (_currentPage * _pageSize) - 1);
+      
+      final response = await query;
+      final products = (response as List).map((json) => Product.fromJson(json)).toList();
+      
+      // Підрахунок загальної кількості сторінок
+      final countResp = await Supabase.instance.client
+          .from('listings')
+          .select('id', const FetchOptions(count: CountOption.exact));
+      final totalCount = countResp.count ?? products.length;
+      
+      setState(() {
+        _products = products;
+        _isLoadingProducts = false;
+        _totalPages = (totalCount / _pageSize).ceil().clamp(1, 9999);
+      });
+    } catch (e) {
+      print('Error fetching products: $e');
+      setState(() {
+        _isLoadingProducts = false;
+      });
+    }
   }
 
   void _onPageChanged(int newPage) {
@@ -100,6 +293,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       _categoryNameCache[categoryId] = name;
     });
     return name;
+  }
+
+  // Додаю метод для пагінації
+  Widget _buildPagination() {
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.only(top: 12, bottom: 16, left: 24, right: 24),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Color(0xFFEAECF0), width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Ліва частина: текст
+          Row(
+            children: [
+              Text(
+                'Сторінка $_currentPage із $_totalPages',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+          // Права частина: кнопки
+          Row(
+            children: [
+              _PaginationButton(isLeft: true, onTap: _currentPage > 1 ? () => _onPageChanged(_currentPage - 1) : null),
+              const SizedBox(width: 8),
+              _PaginationButton(isLeft: false, onTap: _currentPage < _totalPages ? () => _onPageChanged(_currentPage + 1) : null),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -322,9 +558,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             // Блок для таблиці оголошень
                             Container(
                               width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 36),
                               constraints: const BoxConstraints(
-                                minHeight: 80 + 8 * 64 + 56, // заголовки + 8 рядків + пагінація
-                                maxHeight: 80 + 8 * 64 + 56,
+                                minHeight: 80 + 8 * 72 + 56, // заголовки + 8 рядків + пагінація
+                                maxHeight: 80 + 8 * 72 + 56,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -361,44 +598,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                   ),
                                   const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                   // Рядки з реальними даними (без скролу)
-                                  Expanded(
-                                    child: _isLoadingProducts
-                                        ? const Center(child: CircularProgressIndicator())
-                                        : Column(
+                                  _isLoadingProducts
+                                      ? const Expanded(child: Center(child: CircularProgressIndicator()))
+                                      : Expanded(
+                                          child: Column(
                                             children: [
-                                              for (final ad in _products)
-                                                AdminAdTableRow(
+                                              for (final ad in _products.take(8))
+                                                SizedBox(
+                                                  height: 72,
+                                                  child: AdminAdTableRow(
                                                   ad: ad,
                                                   categoryName: _allCategories[ad.categoryId] ?? '',
                                                   formatDate: _formatDate,
                                                   formatPrice: _formatPrice,
+                                                  listingService: _listingService,
+                                                  onStatusChanged: () => _fetchProducts(),
+                                                  ),
                                                 ),
                                               const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
-                                              const Spacer(),
                                             ],
                                           ),
                                   ),
                                   // Пагінація (завжди внизу)
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Сторінка $_currentPage із $_totalPages', style: const TextStyle(fontSize: 14)),
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.chevron_left),
-                                              onPressed: _currentPage > 1 ? () => _onPageChanged(_currentPage - 1) : null,
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.chevron_right),
-                                              onPressed: _currentPage < _totalPages ? () => _onPageChanged(_currentPage + 1) : null,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                    padding: const EdgeInsets.only(top: 16, bottom: 16),
+                                    child: _buildPagination(),
                                   ),
                                 ],
                               ),
@@ -434,6 +658,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final currency = ad.currency ?? '₴';
     return '$currency${ad.price?.toStringAsFixed(2) ?? ''}';
   }
+
+
 }
 
 // Додаю віджет для рядка таблиці
@@ -442,7 +668,9 @@ class AdminAdTableRow extends StatelessWidget {
   final String categoryName;
   final String Function(DateTime?) formatDate;
   final String Function(Product) formatPrice;
-  const AdminAdTableRow({Key? key, required this.ad, required this.categoryName, required this.formatDate, required this.formatPrice}) : super(key: key);
+  final ListingService listingService;
+  final VoidCallback? onStatusChanged;
+  const AdminAdTableRow({Key? key, required this.ad, required this.categoryName, required this.formatDate, required this.formatPrice, required this.listingService, this.onStatusChanged}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -492,31 +720,160 @@ class AdminAdTableRow extends StatelessWidget {
             flex: 2,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFFB6E6F2) : const Color(0xFFE4E4E7),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  (ad.customAttributes?['status'] ?? 'active') == 'active' ? 'Активний' : 'Неактивний',
-                  style: TextStyle(
-                    color: (ad.customAttributes?['status'] ?? 'active') == 'active' ? const Color(0xFF015873) : const Color(0xFF52525B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+              child: _buildStatusBadge(ad.status ?? 'active'),
             ),
           ),
-          SizedBox(
-            width: 40,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFEB5757)),
-              onPressed: () {},
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _ActionIconButton(
+                svg: _slashCircleSvg,
+                tooltip: 'Заблокувати',
+                onTap: () {
+                  showBlockListingDialog(
+                    context: context,
+                    onBlock: () async {
+                      try {
+                        await listingService.updateListingStatus(ad.id, 'blocked');
+                        // Закриваємо тільки діалог, не всю адмін панель
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          // Невелика затримка для оновлення бази даних
+                          await Future.delayed(const Duration(milliseconds: 500));
+                          // Оновлюємо список продуктів для відображення змін
+                          onStatusChanged?.call();
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Помилка: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _ActionIconButton(
+                svg: _trashSvg,
               tooltip: 'Видалити',
+                onTap: () {},
+                color: const Color(0xFFB42318),
             ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    switch (status) {
+      case 'active':
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB6E6F2),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: const Text(
+            'Активний',
+            style: TextStyle(
+              color: Color(0xFF015873),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      case 'inactive':
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAFAFA),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Text(
+            'Неактивний',
+            style: TextStyle(
+              color: Color(0xFF52525B),
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.14,
+              height: 1.4,
+            ),
+          ),
+        );
+      case 'blocked':
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFCDC2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Text(
+            'Заблокований',
+            style: TextStyle(
+              color: Color(0xFFB42318),
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.14,
+              height: 1.4,
+            ),
+          ),
+        );
+      default:
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB6E6F2),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: const Text(
+            'Активний',
+            style: TextStyle(
+              color: Color(0xFF015873),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+    }
+  }
+}
+
+class _PaginationButton extends StatelessWidget {
+  final bool isLeft;
+  final VoidCallback? onTap;
+  const _PaginationButton({required this.isLeft, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE4E4E7)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: SvgPicture.string(
+          isLeft ? _chevronLeftSvg : _chevronRightSvg,
+          width: 20,
+          height: 20,
+          color: onTap != null ? Colors.black : const Color(0xFFBDBDBD),
+        ),
       ),
     );
   }

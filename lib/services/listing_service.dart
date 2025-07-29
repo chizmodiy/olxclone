@@ -161,22 +161,11 @@ class ListingService {
     }
   }
 
-  // Оновлений метод для оновлення статусу оголошення з merge custom_attributes
+  // Оновлений метод для оновлення статусу оголошення
   Future<void> updateListingStatus(String listingId, String status) async {
     try {
-      // Отримати поточні custom_attributes
-      final response = await _client
-          .from('listings')
-          .select('custom_attributes')
-          .eq('id', listingId)
-          .single();
-      final Map<String, dynamic> currentAttributes =
-          (response['custom_attributes'] as Map<String, dynamic>? ?? {});
-      // Оновити статус, зберігаючи інші атрибути
-      final updatedAttributes = Map<String, dynamic>.from(currentAttributes)
-        ..['status'] = status;
       await _client.from('listings').update({
-        'custom_attributes': updatedAttributes,
+        'status': status,
       }).eq('id', listingId);
     } catch (e) {
       throw Exception('Не вдалося оновити статус оголошення: $e');
