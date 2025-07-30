@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
 import '../models/user.dart';
@@ -546,6 +547,64 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             _showMessageInput = type == 'message';
           });
         },
+      ),
+    );
+  }
+
+  Widget _buildContactItem(String iconPath, String text, {required bool isSocialIcon}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            iconPath,
+            width: 24,
+            height: 24,
+            colorFilter: isSocialIcon ? null : const ColorFilter.mode(Color(0xFFA1A1AA), BlendMode.srcIn),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: text));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Скопійовано в буфер обміну'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: Color(0xFF101828),
+                  fontSize: 16,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                  letterSpacing: 0.16,
+                ),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: text));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Скопійовано в буфер обміну'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: SvgPicture.asset(
+              'assets/icons/copy-01.svg',
+              width: 20,
+              height: 20,
+              colorFilter: const ColorFilter.mode(Color(0xFFA1A1AA), BlendMode.srcIn),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1334,86 +1393,44 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Contact buttons row
-                          Row(
-                            children: [
-                                                                              // WhatsApp button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildContactButton(
-                                      'whatsapp',
-                                      'assets/icons/whatsapp.svg',
-                                      () => _handleContactPress('whatsapp'),
-                                      isPrimary: _activeContactMethod == 'whatsapp',
-                                    ),
+                          // Contacts group (WhatsApp, Telegram, Viber, Phone)
+                          if (_product?.whatsapp != null && _product!.whatsapp!.isNotEmpty ||
+                              _product?.telegram != null && _product!.telegram!.isNotEmpty ||
+                              _product?.viber != null && _product!.viber!.isNotEmpty ||
+                              _product?.phoneNumber != null && _product!.phoneNumber!.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // WhatsApp contact
+                                if (_product?.whatsapp != null && _product!.whatsapp!.isNotEmpty)
+                                  _buildContactItem(
+                                    'assets/icons/whatsapp.svg',
+                                    _product!.whatsapp!,
+                                    isSocialIcon: true,
                                   ),
-                                  // Telegram button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildContactButton(
-                                      'telegram',
-                                      'assets/icons/telegram.svg',
-                                      () => _handleContactPress('telegram'),
-                                      isPrimary: _activeContactMethod == 'telegram',
-                                    ),
+                                // Telegram contact
+                                if (_product?.telegram != null && _product!.telegram!.isNotEmpty)
+                                  _buildContactItem(
+                                    'assets/icons/telegram.svg',
+                                    _product!.telegram!,
+                                    isSocialIcon: true,
                                   ),
-                                  // Viber button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildContactButton(
-                                      'viber',
-                                      'assets/icons/viber.svg',
-                                      () => _handleContactPress('viber'),
-                                      isPrimary: _activeContactMethod == 'viber',
-                                    ),
+                                // Viber contact
+                                if (_product?.viber != null && _product!.viber!.isNotEmpty)
+                                  _buildContactItem(
+                                    'assets/icons/viber.svg',
+                                    _product!.viber!,
+                                    isSocialIcon: true,
                                   ),
-                                  // Phone button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildContactButton(
-                                      'phone',
-                                      'assets/icons/phone.svg',
-                                      () => _handleContactPress('phone'),
-                                      isPrimary: _activeContactMethod == 'phone',
-                                    ),
+                                // Phone contact
+                                if (_product?.phoneNumber != null && _product!.phoneNumber!.isNotEmpty)
+                                  _buildContactItem(
+                                    'assets/icons/phone.svg',
+                                    _product!.phoneNumber!,
+                                    isSocialIcon: false,
                                   ),
-                                  // Message button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildContactButton(
-                                      'message',
-                                      'assets/icons/message-circle-01.svg',
-                                      () => setState(() => _showMessageInput = true),
-                                      isPrimary: _activeContactMethod == 'message',
-                                    ),
-                                  ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          // Contact info display
-                          if (_activeContactMethod == 'message' && _showMessageInput)
-                            _buildMessageInput(),
-                          if (_activeContactMethod != 'message')
-                            if (_activeContactMethod == 'phone')
-                              _buildContactInfo(
-                                'assets/icons/phone.svg',
-                                _product?.phoneNumber ?? 'Відсутнє',
-                              ),
-                            if (_activeContactMethod == 'whatsapp')
-                              _buildContactInfo(
-                                'assets/icons/whatsapp.svg',
-                                _product?.whatsapp ?? 'Відсутнє',
-                              ),
-                            if (_activeContactMethod == 'telegram')
-                              _buildContactInfo(
-                                'assets/icons/telegram.svg',
-                                _product?.telegram ?? 'Відсутнє',
-                              ),
-                            if (_activeContactMethod == 'viber')
-                              _buildContactInfo(
-                                'assets/icons/viber.svg',
-                                _product?.viber ?? 'Відсутнє',
-                              ),
+                              ],
+                            ),
                         ],
                       ),
                     ],
@@ -1423,6 +1440,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
+          const SizedBox(height: 40),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
             child: SizedBox(
