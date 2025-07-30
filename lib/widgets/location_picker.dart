@@ -471,7 +471,7 @@ class _LocationPickerState extends State<LocationPicker> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -658,7 +658,7 @@ class _LocationPickerState extends State<LocationPicker> {
           // Кнопка "Моє місцезнаходження"
           SizedBox(
             width: double.infinity,
-            height: 40,
+            height: 44, // Фіксована висота 44 пікселі
             child: ElevatedButton.icon(
               icon: const Icon(Icons.my_location),
               label: const Text('Моє місцезнаходження'),
@@ -670,7 +670,7 @@ class _LocationPickerState extends State<LocationPicker> {
                   borderRadius: BorderRadius.circular(200),
                   side: const BorderSide(color: Color(0xFFE4E4E7)),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 textStyle: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Inter',

@@ -603,7 +603,8 @@ class _AddListingPageState extends State<AddListingPage> {
               const SizedBox(height: 6),
               if (field.type == 'number')
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  height: 44, // Фіксована висота 44 пікселі
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: AppColors.zinc50,
                     borderRadius: BorderRadius.circular(200),
@@ -639,7 +640,8 @@ class _AddListingPageState extends State<AddListingPage> {
                 GestureDetector(
                   onTap: () => _showOptionsDialog(field),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    height: 44, // Фіксована висота 44 пікселі
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: AppColors.zinc50,
                       borderRadius: BorderRadius.circular(200),
@@ -681,7 +683,8 @@ class _AddListingPageState extends State<AddListingPage> {
                       children: [
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            height: 44, // Фіксована висота 44 пікселі
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: AppColors.zinc50,
                               borderRadius: BorderRadius.circular(200),
@@ -729,7 +732,8 @@ class _AddListingPageState extends State<AddListingPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            height: 44, // Фіксована висота 44 пікселі
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: AppColors.zinc50,
                               borderRadius: BorderRadius.circular(200),
@@ -985,7 +989,8 @@ class _AddListingPageState extends State<AddListingPage> {
             }
           },
           child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              height: 44, // Фіксована висота 44 пікселі
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.zinc50,
                 borderRadius: BorderRadius.circular(200),
@@ -1707,7 +1712,8 @@ class _AddListingPageState extends State<AddListingPage> {
         if (!_isNegotiablePrice) ...[
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            height: 44, // Фіксована висота 44 пікселі
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
@@ -1805,12 +1811,13 @@ class _AddListingPageState extends State<AddListingPage> {
     bool isTelegramInput = false,
   }) {
     return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200),
-              ),
-              child: TextField(
+      height: 44, // Фіксована висота 44 пікселі
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(color: AppColors.zinc200),
+      ),
+      child: TextField(
         controller: controller,
         keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
         inputFormatters: isTelegramInput 
@@ -1819,11 +1826,11 @@ class _AddListingPageState extends State<AddListingPage> {
                 FilteringTextInputFormatter.digitsOnly,
                 _PhoneNumberFormatter(),
               ],
-                decoration: InputDecoration(
+        decoration: InputDecoration(
           hintText: hintText,
           hintStyle: AppTextStyles.body2Regular.copyWith(color: AppColors.color5),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          border: InputBorder.none,
           prefixText: isTelegramInput ? null : '+380 ',
           prefixStyle: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
         ),
