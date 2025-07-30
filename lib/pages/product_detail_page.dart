@@ -12,6 +12,7 @@ import 'package:latlong2/latlong.dart';
 import 'chat_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../pages/edit_listing_page_fixed.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -99,6 +100,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProduct();
     _loadFavoriteStatus();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_currentUserId != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   Future<void> _loadProduct() async {

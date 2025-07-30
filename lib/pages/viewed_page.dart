@@ -57,6 +57,8 @@ class _ViewedContentState extends State<ViewedContent> {
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadViewedProducts(); // Call new method to load viewed products
     _scrollController.addListener(_onScroll);
+    
+
   }
 
   @override
@@ -142,6 +144,8 @@ class _ViewedContentState extends State<ViewedContent> {
       });
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {

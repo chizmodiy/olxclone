@@ -143,4 +143,22 @@ class ProfileService {
       return [];
     }
   }
+
+  Future<String?> getUserStatus() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final response = await _client
+          .from('profiles')
+          .select('status')
+          .eq('id', userId)
+          .single();
+      
+      return response['status'] as String?;
+    } catch (e) {
+      print('Error getting user status: $e');
+      return null;
+    }
+  }
 } 

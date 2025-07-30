@@ -24,6 +24,8 @@ import '../services/product_service.dart';
 import '../models/listing.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'dart:ui';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class EditListingPage extends StatefulWidget {
   final Listing listing;
@@ -77,6 +79,7 @@ class _EditListingPageState extends State<EditListingPage> {
   String? _selectedRegionName;
   double? _selectedLatitude;
   double? _selectedLongitude;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
@@ -84,6 +87,28 @@ class _EditListingPageState extends State<EditListingPage> {
     _loadCategories();
     _loadRegions();
     _loadListingForEditing();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   Future<void> _loadCategories() async {

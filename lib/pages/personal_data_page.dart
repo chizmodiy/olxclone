@@ -5,6 +5,7 @@ import '../services/profile_service.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class PersonalDataPage extends StatefulWidget {
   const PersonalDataPage({super.key});
@@ -26,6 +27,28 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   void initState() {
     super.initState();
     _loadProfile();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   Future<void> _loadProfile() async {

@@ -4,6 +4,7 @@ import '../services/product_service.dart';
 import '../models/product.dart';
 import '../widgets/product_card_list_item.dart';
 import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class FavoriteListingsPage extends StatefulWidget {
   const FavoriteListingsPage({super.key});
@@ -31,6 +32,16 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
       _loadProducts();
     });
     _searchController.addListener(_onSearchChanged);
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_currentUserId != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
   }
 
   @override
@@ -105,6 +116,17 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
           ? _products
           : _products.where((p) => p.title.toLowerCase().contains(query)).toList();
     });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   @override

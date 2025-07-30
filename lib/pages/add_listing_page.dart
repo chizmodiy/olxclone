@@ -20,6 +20,8 @@ import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:async'; // Add this import for Timer
 import '../widgets/location_picker.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -72,13 +74,36 @@ class _AddListingPageState extends State<AddListingPage> {
   String? _selectedRegionName;
   double? _selectedLatitude;
   double? _selectedLongitude;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _loadRegions();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
     // _citySearchController.addListener(() => _onCitySearchChanged(_citySearchController.text)); // REMOVE THIS LINE
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   Future<void> _loadCategories() async {

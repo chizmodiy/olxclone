@@ -6,6 +6,8 @@ import 'package:withoutname/models/category.dart';
 import 'package:withoutname/models/subcategory.dart';
 import 'package:withoutname/services/subcategory_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class SubcategorySelectionPage extends StatefulWidget {
   final Category category; // The category for which to show subcategories
@@ -20,11 +22,23 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
   Subcategory? _selectedSubcategory; // Currently selected subcategory
   List<Subcategory> _subcategories = []; // List of subcategories
   bool _isLoadingSubcategories = true; // Flag for subcategory loading
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
     super.initState();
     _loadSubcategories();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
   }
 
   Future<void> _loadSubcategories() async {
@@ -46,6 +60,17 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
         _isLoadingSubcategories = false;
       });
     }
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   @override

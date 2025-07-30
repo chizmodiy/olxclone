@@ -12,6 +12,8 @@ import 'package:withoutname/pages/subcategory_selection_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:withoutname/services/listing_service.dart'; // Import ListingService
 import 'package:withoutname/data/subcategories_data.dart'; // Import for getExtraFieldsForSubcategory
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class FilterPage extends StatefulWidget {
   final Map<String, dynamic> initialFilters;
@@ -59,6 +61,7 @@ class _FilterPageState extends State<FilterPage> {
   bool _isLoadingSubcategories = false;
 
   late final ListingService _listingService; // New: ListingService instance
+  final ProfileService _profileService = ProfileService();
 
   final GlobalKey _subcategoryButtonKey = GlobalKey();
 
@@ -113,7 +116,16 @@ class _FilterPageState extends State<FilterPage> {
     _selectedSize = widget.initialFilters['size'];
     _selectedCondition = widget.initialFilters['condition'];
 
-
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
   }
 
   Future<void> _loadCategories() async {
@@ -1563,6 +1575,17 @@ class _FilterPageState extends State<FilterPage> {
           ),
         );
       },
+    );
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
     );
   }
 } 

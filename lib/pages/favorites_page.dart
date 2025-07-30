@@ -56,6 +56,8 @@ class _FavoritesContentState extends State<FavoritesContent> {
     _loadFavorites().then((_) {
       _loadProducts();
     });
+    
+
     // _scrollController.addListener(_onScroll); // _onScroll is no longer needed as we load all favorites at once
   }
 
@@ -245,6 +247,8 @@ class _FavoritesContentState extends State<FavoritesContent> {
       ),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {

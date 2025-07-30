@@ -5,6 +5,8 @@ import 'package:withoutname/theme/app_text_styles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/pages/otp_page.dart';
 import 'package:flutter/services.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -18,6 +20,31 @@ class _AuthPageState extends State<AuthPage> {
   bool _isLoading = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   final _supabase = Supabase.instance.client;
+  final ProfileService _profileService = ProfileService();
+
+  @override
+  void initState() {
+    super.initState();
+    final user = Supabase.instance.client.auth.currentUser;
+    print('[AUTH] initState: currentUser = $user');
+    if (user != null) {
+      print('[AUTH] User already authorized, redirecting to /general');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacementNamed('/');
+        print('[AUTH] Navigator.pushReplacementNamed(/general) called from initState');
+      });
+    }
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (user != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
 
   void _toggleAuthMode() {
     setState(() {
@@ -40,20 +67,26 @@ class _AuthPageState extends State<AuthPage> {
     setState(() {
       _isLoading = true;
     });
+    print('[AUTH] SignUp: start');
     try {
       final phone = '+380${_phoneNumberController.text.trim()}';
+      print('[AUTH] SignUp: phone = $phone');
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
+      print('[AUTH] SignUp: OTP sent, navigating to OtpPage');
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
     } on AuthException catch (e) {
+      print('[AUTH] AuthException (SignUp): ${e.message}');
       _showSnackBar(e.message, isError: true);
     } catch (e) {
+      print('[AUTH] UNEXPECTED ERROR (SignUp): ${e.toString()}');
       _showSnackBar('An unexpected error occurred', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
       });
+      print('[AUTH] SignUp: end');
     }
   }
 
@@ -61,20 +94,26 @@ class _AuthPageState extends State<AuthPage> {
     setState(() {
       _isLoading = true;
     });
+    print('[AUTH] LogIn: start');
     try {
       final phone = '+380${_phoneNumberController.text.trim()}';
+      print('[AUTH] LogIn: phone = $phone');
       await _supabase.auth.signInWithOtp(
         phone: phone,
       );
+      print('[AUTH] LogIn: OTP sent, navigating to OtpPage');
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: phone, isSignUp: _showSignUp)));
     } on AuthException catch (e) {
+      print('[AUTH] AuthException (LogIn): ${e.message}');
       _showSnackBar(e.message, isError: true);
     } catch (e) {
+      print('[AUTH] UNEXPECTED ERROR (LogIn): ${e.toString()}');
       _showSnackBar('An unexpected error occurred', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
       });
+      print('[AUTH] LogIn: end');
     }
   }
 
@@ -82,27 +121,34 @@ class _AuthPageState extends State<AuthPage> {
     setState(() {
       _isLoading = true;
     });
+    print('[AUTH] QuickAdminLogin: start');
     try {
       final email = 'admin@test.com';
       final password = 'admin123456';
-      
+      print('[AUTH] QuickAdminLogin: email = $email');
       final AuthResponse res = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-
+      print('[AUTH] QuickAdminLogin: AuthResponse = $res');
       if (res.user != null) {
-        // Navigate to general page and remove all previous routes without showing success message
-        Navigator.of(context).pushNamedAndRemoveUntil('/general', (route) => false);
+        print('[AUTH] QuickAdminLogin: Success, redirecting to /general');
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        print('[AUTH] Navigator.pushNamedAndRemoveUntil(/general) called from QuickAdminLogin');
+      } else {
+        print('[AUTH] QuickAdminLogin: No user in response');
       }
     } on AuthException catch (e) {
+      print('[AUTH] AuthException (QuickAdminLogin): ${e.message}');
       _showSnackBar(e.message, isError: true);
     } catch (e) {
+      print('[AUTH] UNEXPECTED ERROR (QuickAdminLogin): ${e.toString()}');
       _showSnackBar('An unexpected error occurred', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
       });
+      print('[AUTH] QuickAdminLogin: end');
     }
   }
 
@@ -110,24 +156,34 @@ class _AuthPageState extends State<AuthPage> {
     setState(() {
       _isLoading = true;
     });
+    print('[AUTH] QuickUserLogin: start');
     try {
       final email = 'user@test.com';
       final password = 'user123456';
+      print('[AUTH] QuickUserLogin: email = $email');
       final AuthResponse res = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
+      print('[AUTH] QuickUserLogin: AuthResponse = $res');
       if (res.user != null) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/general', (route) => false);
+        print('[AUTH] QuickUserLogin: Success, redirecting to /general');
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        print('[AUTH] Navigator.pushNamedAndRemoveUntil(/general) called from QuickUserLogin');
+      } else {
+        print('[AUTH] QuickUserLogin: No user in response');
       }
     } on AuthException catch (e) {
+      print('[AUTH] AuthException (QuickUserLogin): ${e.message}');
       _showSnackBar(e.message, isError: true);
     } catch (e) {
+      print('[AUTH] UNEXPECTED ERROR (QuickUserLogin): ${e.toString()}');
       _showSnackBar('An unexpected error occurred', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
       });
+      print('[AUTH] QuickUserLogin: end');
     }
   }
 
@@ -135,6 +191,17 @@ class _AuthPageState extends State<AuthPage> {
   void dispose() {
     _phoneNumberController.dispose();
     super.dispose();
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   @override

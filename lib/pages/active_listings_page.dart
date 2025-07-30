@@ -7,6 +7,10 @@ import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:developer';
 import '../services/listing_service.dart';
+import '../widgets/common_header.dart';
+import '../models/listing.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class ActiveListingsPage extends StatefulWidget {
   const ActiveListingsPage({super.key});
@@ -26,6 +30,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
   int? _openedActionIndex;
   final Duration _swipeAnimDuration = const Duration(milliseconds: 250);
   final ListingService _listingService = ListingService(Supabase.instance.client);
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
@@ -33,6 +38,27 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadProducts();
     _searchController.addListener(_onSearchChanged);
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_currentUserId != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   @override

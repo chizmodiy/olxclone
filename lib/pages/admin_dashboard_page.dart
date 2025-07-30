@@ -8,6 +8,8 @@ import '../services/complaint_service.dart';
 import 'dart:async';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/user_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
+import '../services/profile_service.dart';
 
 // Додаю ActionIconButton і SVG одразу після імпортів
 class _ActionIconButton extends StatelessWidget {
@@ -40,8 +42,6 @@ class _ActionIconButton extends StatelessWidget {
     );
   }
 }
-
-
 
 const String _chevronLeftSvg = '''<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.2556 4.41073C12.581 4.73617 12.581 5.26381 12.2556 5.58925L7.84485 9.99999L12.2556 14.4107C12.581 14.7362 12.581 15.2638 12.2556 15.5892C11.9302 15.9147 11.4025 15.9147 11.0771 15.5892L6.07709 10.5892C5.75165 10.2638 5.75165 9.73617 6.07709 9.41073L11.0771 4.41073C11.4025 4.0853 11.9302 4.0853 12.2556 4.41073Z" fill="currentColor"/></svg>''';
 
@@ -217,6 +217,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   final Map<String, String> _categoryNameCache = {};
   Map<String, String> _allCategories = {};
   final UserService _userService = UserService(Supabase.instance.client);
+  final ProfileService _profileService = ProfileService();
 
   Timer? _searchDebounce;
 
@@ -224,6 +225,28 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   void initState() {
     super.initState();
     _initCategoriesAndProducts();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   Future<void> _initCategoriesAndProducts() async {
@@ -306,16 +329,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   Future<void> _fetchUsers() async {
     setState(() => _isLoadingUsers = true);
+    print('[USERS] _fetchUsers: start');
     try {
+      print('[USERS] Executing Supabase query...');
       final users = await Supabase.instance.client
           .from('profiles')
           .select()
-          .order('created_at', ascending: false);
+          .order('id', ascending: false);
+      print('[USERS] Query result: $users');
+      print('[USERS] Users count: ${users.length}');
       setState(() {
         _users = List<Map<String, dynamic>>.from(users);
         _isLoadingUsers = false;
       });
+      print('[USERS] _users updated, count: ${_users.length}');
     } catch (e) {
+      print('[USERS] ERROR fetching users: $e');
       setState(() => _isLoadingUsers = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1327,7 +1356,7 @@ class ComplaintTableRow extends StatelessWidget {
               children: [
                 SvgPicture.string(
                   _userIconSvg,
-                  width: 40,
+            width: 40,
                   height: 40,
                 ),
                 const SizedBox(width: 12),
@@ -1427,13 +1456,15 @@ class UserTableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userName = user['full_name'] ?? 'Невідомий користувач';
+    final firstName = user['first_name'] ?? '';
+    final lastName = user['last_name'] ?? '';
+    final userName = '$firstName $lastName'.trim().isEmpty ? 'Невідомий користувач' : '$firstName $lastName'.trim();
     final email = user['email'] ?? '';
     final phone = user['phone'] ?? '';
-    final createdAt = user['created_at'] != null ? DateTime.tryParse(user['created_at']) : null;
-    final createdDate = createdAt != null ? '${createdAt.day.toString().padLeft(2, '0')}.${createdAt.month.toString().padLeft(2, '0')}.${createdAt.year}' : '';
     final status = user['status'] ?? 'active';
     final avatarUrl = user['avatar_url'] as String?;
+    
+    print('[USERS] UserTableRow build: userName=$userName, email=$email, status=$status');
     
     return Container(
       height: 72,
@@ -1523,14 +1554,14 @@ class UserTableRow extends StatelessWidget {
               ),
             ),
           ),
-          // Дата
+          // Дата (поки що пуста, бо немає created_at)
           Expanded(
             flex: 2,
             child: Container(
               width: 160,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Text(
-                createdDate,
+                '-',
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 16,
@@ -1543,13 +1574,9 @@ class UserTableRow extends StatelessWidget {
             ),
           ),
           // Статус
-          Expanded(
-            flex: 2,
-            child: Container(
-              width: 160,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: _buildUserStatusBadge(status),
-            ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: _buildUserStatusBadge(status),
           ),
           // Дії
           Container(

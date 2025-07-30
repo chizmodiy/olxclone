@@ -71,7 +71,7 @@ class HomeContentState extends State<HomeContent> {
     _scrollController.addListener(_onScroll);
     
     // Показуємо bottom sheet для розлогінених користувачів після завантаження
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_currentUserId == null) {
         _showAuthBottomSheet();
       }

@@ -7,6 +7,8 @@ import '../theme/app_text_styles.dart';
 import '../widgets/complaint_modal.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../pages/edit_listing_page_fixed.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class ListingDetailPage extends StatefulWidget {
   final String listingId;
@@ -22,11 +24,23 @@ class ListingDetailPage extends StatefulWidget {
 
 class _ListingDetailPageState extends State<ListingDetailPage> {
   late Future<Listing> _listingFuture;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
     super.initState();
     _loadListing();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
   }
 
   void _loadListing() {
@@ -34,7 +48,16 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     _listingFuture = listingService.getListingById(widget.listingId);
   }
 
-
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
+  }
 
   void _showComplaintModal(Listing listing) {
     showModalBottomSheet(

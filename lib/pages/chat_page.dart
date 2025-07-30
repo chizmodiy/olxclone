@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../services/profile_service.dart';
+
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -19,12 +21,15 @@ class _ChatPageState extends State<ChatPage> {
   String? _currentUserId;
   List<Map<String, dynamic>> _chats = [];
   bool _loading = true;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadChats();
+    
+
   }
 
   Future<void> _loadChats() async {
@@ -125,6 +130,8 @@ class _ChatPageState extends State<ChatPage> {
       _loading = false;
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {

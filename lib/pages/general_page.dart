@@ -8,6 +8,8 @@ import 'package:withoutname/pages/home_page.dart';
 import 'package:withoutname/pages/viewed_page.dart';
 import 'package:withoutname/pages/favorites_page.dart';
 import 'chat_page.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class GeneralPage extends StatefulWidget {
   const GeneralPage({super.key});
@@ -18,6 +20,7 @@ class GeneralPage extends StatefulWidget {
 
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
+  final ProfileService _profileService = ProfileService();
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
@@ -38,10 +41,36 @@ class _GeneralPageState extends State<GeneralPage> {
     return false; // TODO: замінити на реальну перевірку
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
   }
 
   @override

@@ -9,6 +9,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/profile_service.dart';
 import '../pages/filter_page.dart'; // Додаю імпорт FilterPage
+import '../widgets/blocked_user_bottom_sheet.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Pin extends StatelessWidget {
   final String count;
@@ -96,6 +98,8 @@ class _CommentsState extends State<Comments> {
       });
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +291,7 @@ class _MapPageState extends State<MapPage> {
   bool _loading = true;
   String _searchQuery = '';
   Map<String, dynamic> _currentFilters = {}; // Додаю збереження фільтрів
+  final ProfileService _profileService = ProfileService();
 
   void _goHome() {
     // Знайти GeneralPage в дереві і викликати зміну вкладки

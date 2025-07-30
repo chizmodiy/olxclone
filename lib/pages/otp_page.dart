@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
+import '../services/profile_service.dart';
+import '../widgets/blocked_user_bottom_sheet.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
@@ -24,6 +26,34 @@ class _OtpPageState extends State<OtpPage> {
   final TextEditingController _otpController6 = TextEditingController();
   final _supabase = Supabase.instance.client;
   bool _isLoading = false;
+  final ProfileService _profileService = ProfileService();
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Перевіряємо статус користувача після завантаження
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final userStatus = await _profileService.getUserStatus();
+        if (userStatus == 'blocked') {
+          _showBlockedUserBottomSheet();
+        }
+      }
+    });
+  }
+
+  void _showBlockedUserBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false, // Неможливо закрити
+      enableDrag: false, // Неможливо перетягувати
+      builder: (context) => const BlockedUserBottomSheet(),
+    );
+  }
 
   void _showSnackBar(String message, {bool isError = false}) {
     if (isError) {  // Only show error messages
@@ -53,7 +83,7 @@ class _OtpPageState extends State<OtpPage> {
         type: OtpType.sms,
       );
       if (smth.session != null) {
-        Navigator.of(context).pushReplacementNamed('/general');
+        Navigator.of(context).pushReplacementNamed('/');
       } else {
         _showSnackBar('OTP verification failed.', isError: true);
       }
