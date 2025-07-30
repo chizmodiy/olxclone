@@ -189,18 +189,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _showComplaint() {
-    setState(() {
-      _showComplaintDialog = true;
-    });
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ComplaintBottomSheet(
+        onSubmit: _submitComplaint,
+        onClose: _hideComplaint,
+        initialType: _selectedComplaintType,
+        titleController: _complaintTitleController,
+        descriptionController: _complaintDescriptionController,
+      ),
+    );
   }
 
   void _hideComplaint() {
-    setState(() {
-      _showComplaintDialog = false;
-      _complaintTitleController.clear();
-      _complaintDescriptionController.clear();
-      _selectedComplaintType = 'Товар не відповідає опису';
-    });
+    Navigator.of(context).pop();
+    _complaintTitleController.clear();
+    _complaintDescriptionController.clear();
+    _selectedComplaintType = 'Товар не відповідає опису';
   }
 
   Future<void> _submitComplaint() async {
@@ -230,285 +237,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  Widget _buildComplaintDialog() {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 36,
-            height: 5,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE4E4E7),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 13),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Повідомити про проблему',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Опишіть проблему яку ви зустріли з цим продавцем',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF71717A),
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: _hideComplaint,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Назва товару',
-                      style: TextStyle(
-                        color: Color(0xFF52525B),
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                        letterSpacing: 0.14,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _complaintTitleController,
-                      decoration: InputDecoration(
-                        hintText: 'Введіть назву товару',
-                        hintStyle: const TextStyle(
-                          color: Color(0xFFA1A1AA),
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                          letterSpacing: 0.16,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFFFAFAFA),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(200),
-                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(200),
-                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(200),
-                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                        height: 1.5,
-                        letterSpacing: 0.16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(color: Color(0xFFE4E4E7)),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _buildComplaintTypeChip('Товар не відповідає опису'),
-                    _buildComplaintTypeChip('Не отримав товар'),
-                    _buildComplaintTypeChip('Продавець не відповідав'),
-                    _buildComplaintTypeChip('Проблема з оплатою'),
-                    _buildComplaintTypeChip('Неналежна поведінка'),
-                    _buildComplaintTypeChip('Інше'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 160,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Опис',
-                        style: TextStyle(
-                          color: Color(0xFF52525B),
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          height: 1.4,
-                          letterSpacing: 0.14,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Expanded(
-                        child: TextField(
-                          controller: _complaintDescriptionController,
-                          maxLines: null,
-                          expands: true,
-                          textAlignVertical: TextAlignVertical.top,
-                          decoration: InputDecoration(
-                            hintText: 'Опишіть свою скаргу',
-                            alignLabelWithHint: false,
-                            hintStyle: const TextStyle(
-                              color: Color(0xFFA1A1AA),
-                              fontSize: 16,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
-                              letterSpacing: 0.16,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
-                            ),
-                          ),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
-                            letterSpacing: 0.16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: _submitComplaint,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF015873),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(200),
-                      ),
-                    ),
-                    child: const Text(
-                      'Надіслати скаргу',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: OutlinedButton(
-                    onPressed: _hideComplaint,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFE4E4E7)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(200),
-                      ),
-                    ),
-                    child: const Text(
-                      'Скасувати',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 36),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildComplaintTypeChip(String type) {
-    final isSelected = _selectedComplaintType == type;
-    return ChoiceChip(
-      label: Text(
-        type,
-        style: TextStyle(
-          color: isSelected ? Colors.black : const Color(0xFF52525B),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      selected: isSelected,
-      onSelected: (bool selected) {
-        setState(() {
-          _selectedComplaintType = type;
-        });
-      },
-      backgroundColor: Colors.white,
-      selectedColor: const Color(0xFFF4F4F5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(200),
-        side: BorderSide(
-          color: isSelected ? const Color(0xFFF4F4F5) : const Color(0xFFE4E4E7),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-    );
-  }
 
   Widget _buildContactButton(
     String type,
@@ -887,16 +616,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          _buildMainContent(imageHeight),
-          if (_showComplaintDialog) ComplaintDialog(
-            onClose: _hideComplaint,
-            onSubmit: (title, description, type) => _submitComplaintWithData(title, description, type),
-            initialType: _selectedComplaintType,
-          ),
-        ],
-      ),
+      body: _buildMainContent(imageHeight),
     );
   }
 
@@ -1484,10 +1204,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            GestureDetector(
-              onTap: () {}, // Prevent tap through
-              child: _buildComplaintDialog(),
-            ),
+            // Empty for now since we're using showModalBottomSheet
           ],
         ),
       ),
@@ -1932,6 +1649,325 @@ class _ComplaintDialogState extends State<ComplaintDialog> {
             ),
           ],
         ),
+      ),
+    );
+  }
+} 
+
+class ComplaintBottomSheet extends StatefulWidget {
+  final VoidCallback onSubmit;
+  final VoidCallback onClose;
+  final String initialType;
+  final TextEditingController titleController;
+  final TextEditingController descriptionController;
+
+  const ComplaintBottomSheet({
+    super.key,
+    required this.onSubmit,
+    required this.onClose,
+    required this.initialType,
+    required this.titleController,
+    required this.descriptionController,
+  });
+
+  @override
+  State<ComplaintBottomSheet> createState() => _ComplaintBottomSheetState();
+}
+
+class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
+  late String _selectedComplaintType;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedComplaintType = widget.initialType;
+  }
+
+  Widget _buildComplaintTypeChip(String type) {
+    final isSelected = _selectedComplaintType == type;
+    return ChoiceChip(
+      label: Text(
+        type,
+        style: TextStyle(
+          color: isSelected ? Colors.black : const Color(0xFF52525B),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (bool selected) {
+        setState(() {
+          _selectedComplaintType = type;
+        });
+      },
+      backgroundColor: Colors.white,
+      selectedColor: const Color(0xFFF4F4F5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(200),
+        side: BorderSide(
+          color: isSelected ? const Color(0xFFF4F4F5) : const Color(0xFFE4E4E7),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 5,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE4E4E7),
+              borderRadius: BorderRadius.circular(2.5),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Повідомити про проблему',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Опишіть проблему яку ви зустріли з цим продавцем',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF71717A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: widget.onClose,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Назва товару',
+                      style: TextStyle(
+                        color: Color(0xFF52525B),
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        letterSpacing: 0.14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: widget.titleController,
+                      decoration: InputDecoration(
+                        hintText: 'Введіть назву товару',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFFA1A1AA),
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                          letterSpacing: 0.16,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFFAFAFA),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(200),
+                          borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                        ),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: Color(0xFFE4E4E7)),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildComplaintTypeChip('Товар не відповідає опису'),
+                    _buildComplaintTypeChip('Не отримав товар'),
+                    _buildComplaintTypeChip('Продавець не відповідав'),
+                    _buildComplaintTypeChip('Проблема з оплатою'),
+                    _buildComplaintTypeChip('Неналежна поведінка'),
+                    _buildComplaintTypeChip('Інше'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 160,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Опис',
+                        style: TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                          letterSpacing: 0.14,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: TextField(
+                          controller: widget.descriptionController,
+                          maxLines: null,
+                          expands: true,
+                          textAlignVertical: TextAlignVertical.top,
+                          decoration: InputDecoration(
+                            hintText: 'Опишіть свою скаргу',
+                            alignLabelWithHint: false,
+                            hintStyle: const TextStyle(
+                              color: Color(0xFFA1A1AA),
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
+                              letterSpacing: 0.16,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFFAFAFA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE4E4E7)),
+                            ),
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                            letterSpacing: 0.16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: widget.onSubmit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF015873),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                    ),
+                    child: const Text(
+                      'Надіслати скаргу',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton(
+                    onPressed: widget.onClose,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFE4E4E7)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                    ),
+                    child: const Text(
+                      'Скасувати',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 36),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
