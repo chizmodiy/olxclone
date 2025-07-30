@@ -137,10 +137,11 @@ class _LocationPickerState extends State<LocationPicker> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
-        final predictions = data['predictions'] as List;
+        final predictions = data['predictions'] as List<dynamic>;
         cities = predictions.map<Map<String, String>>((p) {
-          final description = p['description'] as String;
-          final placeId = p['place_id'] as String;
+          final Map<String, dynamic> prediction = p as Map<String, dynamic>;
+          final description = prediction['description']?.toString() ?? '';
+          final placeId = prediction['place_id']?.toString() ?? '';
           return {'name': description, 'placeId': placeId};
         }).toList();
       } else if (data['status'] == 'ZERO_RESULTS') {
@@ -164,8 +165,12 @@ class _LocationPickerState extends State<LocationPicker> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
-        final loc = data['result']['geometry']['location'];
-        return latlong.LatLng(loc['lat'], loc['lng']);
+        final result = data['result'] as Map<String, dynamic>;
+        final geometry = result['geometry'] as Map<String, dynamic>;
+        final location = geometry['location'] as Map<String, dynamic>;
+        final lat = location['lat'] as double;
+        final lng = location['lng'] as double;
+        return latlong.LatLng(lat, lng);
       }
     }
     return null;
@@ -175,8 +180,16 @@ class _LocationPickerState extends State<LocationPicker> {
     final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${latLng.latitude}&lon=${latLng.longitude}&zoom=10&addressdetails=1');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['address']['city'] ?? data['address']['town'] ?? data['address']['village'] ?? data['address']['state'] ?? data['display_name'];
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final address = data['address'] as Map<String, dynamic>?;
+      if (address != null) {
+        return address['city']?.toString() ?? 
+               address['town']?.toString() ?? 
+               address['village']?.toString() ?? 
+               address['state']?.toString() ?? 
+               data['display_name']?.toString();
+      }
+      return data['display_name']?.toString();
     }
     return null;
   }
@@ -185,10 +198,11 @@ class _LocationPickerState extends State<LocationPicker> {
     final url = Uri.parse('https://nominatim.openstreetmap.org/search?country=Україна&state=${Uri.encodeComponent(regionName)}&format=json&limit=1');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data is List && data.isNotEmpty) {
-        final lat = double.tryParse(data[0]['lat'].toString());
-        final lon = double.tryParse(data[0]['lon'].toString());
+      final data = json.decode(response.body) as List<dynamic>;
+      if (data.isNotEmpty) {
+        final firstResult = data[0] as Map<String, dynamic>;
+        final lat = double.tryParse(firstResult['lat']?.toString() ?? '');
+        final lon = double.tryParse(firstResult['lon']?.toString() ?? '');
         if (lat != null && lon != null) {
           return latlong.LatLng(lat, lon);
         }
