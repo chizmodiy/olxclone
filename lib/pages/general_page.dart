@@ -79,7 +79,7 @@ class _GeneralPageState extends State<GeneralPage> {
       backgroundColor: Colors.white,
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(23, 6, 23, 36),
+        padding: EdgeInsets.fromLTRB(23, 6, 23, MediaQuery.of(context).size.width >= 450 ? 36 : 20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: const [
@@ -207,6 +207,8 @@ class _GeneralPageState extends State<GeneralPage> {
     final bool isSelected = _selectedIndex == index;
     final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5;
     final Color textColor = isSelected ? AppColors.color2 : AppColors.color8;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showText = screenWidth >= 450;
 
     return InkWell(
       onTap: () => _onItemTapped(index),
@@ -223,11 +225,16 @@ class _GeneralPageState extends State<GeneralPage> {
               height: 20,
               colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
-            ),
+            if (showText) ...[
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
           ],
         ),
       ),
@@ -243,6 +250,8 @@ class _GeneralPageState extends State<GeneralPage> {
     final bool isSelected = _selectedIndex == index;
     final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5;
     final Color textColor = isSelected ? AppColors.color2 : AppColors.color8;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showText = screenWidth >= 450;
 
     return InkWell(
       onTap: () => _onItemTapped(index),
@@ -274,11 +283,16 @@ class _GeneralPageState extends State<GeneralPage> {
                   ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
-            ),
+            if (showText) ...[
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
           ],
         ),
       ),

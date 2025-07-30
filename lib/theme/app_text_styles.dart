@@ -166,4 +166,93 @@ class AppTextStyles {
         height: 1.3,
         letterSpacing: 0.02 * 12,
       );
+
+  // Input Styles
+  static InputDecoration get inputDecoration => InputDecoration(
+    filled: true,
+    fillColor: const Color(0xFFFAFAFA), // Zinc-50
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFFE4E4E7), // Zinc-200
+      ),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFFE4E4E7), // Zinc-200
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFF015873), // Primary color
+      ),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 10,
+    ),
+    isDense: false,
+    hintStyle: body1Regular.copyWith(
+      color: const Color(0xFFA1A1AA), // Zinc-400
+      letterSpacing: 0.16,
+    ),
+  );
+
+  static InputDecoration get inputDecorationWithShadow => InputDecoration(
+    filled: true,
+    fillColor: const Color(0xFFFAFAFA), // Zinc-50
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFFE4E4E7), // Zinc-200
+      ),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFFE4E4E7), // Zinc-200
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(200),
+      borderSide: const BorderSide(
+        width: 1,
+        color: Color(0xFF015873), // Primary color
+      ),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 10,
+    ),
+    isDense: false,
+    hintStyle: body1Regular.copyWith(
+      color: const Color(0xFFA1A1AA), // Zinc-400
+      letterSpacing: 0.16,
+    ),
+  );
+
+  // Container style for input with shadow
+  static BoxDecoration get inputContainerDecoration => BoxDecoration(
+    color: const Color(0xFFFAFAFA), // Zinc-50
+    borderRadius: BorderRadius.circular(200),
+    border: Border.all(
+      width: 1,
+      color: const Color(0xFFE4E4E7), // Zinc-200
+    ),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x0C101828), // rgba(16, 24, 40, 0.05)
+        blurRadius: 2,
+        offset: Offset(0, 1),
+        spreadRadius: 0,
+      ),
+    ],
+  );
 } 
