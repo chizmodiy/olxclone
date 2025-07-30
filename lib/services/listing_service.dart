@@ -38,8 +38,6 @@ class ListingService {
     required List<XFile> images,
   }) async {
     try {
-      print('=== Starting createListing process ===');
-      
       // Validate price and currency based on isFree
       if (isFree) {
         if (price != null || currency != null) {
@@ -59,24 +57,17 @@ class ListingService {
       if (user == null) {
         throw Exception('User must be logged in to create a listing');
       }
-      print('Current user ID: ${user.id}');
 
       // Upload images first
-      print('Starting image upload process...');
       final List<String> imageUrls = [];
       if (images.isNotEmpty) {
-        print('Uploading ${images.length} images');
         for (var image in images) {
-          print('Uploading image: ${image.name}');
           final imageUrl = await _storageService.uploadImage(image);
-          print('Image uploaded successfully: $imageUrl');
           imageUrls.add(imageUrl);
         }
-        print('All images uploaded successfully');
       }
 
       // Create the listing
-      print('Creating listing record...');
       final response = await _client.from('listings').insert({
         'title': title,
         'description': description,
@@ -100,13 +91,9 @@ class ListingService {
       }).select('id').single();
 
       final listingId = response['id'] as String;
-      print('Listing created with ID: $listingId');
 
       return listingId;
     } catch (error) {
-      print('=== Error in createListing ===');
-      print('Error type: ${error.runtimeType}');
-      print('Error details: $error');
       throw Exception('Failed to create listing: $error');
     }
   }
@@ -187,16 +174,8 @@ class ListingService {
         throw Exception('Користувач не авторизований');
       }
       
-      print('Виконуємо запит видалення...');
-      final response = await _client.from('listings').delete().eq('id', listingId);
-      print('Відповідь від бази даних: $response');
-      print('Оголошення успішно видалено з бази даних');
-      print('=== КІНЕЦЬ ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
+      await _client.from('listings').delete().eq('id', listingId);
     } catch (e) {
-      print('=== ПОМИЛКА ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
-      print('Помилка видалення оголошення: $e');
-      print('Тип помилки: ${e.runtimeType}');
-      print('=== КІНЕЦЬ ПОМИЛКИ ===');
       throw Exception('Не вдалося видалити оголошення: $e');
     }
   }
@@ -225,8 +204,6 @@ class ListingService {
     List<String>? existingImageUrls,
   }) async {
     try {
-      print('=== Starting updateListing process ===');
-      
       // Validate price and currency based on isFree
       if (isFree) {
         if (price != null || currency != null) {
@@ -246,7 +223,6 @@ class ListingService {
       if (user == null) {
         throw Exception('User must be logged in to update a listing');
       }
-      print('Current user ID: ${user.id}');
 
       // Upload new images if any
       final List<String> imageUrls = [];
@@ -255,18 +231,13 @@ class ListingService {
       }
       
       if (newImages != null && newImages.isNotEmpty) {
-        print('Uploading ${newImages.length} new images');
         for (var image in newImages) {
-          print('Uploading image: ${image.name}');
           final imageUrl = await _storageService.uploadImage(image);
-          print('Image uploaded successfully: $imageUrl');
           imageUrls.add(imageUrl);
         }
-        print('All new images uploaded successfully');
       }
 
       // Update the listing
-      print('Updating listing record...');
       await _client.from('listings').update({
         'title': title,
         'description': description,

@@ -41,7 +41,6 @@ class ProductService {
       
       return (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      print('Error getting products by IDs: $e');
       return [];
     }
   }
@@ -81,7 +80,7 @@ class ProductService {
         return hits.map((hit) => Product.fromJson(hit)).toList();
       } else {
         // --- SUPABASE SEARCH (fallback) ---
-        print('Fetching products with params: limit=$limit, offset=$offset, searchQuery=$searchQuery, categoryId=$categoryId, subcategoryId=$subcategoryId, minPrice=$minPrice, maxPrice=$maxPrice, hasDelivery=$hasDelivery, sortBy=$sortBy, isFree=$isFree, minArea=$minArea, maxArea=$maxArea, minYear=$minYear, maxYear=$maxYear, brand=$brand, minEngineHp=$minEngineHp, maxEngineHp=$maxEngineHp, size=$size, condition=$condition');
+
 
         PostgrestFilterBuilder query = _supabase.from('listings').select();
 
@@ -176,7 +175,6 @@ class ProductService {
         return data.map((json) => Product.fromJson(json as Map<String, dynamic>)).toList();
       }
     } catch (e) {
-      print('Error fetching products: $e');
       return [];
     }
   }
@@ -190,7 +188,6 @@ class ProductService {
           .not('longitude', 'is', null);
       return (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      print('Error getting products with coordinates: $e');
       return [];
     }
   }

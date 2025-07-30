@@ -128,7 +128,7 @@ class HomeContentState extends State<HomeContent> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print('Error loading products: $_errorMessage');
+
     }
   }
 
@@ -140,7 +140,7 @@ class HomeContentState extends State<HomeContent> {
         _favoriteProductIds = favoriteIds;
       });
     } catch (e) {
-      print('Error loading favorites: $e');
+      // Error loading favorites
     }
   }
 
@@ -180,7 +180,7 @@ class HomeContentState extends State<HomeContent> {
         });
       }
     } catch (e) {
-      print('Error toggling favorite: $e');
+      // Error toggling favorite
     }
   }
 

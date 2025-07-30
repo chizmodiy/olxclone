@@ -164,9 +164,6 @@ class _AddListingPageState extends State<AddListingPage> {
   Future<void> _pickImage() async {
     try {
       if (_selectedImages.length >= 7) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can select a maximum of 7 images.')),
-        );
         return;
       }
       
@@ -184,17 +181,13 @@ class _AddListingPageState extends State<AddListingPage> {
                 _selectedImages.add(image);
         });
       }
-    } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Could not load image: ${image.name}')),
-            );
+                } catch (e) {
+            // Skip invalid image
           }
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error selecting images. Please try again.')),
-      );
+      // Error selecting images
     }
   }
 
@@ -1970,17 +1963,11 @@ class _AddListingPageState extends State<AddListingPage> {
   Future<void> _createListing() async {
     final formValidationMessage = _validateForm();
     if (formValidationMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(formValidationMessage)),
-      );
       return;
     }
 
     final extraFieldsValidationMessage = _validateExtraFields();
     if (extraFieldsValidationMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(extraFieldsValidationMessage)),
-      );
       return;
     }
 
@@ -2044,14 +2031,9 @@ class _AddListingPageState extends State<AddListingPage> {
         longitude: _selectedLongitude,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Оголошення успішно опубліковано!')),
-        );
         Navigator.of(context).pop(true);
       } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка: $error')),
-        );
+        // Error handling without showing message
     } finally {
       setState(() {
         _isLoading = false;

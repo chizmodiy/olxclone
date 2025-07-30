@@ -812,12 +812,8 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           client.storage.from('chat_images').getPublicUrl(imagePath);
       await _sendMessage(imageUrl: imageUrl);
     } catch (e) {
-      // ignore: avoid_print
-      print('!!!!!!!!!!!!!!!!! SUPABASE STORAGE ERROR: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка завантаження фото: $e')),
-        );
+        // Error loading photo
       }
     }
   }

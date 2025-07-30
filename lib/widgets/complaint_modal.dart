@@ -63,15 +63,10 @@ class _ComplaintModalState extends State<ComplaintModal> {
 
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Скаргу успішно надіслано')),
-        );
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка: $error')),
-        );
+        // Error submitting complaint
       }
     } finally {
       if (mounted) {

@@ -250,9 +250,6 @@ class _EditListingPageState extends State<EditListingPage> {
 
     } catch (e) {
       print('Error loading listing for editing: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Помилка завантаження оголошення: $e')),
-      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -263,9 +260,6 @@ class _EditListingPageState extends State<EditListingPage> {
   Future<void> _pickImage() async {
     try {
       if (_selectedImages.length >= 7) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can select a maximum of 7 images.')),
-        );
         return;
       }
       
@@ -280,9 +274,7 @@ class _EditListingPageState extends State<EditListingPage> {
         setState(() {});
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error selecting images. Please try again.')),
-      );
+      // Error selecting images
     }
   }
 
@@ -2020,17 +2012,11 @@ class _EditListingPageState extends State<EditListingPage> {
   Future<void> _updateListing() async {
     final formValidationMessage = _validateForm();
     if (formValidationMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(formValidationMessage)),
-      );
       return;
     }
 
     final extraFieldsValidationMessage = _validateExtraFields();
     if (extraFieldsValidationMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(extraFieldsValidationMessage)),
-      );
       return;
     }
 
@@ -2095,14 +2081,9 @@ class _EditListingPageState extends State<EditListingPage> {
         longitude: _selectedLongitude,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Оголошення успішно оновлено!')),
-      );
       Navigator.of(context).pop(true);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Помилка оновлення: $error')),
-      );
+      // Error updating listing
     } finally {
       setState(() {
         _isLoading = false;

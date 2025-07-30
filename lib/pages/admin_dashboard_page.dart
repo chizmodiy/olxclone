@@ -302,7 +302,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       _totalPages = (totalCount / _pageSize).ceil().clamp(1, 9999);
     });
     } catch (e) {
-      print('Error fetching products: $e');
       setState(() {
         _isLoadingProducts = false;
       });
@@ -320,36 +319,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     } catch (e) {
       setState(() => _isLoadingComplaints = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка завантаження скарг: $e')),
-        );
+        // Error loading complaints
       }
     }
   }
 
   Future<void> _fetchUsers() async {
     setState(() => _isLoadingUsers = true);
-    print('[USERS] _fetchUsers: start');
     try {
-      print('[USERS] Executing Supabase query...');
       final users = await Supabase.instance.client
           .from('profiles')
           .select()
           .order('id', ascending: false);
-      print('[USERS] Query result: $users');
-      print('[USERS] Users count: ${users.length}');
       setState(() {
         _users = List<Map<String, dynamic>>.from(users);
         _isLoadingUsers = false;
       });
-      print('[USERS] _users updated, count: ${_users.length}');
     } catch (e) {
-      print('[USERS] ERROR fetching users: $e');
       setState(() => _isLoadingUsers = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Помилка завантаження користувачів: $e')),
-        );
+        // Error loading users
       }
     }
   }
@@ -1189,19 +1178,11 @@ class AdminAdTableRow extends StatelessWidget {
                       try {
                         print('Початок видалення оголошення ${ad.id}');
                         await listingService.deleteListing(ad.id);
-                        print('Оголошення видалено, оновлюємо список');
                         // Оновлюємо список продуктів для відображення змін
                         onStatusChanged?.call();
-                        print('Список оновлено');
                       } catch (e) {
-                        print('Помилка при видаленні: $e');
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Помилка: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          // Error occurred
                         }
                       }
                     },
@@ -1464,7 +1445,7 @@ class UserTableRow extends StatelessWidget {
     final status = user['status'] ?? 'active';
     final avatarUrl = user['avatar_url'] as String?;
     
-    print('[USERS] UserTableRow build: userName=$userName, email=$email, status=$status');
+    
     
     return Container(
       height: 72,

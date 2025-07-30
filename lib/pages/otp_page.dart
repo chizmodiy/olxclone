@@ -56,14 +56,7 @@ class _OtpPageState extends State<OtpPage> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
-    if (isError) {  // Only show error messages
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Disabled snackbar messages
   }
 
   Future<void> _verifyOtp() async {

@@ -315,14 +315,13 @@ class _FilterPageState extends State<FilterPage> {
       setState(() {
         _minAvailablePrice = prices['minPrice'] ?? 0.0;
         _maxAvailablePrice = prices['maxPrice'] ?? 100.0; // Default if no listings
-        print('Loaded prices for $currency: Min: $_minAvailablePrice, Max: $_maxAvailablePrice'); // Debug print
+
         // Встановлюємо слайдер у діапазон 0 - max
 
         _minPriceController.text = '0';
         _maxPriceController.text = _maxAvailablePrice.toStringAsFixed(0);
       });
     } catch (e) {
-      print('Error loading min/max prices: $e');
       setState(() {
         _minAvailablePrice = 0.0;
         _maxAvailablePrice = 100.0;

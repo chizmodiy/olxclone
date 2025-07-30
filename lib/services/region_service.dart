@@ -19,7 +19,6 @@ class RegionService {
           .map((json) => Region.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (error) {
-      print('Error fetching regions: $error');
       return [];
     }
   }
@@ -29,8 +28,7 @@ class RegionService {
       // Check if regions already exist and have bounding box data
       final existing = await _supabaseClient.from('regions').select('id, min_lat');
       if ((existing as List).isNotEmpty && existing.any((element) => element['min_lat'] != null)) {
-        print('Regions already initialized with bounding box data.');
-        return; // Regions already initialized with bounding box
+              return; // Regions already initialized with bounding box
       }
 
       // List of Ukrainian regions
@@ -102,19 +100,15 @@ class RegionService {
                 regionMap['max_lon'] = double.tryParse(bbox[3].toString());
                 regionsToInsert.add(regionMap);
               } else {
-                print('Warning: Bounding box not found for region: $regionName');
                 regionsToInsert.add(regionMap); // Add without bbox if not found
               }
             } else {
-              print('Warning: No Nominatim result for region: $regionName');
               regionsToInsert.add(regionMap); // Add without bbox if not found
             }
           } else {
-            print('Error fetching Nominatim data for $regionName: ${response.statusCode}, ${response.body}');
             regionsToInsert.add(regionMap); // Add without bbox on error
           }
         } catch (e) {
-          print('Exception fetching Nominatim data for $regionName: $e');
           regionsToInsert.add(regionMap); // Add without bbox on exception
         }
       }
@@ -122,13 +116,10 @@ class RegionService {
       // Insert regions into the database
       if (regionsToInsert.isNotEmpty) {
         await _supabaseClient.from('regions').insert(regionsToInsert);
-        print('Regions initialized and updated with bounding box data.');
-      } else {
-        print('No regions to insert or update.');
       }
 
     } catch (error) {
-      print('Error initializing regions: $error');
+      // Error initializing regions
     }
   }
 } 

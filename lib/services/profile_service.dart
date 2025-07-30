@@ -16,7 +16,6 @@ class ProfileService {
           .single();
       return response != null ? UserProfile.fromJson(response as Map<String, dynamic>) : null;
     } catch (e) {
-      print('Error fetching user profile: $e');
       return null;
     }
   }
@@ -24,7 +23,6 @@ class ProfileService {
   Future<Map<String, dynamic>?> _getProfile() async {
     final currentUser = _client.auth.currentUser;
     if (currentUser == null) {
-      print('No current user available.');
       return null;
     }
 
@@ -36,7 +34,6 @@ class ProfileService {
           .single();
       return response as Map<String, dynamic>?;
     } catch (e) {
-      print('Error fetching profile: $e');
       return null;
     }
   }
@@ -122,7 +119,7 @@ class ProfileService {
           })
           .eq('id', userId);
     } catch (e) {
-      print('Error adding to viewed list: $e');
+      // Error adding to viewed list
     }
   }
 
@@ -139,7 +136,6 @@ class ProfileService {
       
       return List<String>.from(response['viewed_list'] ?? []);
     } catch (e) {
-      print('Error getting viewed list: $e');
       return [];
     }
   }
@@ -157,7 +153,6 @@ class ProfileService {
       
       return response['status'] as String?;
     } catch (e) {
-      print('Error getting user status: $e');
       return null;
     }
   }

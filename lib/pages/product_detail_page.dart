@@ -138,8 +138,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _subcategoryName = subcategoryName;
         _isLoading = false;
       });
-      print('userId: ${product.userId}');
-      print('userProfile: $userProfile');
+
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -156,13 +155,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _isFavorite = favoriteIds.contains(widget.productId);
       });
     } catch (e) {
-      print('Error loading favorite status: $e');
+      // Error loading favorite status
     }
   }
 
   Future<void> _toggleFavorite() async {
     if (_currentUserId == null) {
-      print('User not logged in. Cannot toggle favorite.');
       return;
     }
 
@@ -176,7 +174,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _isFavorite = !_isFavorite;
       });
     } catch (e) {
-      print('Error toggling favorite: $e');
+      // Error toggling favorite
     }
   }
 
@@ -206,29 +204,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _submitComplaint() async {
     if (_currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, увійдіть в систему щоб надіслати скаргу'),
-        ),
-      );
       return;
     }
 
     if (_complaintTitleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, введіть назву товару'),
-        ),
-      );
       return;
     }
 
     if (_complaintDescriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, опишіть проблему'),
-        ),
-      );
       return;
     }
 
@@ -241,17 +224,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       );
       
       _hideComplaint();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Скаргу надіслано'),
-        ),
-      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Помилка при надсиланні скарги: ${e.toString()}'),
-        ),
-      );
+      // Error submitting complaint
     }
   }
 
@@ -922,11 +896,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           _buildNavigationButton(
                             iconPath: 'assets/icons/share-07.svg',
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Функція поділитися буде додана незабаром'),
-                                ),
-                              );
+                              // Share functionality coming soon
                             },
                           ),
                           const SizedBox(width: 12), // 12px gap
@@ -1544,9 +1514,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (_currentUserId == null || _product == null || _userProfile == null) return;
     final ownerId = _product!.userId;
     if (ownerId == _currentUserId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Це ваше оголошення.')),
-      );
       return;
     }
     final client = Supabase.instance.client;
@@ -1613,29 +1580,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void _submitComplaintWithData(String title, String description, String type) {
     if (_currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, увійдіть в систему щоб надіслати скаргу'),
-        ),
-      );
       return;
     }
 
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, введіть назву товару'),
-        ),
-      );
       return;
     }
 
     if (description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Будь ласка, опишіть проблему'),
-        ),
-      );
       return;
     }
 
@@ -1648,17 +1600,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       );
       
       _hideComplaint();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Скаргу надіслано'),
-        ),
-      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Помилка при надсиланні скарги: ${e.toString()}'),
-        ),
-      );
+      // Error submitting complaint
     }
   }
 } 

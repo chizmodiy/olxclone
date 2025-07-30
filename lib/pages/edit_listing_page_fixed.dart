@@ -251,9 +251,6 @@ class _EditListingPageState extends State<EditListingPage> {
 
     } catch (e) {
       print('Error loading listing for editing: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Помилка завантаження оголошення: $e')),
-      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -977,9 +974,6 @@ class _EditListingPageState extends State<EditListingPage> {
   Future<void> _pickImage() async {
     try {
       if (_selectedImages.length >= 7) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Можна вибрати максимум 7 зображень.')),
-        );
         return;
       }
       
@@ -994,9 +988,7 @@ class _EditListingPageState extends State<EditListingPage> {
         setState(() {});
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Помилка вибору зображень. Спробуйте ще раз.')),
-      );
+      // Error selecting images
     }
   }
 

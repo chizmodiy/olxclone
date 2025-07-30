@@ -10,10 +10,8 @@ class CityService {
       if (regionName != null && regionName.isNotEmpty && minLat == null) {
         // This case indicates an initial search without bounding box data yet, or a fallback.
         // We will now always aim to use bounding box if available.
-        print('CityService: Initial search for region (no bbox available yet): $regionName');
       } else if (minLat == null || maxLat == null || minLon == null || maxLon == null) {
         // If query is empty and bounding box is not fully provided, return empty list
-        print('CityService: Cannot perform initial search without bounding box data for region.');
         return [];
       }
     }
@@ -47,7 +45,7 @@ class CityService {
 
 
     final uri = Uri.parse(nominatimUrl).replace(queryParameters: params);
-    print('Nominatim API Request URL: $uri'); // Print the full request URL
+
 
     try {
       final response = await http.get(
@@ -59,7 +57,7 @@ class CityService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
-        print('Nominatim API Response Body (Success): ${response.body}'); // Print successful response body
+
         // Filter and sort cities alphabetically by name
         List<City> cities = [];
         for (var item in data) {
@@ -86,21 +84,16 @@ class CityService {
             try {
               cities.add(City.fromJson(item));
             } catch (e) {
-              print('Error parsing city from Nominatim item (filtered): $e, Item: $item');
+              // Error parsing city
             }
-          } else {
-            print('Filtered out non-settlement item: $item'); // Log filtered out items
           }
         }
         cities.sort((a, b) => a.name.compareTo(b.name));
         return cities;
       } else {
-        print('Nominatim API Response Status: ${response.statusCode}');
-        print('Nominatim API Response Body (Error): ${response.body}'); // Print error response body
         return [];
       }
     } catch (e) {
-      print('Error searching cities: $e');
       return [];
     }
   }
