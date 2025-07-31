@@ -12,8 +12,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
     final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
 
     return Container(
-      height: 64,
-      padding: const EdgeInsets.fromLTRB(13, 34, 13, 8),
+      padding: const EdgeInsets.fromLTRB(13, 42, 13, 16),
       color: AppColors.primaryColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,7 +64,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
                 color: avatarUrl == null ? Colors.grey[300] : null,
               ),
               child: avatarUrl == null
-                  ? const Icon(Icons.person, color: Colors.white)
+                  ? const Icon(Icons.person, color: Colors.white, size: 24)
                   : null,
             ),
           ),
@@ -75,5 +74,5 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(120);
 } 

@@ -186,7 +186,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
     return CompositedTransformFollower(
       link: _viewLayerLink,
       showWhenUnlinked: false,
-      offset: const Offset(0, 52), // 44px (висота кнопки) + 8px (відступ)
+      offset: const Offset(-180, 52), // 44px (висота кнопки) + 8px (відступ), зміщено вліво на 180px
       child: Container(
         width: 220,
         decoration: BoxDecoration(
