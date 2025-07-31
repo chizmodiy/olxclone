@@ -152,7 +152,7 @@ class HomeContentState extends State<HomeContent> {
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
+      backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.zero,
         child: Stack(
           children: [
@@ -176,13 +176,13 @@ class HomeContentState extends State<HomeContent> {
               right: 0,
               bottom: 0,
               child: AuthBottomSheet(
-                onLoginPressed: () {
-                  Navigator.of(context).pop(); // Закриваємо bottom sheet
-                  Navigator.of(context).pushNamed('/auth');
-                },
-                onCancelPressed: () {
-                  Navigator.of(context).pop(); // Закриваємо bottom sheet
-                },
+        onLoginPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+          Navigator.of(context).pushNamed('/auth');
+        },
+        onCancelPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+        },
               ),
             ),
           ],
@@ -294,31 +294,31 @@ class HomeContentState extends State<HomeContent> {
       showWhenUnlinked: false,
       offset: const Offset(-180, 52), // 44px (висота кнопки) + 8px (відступ), зміщено вліво на 180px
       child: Container(
-        width: 220,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(16, 24, 40, 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: const Color.fromRGBO(16, 24, 40, 0.03),
-              blurRadius: 2,
-              offset: const Offset(0, 2),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
-            _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined),
-            _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
-          ],
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
+          _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined),
+          _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
+        ],
         ),
       ),
     );
@@ -367,31 +367,31 @@ class HomeContentState extends State<HomeContent> {
       showWhenUnlinked: false,
       offset: const Offset(-180, 52), // 44px (висота кнопки) + 8px (відступ), зміщено вліво на 180px
       child: Container(
-        width: 220,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(16, 24, 40, 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: const Color.fromRGBO(16, 24, 40, 0.03),
-              blurRadius: 2,
-              offset: const Offset(0, 2),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildSortDropdownMenuItem('Від новіших', null),
-            _buildSortDropdownMenuItem('Від дешевших', 'price_asc'),
-            _buildSortDropdownMenuItem('Від дорогих', 'price_desc'),
-          ],
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: const Color.fromRGBO(16, 24, 40, 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSortDropdownMenuItem('Від новіших', null),
+          _buildSortDropdownMenuItem('Від дешевших', 'price_asc'),
+          _buildSortDropdownMenuItem('Від дорогих', 'price_desc'),
+        ],
         ),
       ),
     );
@@ -458,42 +458,42 @@ class HomeContentState extends State<HomeContent> {
                 CompositedTransformTarget(
                   link: _sortLayerLink,
                   child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isSortDropdownOpen = !_isSortDropdownOpen;
+                  onTap: () {
+                    setState(() {
+                      _isSortDropdownOpen = !_isSortDropdownOpen;
                         // Закриваємо view dropdown якщо відкриваємо sort dropdown
                         if (_isSortDropdownOpen) {
                           _isViewDropdownOpen = false;
                         }
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                        boxShadow: _isSortDropdownOpen
-                            ? [
-                                BoxShadow(
-                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 0, // Changed from 2 to 0
-                                  spreadRadius: 5,
-                                ),
-                              ]
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 2,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                      ),
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                      boxShadow: _isSortDropdownOpen
+                          ? [
+                              BoxShadow(
+                                color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                offset: const Offset(0, 1),
+                                blurRadius: 0, // Changed from 2 to 0
+                                spreadRadius: 5,
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                    ),
                       child: const Icon(
-                        Icons.sort, // Always show sort icon, regardless of dropdown state
-                        size: 20,
-                        color: Colors.black,
+                      Icons.sort, // Always show sort icon, regardless of dropdown state
+                      size: 20,
+                      color: Colors.black,
                       ),
                     ),
                   ),
@@ -502,34 +502,34 @@ class HomeContentState extends State<HomeContent> {
                 CompositedTransformTarget(
                   link: _viewLayerLink,
                   child: GestureDetector(
-                    onTap: _toggleView,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                        boxShadow: _isViewDropdownOpen
-                            ? [
-                                BoxShadow(
-                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 0, // Changed from 2 to 0
-                                  spreadRadius: 5,
-                                ),
-                              ]
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 2,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                      ),
-                      child: Icon(
-                        _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
-                        size: 20,
-                        color: Colors.black,
+                  onTap: _toggleView,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                      boxShadow: _isViewDropdownOpen
+                          ? [
+                              BoxShadow(
+                                color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                offset: const Offset(0, 1),
+                                blurRadius: 0, // Changed from 2 to 0
+                                spreadRadius: 5,
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                    ),
+                    child: Icon(
+                      _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                      size: 20,
+                      color: Colors.black,
                       ),
                     ),
                   ),
@@ -852,8 +852,8 @@ class HomeContentState extends State<HomeContent> {
               color: Colors.transparent,
               width: double.infinity,
               height: double.infinity,
-            ),
           ),
+        ),
         if (_isSortDropdownOpen)
           _buildSortDropdown(),
         if (_isViewDropdownOpen)

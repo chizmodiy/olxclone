@@ -195,8 +195,8 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
                                         title: product.title,
                                         price: product.formattedPrice,
                                         images: product.photos,
-                                        isFavorite: false,
-                                        onFavoriteToggle: null,
+
+                                        
                                         onTap: () {},
                                       ),
                                     ),

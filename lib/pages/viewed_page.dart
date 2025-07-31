@@ -6,7 +6,7 @@ import '../models/product.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
-import '../widgets/product_card_list_item.dart'; // Import ProductCardListItem
+import '../widgets/viewed_product_card.dart'; // Import ProductCardListItem
 import 'dart:async'; // Import Timer
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -79,8 +79,10 @@ class _ViewedContentState extends State<ViewedContent> {
 
     try {
       final viewedProductIds = await _profileService.getViewedList();
+      print('Debug: Found ${viewedProductIds.length} viewed product IDs: $viewedProductIds');
       
       if (viewedProductIds.isEmpty) {
+        print('Debug: No viewed products found');
         setState(() {
           _isLoading = false;
           _hasMore = false;
@@ -89,10 +91,8 @@ class _ViewedContentState extends State<ViewedContent> {
       }
 
       // Fetch product details for each ID
-      // This might need a new method in ProductService to get multiple products by IDs
-      // For now, let's assume getProducts can take a list of IDs or we iterate
-      // For simplicity, let's modify getProducts temporarily or add a new one
       final products = await _productService.getProductsByIds(viewedProductIds);
+      print('Debug: Loaded ${products.length} products from ${viewedProductIds.length} IDs');
 
       setState(() {
         _products = products; // Directly assign as we're not paginating here based on viewed IDs
@@ -423,22 +423,19 @@ class _ViewedContentState extends State<ViewedContent> {
                           )
                     : ListView.builder(
                         controller: _scrollController,
+                        shrinkWrap: true,
                         itemCount: filteredProducts.length,
                         itemBuilder: (context, index) {
                           final product = filteredProducts[index];
                           return Padding(
                                 padding: const EdgeInsets.only(bottom: 10), // Space between list items
-                                child: ProductCardListItem(
-                                  id: product.id, // Pass product ID
+                                child: ViewedProductCard(
+                                  id: product.id,
                                   title: product.title,
                                   price: product.formattedPrice,
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
                                   images: product.photos,
-                                  isFavorite: false, // No favorite logic
-                                  onFavoriteToggle: () {
-                                    // No-op for viewed products
-                                  },
                                   onTap: () {
                                     Navigator.of(context).pushNamed(
                                       '/product-detail',

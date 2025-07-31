@@ -662,7 +662,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 Positioned(
                   left: 12,
                   right: 12,
-                  top: 12,
+                  top: 36,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

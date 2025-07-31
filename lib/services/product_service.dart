@@ -34,13 +34,18 @@ class ProductService {
       return [];
     }
     try {
+      print('Debug: Fetching products with IDs: $productIds');
       final response = await _supabase
           .from('listings')
           .select()
           .in_('id', productIds);
       
-      return (response as List).map((json) => Product.fromJson(json)).toList();
+      print('Debug: Raw response: $response');
+      final products = (response as List).map((json) => Product.fromJson(json)).toList();
+      print('Debug: Parsed ${products.length} products');
+      return products;
     } catch (e) {
+      print('Debug: Error in getProductsByIds: $e');
       return [];
     }
   }

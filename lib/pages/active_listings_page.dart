@@ -215,8 +215,8 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                         title: product.title,
                                         price: product.formattedPrice,
                                         images: product.photos,
-                                        isFavorite: false, // Можна додати логіку улюбленого
-                                        onFavoriteToggle: null,
+
+                                        
                                         onTap: () {
                                           // TODO: Перехід до деталей оголошення
                                         },
