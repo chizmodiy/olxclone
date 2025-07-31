@@ -50,7 +50,7 @@ class ProductCardListItem extends StatelessWidget {
             // Зображення з правильним заокругленням
             Container(
               width: 68,
-              height: 80,
+                height: 80,
               clipBehavior: Clip.antiAlias,
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
@@ -58,22 +58,22 @@ class ProductCardListItem extends StatelessWidget {
                   bottomLeft: Radius.circular(8),
                 ),
               ),
-              child: images.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: images.first,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.zinc200,
+                child: images.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: images.first,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, url, error) => Container(
+                          color: AppColors.zinc200,
                         child: const Icon(Icons.broken_image, color: AppColors.color5),
-                      ),
+                        ),
                       placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                  : Container(
+                      )
+                    : Container(
                       color: AppColors.zinc200,
                       child: const Center(
                         child: Icon(Icons.image, size: 40, color: AppColors.color5),
                       ),
-                    ),
+              ),
             ),
             Expanded(
               child: Container(
@@ -88,28 +88,28 @@ class ProductCardListItem extends StatelessWidget {
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
+                      children: [
+                        Expanded(
+                          child: Column(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                                 SizedBox(
                                   width: double.infinity,
                                   child: Text(
-                                    title,
-                                    style: const TextStyle(
+                                title,
+                                style: const TextStyle(
                                       color: Color(0xFF27272A), // Zinc-800
-                                      fontSize: 14,
-                                      fontFamily: 'Inter',
-                                      fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
                                       height: 1.40,
-                                      letterSpacing: 0.14,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                  letterSpacing: 0.14,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                                 ),
                                 const SizedBox(height: 8),
                                 Container(
@@ -149,25 +149,25 @@ class ProductCardListItem extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            price,
-                            style: const TextStyle(
-                              color: Colors.black,
+                              Text(
+                                price,
+                                style: const TextStyle(
+                                  color: Colors.black,
                               fontSize: 14,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
                               height: 1.40,
                               letterSpacing: 0.14,
-                            ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        if (onFavoriteToggle != null)
+                          GestureDetector(
+                            onTap: onFavoriteToggle,
+                            child: const _HeartRoundedIcon(),
                     ),
-                    if (onFavoriteToggle != null)
-                      GestureDetector(
-                        onTap: onFavoriteToggle,
-                        child: const _HeartRoundedIcon(),
-                      ),
                   ],
                 ),
               ),
@@ -239,6 +239,6 @@ class _HeartRoundedPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+} 
 
  

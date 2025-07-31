@@ -474,7 +474,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ? const SizedBox(
                       width: 24,
                       height: 24,
-                                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Text(
                       'Написати',

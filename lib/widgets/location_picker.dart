@@ -539,6 +539,7 @@ class _LocationPickerState extends State<LocationPicker> {
                 child: TextField(
                   controller: _citySearchController,
                   textAlignVertical: TextAlignVertical.center,
+                  maxLines: 1,
                   style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
                   decoration: InputDecoration(
                     hintText: 'Введіть назву міста, вулиці, адреси або закладу',
