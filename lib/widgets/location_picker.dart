@@ -491,26 +491,25 @@ class _LocationPickerState extends State<LocationPicker> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _selectedRegion ?? 'Локація',
-                            style: TextStyle(
-                              color: _selectedRegion == null ? Color(0xFFA1A1AA) : Color(0xFF101828),
-                              fontSize: 16,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: 0.16,
-                            ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selectedRegion ?? 'Локація',
+                          style: TextStyle(
+                            color: _selectedRegion == null ? Color(0xFFA1A1AA) : Color(0xFF101828),
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.16,
+                            height: 1.2,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
-                      ],
-                    ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
+                    ],
                   ),
                 ),
               ),
@@ -533,11 +532,12 @@ class _LocationPickerState extends State<LocationPicker> {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: CompositedTransformTarget(
                 link: _autocompleteLayerLink,
                 child: TextField(
                   controller: _citySearchController,
+                  textAlignVertical: TextAlignVertical.center,
                   style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Inter',
@@ -554,8 +554,8 @@ class _LocationPickerState extends State<LocationPicker> {
                       letterSpacing: 0.16,
                     ),
                     border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
+                    isDense: false,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12),
                   ),
                   onChanged: (value) {
                     _onCitySearchChanged();
@@ -690,7 +690,7 @@ class _LocationPickerState extends State<LocationPicker> {
                   borderRadius: BorderRadius.circular(200),
                   side: const BorderSide(color: Color(0xFFE4E4E7)),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 textStyle: const TextStyle(
                   fontSize: 16,
                   fontFamily: 'Inter',
