@@ -312,7 +312,7 @@ class _LocationPickerState extends State<LocationPicker> {
           CompositedTransformFollower(
             link: _regionDropdownLayerLink,
             showWhenUnlinked: false,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 52),
             child: Material(
               color: Colors.transparent,
               child: Container(
