@@ -66,7 +66,7 @@ class ProductCard extends StatelessWidget {
                                 color: AppColors.zinc200,
                                 child: Icon(Icons.broken_image, color: AppColors.color5),
                               ),
-                              placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                              placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                             ),
                           )
                         : Container(
