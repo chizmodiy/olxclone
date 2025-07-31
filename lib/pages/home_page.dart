@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../widgets/common_header.dart';
 import '../widgets/product_card.dart';
 import '../services/product_service.dart';
@@ -147,18 +148,45 @@ class HomeContentState extends State<HomeContent> {
   }
 
   void _showAuthBottomSheet() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AuthBottomSheet(
-        onLoginPressed: () {
-          Navigator.of(context).pop(); // Закриваємо bottom sheet
-          Navigator.of(context).pushNamed('/auth');
-        },
-        onCancelPressed: () {
-          Navigator.of(context).pop(); // Закриваємо bottom sheet
-        },
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            // Затемнення фону з блюром
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Bottom sheet
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AuthBottomSheet(
+                onLoginPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                  Navigator.of(context).pushNamed('/auth');
+                },
+                onCancelPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

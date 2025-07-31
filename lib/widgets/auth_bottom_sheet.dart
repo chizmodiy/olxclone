@@ -16,8 +16,7 @@ class AuthBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
+      padding: const EdgeInsets.fromLTRB(13, 8, 13, 36),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -103,6 +102,7 @@ class AuthBottomSheet extends StatelessWidget {
             children: [
               SizedBox(
                 width: double.infinity,
+                height: 44,
                 child: ElevatedButton(
                   onPressed: onLoginPressed,
                   style: ElevatedButton.styleFrom(
@@ -111,7 +111,7 @@ class AuthBottomSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(200),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                     elevation: 0,
                     shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                   ),
@@ -127,6 +127,7 @@ class AuthBottomSheet extends StatelessWidget {
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
+                height: 44,
                 child: OutlinedButton(
                   onPressed: onCancelPressed,
                   style: OutlinedButton.styleFrom(
@@ -136,7 +137,7 @@ class AuthBottomSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(200),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                     elevation: 0,
                     shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                   ),

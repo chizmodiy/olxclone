@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import 'package:withoutname/pages/favorites_page.dart';
 import 'chat_page.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../widgets/auth_bottom_sheet.dart';
 
 class GeneralPage extends StatefulWidget {
   const GeneralPage({super.key});
@@ -130,32 +132,47 @@ class _GeneralPageState extends State<GeneralPage> {
                 onPressed: () async {
                   final currentUserId = Supabase.instance.client.auth.currentUser?.id;
                   if (currentUserId == null) {
-                    // Показати діалог для авторизації
+                    // Показати AuthBottomSheet для авторизації
                     showDialog(
                       context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Увійдіть в систему'),
-                          content: const Text('Щоб додати оголошення, потрібно увійти в систему'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('Скасувати'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pushNamed('/auth');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF015873),
-                                foregroundColor: Colors.white,
+                      barrierDismissible: true,
+                      builder: (context) => Dialog(
+                        backgroundColor: Colors.transparent,
+                        insetPadding: EdgeInsets.zero,
+                        child: Stack(
+                          children: [
+                            // Затемнення фону з блюром
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: ClipRect(
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                                    child: Container(
+                                      color: Colors.black.withOpacity(0.3),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child: const Text('Увійти'),
+                            ),
+                            // Bottom sheet
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: AuthBottomSheet(
+                                onLoginPressed: () {
+                                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                                  Navigator.of(context).pushNamed('/auth');
+                                },
+                                onCancelPressed: () {
+                                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                                },
+                              ),
                             ),
                           ],
-                        );
-                      },
+                        ),
+                      ),
                     );
                     return;
                   }
