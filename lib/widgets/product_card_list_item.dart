@@ -28,90 +28,142 @@ class ProductCardListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell( // Wrap with InkWell
-      onTap: onTap, // Pass the onTap callback
-      borderRadius: BorderRadius.circular(12), // Match the container's border radius
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        width: double.infinity, // Adjust width as per parent constraints
-        decoration: BoxDecoration(
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
           color: const Color(0xFFFAFAFA), // Zinc-50
-          borderRadius: BorderRadius.circular(12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 80,
-                height: 80,
-                child: images.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: images.first,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.zinc200,
-                          child: Icon(Icons.broken_image, color: AppColors.color5),
-                        ),
-                        placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                      )
-                    : Container(
-                        color: AppColors.zinc200, // Placeholder color
-                        child: Center(
-                          child: Icon(Icons.image, size: 40, color: AppColors.color5), // Placeholder icon
-                        ),
-                      ),
+            // Зображення з правильним заокругленням
+            Container(
+              width: 68,
+              height: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomLeft: Radius.circular(8),
+                ),
               ),
+              child: images.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: images.first,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => Container(
+                        color: AppColors.zinc200,
+                        child: const Icon(Icons.broken_image, color: AppColors.color5),
+                      ),
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : Container(
+                      color: AppColors.zinc200,
+                      child: const Center(
+                        child: Icon(Icons.image, size: 40, color: AppColors.color5),
+                      ),
+                    ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.4,
-                                  letterSpacing: 0.14,
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    title,
+                                    style: const TextStyle(
+                                      color: Color(0xFF27272A), // Zinc-800
+                                      fontSize: 14,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.40,
+                                      letterSpacing: 0.14,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                price,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.3,
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: double.infinity,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        date ?? '12 Березня 16:00',
+                                        style: const TextStyle(
+                                          color: Color(0xFF838583),
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.30,
+                                          letterSpacing: 0.24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        location ?? 'Харків',
+                                        style: const TextStyle(
+                                          color: Color(0xFF838583),
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.30,
+                                          letterSpacing: 0.24,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        if (onFavoriteToggle != null)
-                          GestureDetector(
-                            onTap: onFavoriteToggle,
-                            child: const _HeartRoundedIcon(),
+                          const SizedBox(width: 8),
+                          Text(
+                            price,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              height: 1.40,
+                              letterSpacing: 0.14,
+                            ),
                           ),
-                      ],
+                        ],
+                      ),
                     ),
+                    if (onFavoriteToggle != null)
+                      GestureDetector(
+                        onTap: onFavoriteToggle,
+                        child: const _HeartRoundedIcon(),
+                      ),
                   ],
                 ),
               ),

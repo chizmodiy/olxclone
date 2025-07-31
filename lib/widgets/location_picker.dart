@@ -225,7 +225,7 @@ class _LocationPickerState extends State<LocationPicker> {
         child: CompositedTransformFollower(
           link: _autocompleteLayerLink,
           showWhenUnlinked: false,
-          offset: Offset(0, size.height + 8),
+          offset: const Offset(0, 52), // 44px (висота інпуту) + 8px (відступ)
           child: Material(
             elevation: 4,
             child: ConstrainedBox(

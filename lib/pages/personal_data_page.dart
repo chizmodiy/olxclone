@@ -248,6 +248,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               ),
                               child: TextField(
                                 controller: _nameController,
+                                textAlignVertical: TextAlignVertical.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
                                   hintText: "Ім’я та прізвище",
@@ -295,6 +296,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               child: TextField(
                                 controller: TextEditingController(text: _phone ?? ''),
                                 enabled: false,
+                                textAlignVertical: TextAlignVertical.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
                                   hintText: "+380 95 354 8756",
@@ -340,7 +342,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 borderRadius: BorderRadius.circular(200),
                                 side: const BorderSide(color: Color(0xFF015873)),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
                               elevation: 0,
                             ),
                             onPressed: _saveProfile,
@@ -366,7 +368,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(200),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
                               elevation: 0,
                             ),
                             onPressed: () => Navigator.of(context).pop(),

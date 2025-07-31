@@ -147,14 +147,18 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Улюблені оголошення',
-                    style: TextStyle(
-                      color: Color(0xFF161817),
-                      fontSize: 24,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 1.20,
+                  Expanded(
+                    child: Text(
+                      'Улюблені оголошення',
+                      style: const TextStyle(
+                        color: Color(0xFF161817),
+                        fontSize: 24,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        height: 1.20,
+                      ),
+                      overflow: TextOverflow.visible,
+                      softWrap: true,
                     ),
                   ),
                 ],

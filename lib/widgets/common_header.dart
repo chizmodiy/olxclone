@@ -13,7 +13,7 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
 
     return Container(
       height: 64,
-      padding: const EdgeInsets.fromLTRB(13, 26, 13, 8),
+      padding: const EdgeInsets.fromLTRB(13, 34, 13, 8),
       color: AppColors.primaryColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
