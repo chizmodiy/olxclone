@@ -199,7 +199,7 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                   )
                 : Text(
-                    'Quick Admin Login',
+                    'Quick user-2 Login',
                     style: AppTextStyles.body2Regular.copyWith(
                       color: AppColors.color5,
                     ),
@@ -224,7 +224,7 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                   )
                 : Text(
-                    'Quick User Login',
+                    'Quick user-2 Login',
                     style: AppTextStyles.body2Regular.copyWith(
                       color: AppColors.color5,
                     ),
