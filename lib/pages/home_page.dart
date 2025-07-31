@@ -61,6 +61,8 @@ class HomeContentState extends State<HomeContent> {
   final TextEditingController _searchController = TextEditingController(); // Search controller
   String _searchQuery = ''; // Current search query
   Timer? _searchDebounceTimer; // Timer for debouncing search
+  final LayerLink _sortLayerLink = LayerLink(); // LayerLink for sort dropdown
+  final LayerLink _viewLayerLink = LayerLink(); // LayerLink for view dropdown
 
   @override
   void initState() {
@@ -255,32 +257,37 @@ class HomeContentState extends State<HomeContent> {
 
   // Helper method to build the dropdown menu for view modes
   Widget _buildViewModeDropdown() {
-    return Container(
-      width: 220,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
-          _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined),
-          _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
-        ],
+    return CompositedTransformFollower(
+      link: _viewLayerLink,
+      showWhenUnlinked: false,
+      offset: const Offset(0, 52), // 44px (висота кнопки) + 8px (відступ)
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 2,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
+            _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined),
+            _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
+          ],
+        ),
       ),
     );
   }
@@ -323,32 +330,37 @@ class HomeContentState extends State<HomeContent> {
 
   // Helper method to build the dropdown menu for sorting
   Widget _buildSortDropdown() {
-    return Container(
-      width: 220,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSortDropdownMenuItem('Від новіших', null),
-          _buildSortDropdownMenuItem('Від дешевших', 'price_asc'),
-          _buildSortDropdownMenuItem('Від дорогих', 'price_desc'),
-        ],
+    return CompositedTransformFollower(
+      link: _sortLayerLink,
+      showWhenUnlinked: false,
+      offset: const Offset(0, 52), // 44px (висота кнопки) + 8px (відступ)
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 2,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildSortDropdownMenuItem('Від новіших', null),
+            _buildSortDropdownMenuItem('Від дешевших', 'price_asc'),
+            _buildSortDropdownMenuItem('Від дорогих', 'price_desc'),
+          ],
+        ),
       ),
     );
   }
@@ -411,72 +423,78 @@ class HomeContentState extends State<HomeContent> {
             ),
             Row(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isSortDropdownOpen = !_isSortDropdownOpen;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(200),
-                      border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                      boxShadow: _isSortDropdownOpen
-                          ? [
-                              BoxShadow(
-                                color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                offset: const Offset(0, 1),
-                                blurRadius: 0, // Changed from 2 to 0
-                                spreadRadius: 5,
-                              ),
-                            ]
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                    ),
-                    child: Icon(
-                      Icons.sort, // Always show sort icon, regardless of dropdown state
-                      size: 20,
-                      color: Colors.black,
+                CompositedTransformTarget(
+                  link: _sortLayerLink,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isSortDropdownOpen = !_isSortDropdownOpen;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                        boxShadow: _isSortDropdownOpen
+                            ? [
+                                BoxShadow(
+                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 0, // Changed from 2 to 0
+                                  spreadRadius: 5,
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                      ),
+                      child: const Icon(
+                        Icons.sort, // Always show sort icon, regardless of dropdown state
+                        size: 20,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _toggleView,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(200),
-                      border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                      boxShadow: _isViewDropdownOpen
-                          ? [
-                              BoxShadow(
-                                color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                offset: const Offset(0, 1),
-                                blurRadius: 0, // Changed from 2 to 0
-                                spreadRadius: 5,
-                              ),
-                            ]
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                    ),
-                    child: Icon(
-                      _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
-                      size: 20,
-                      color: Colors.black,
+                CompositedTransformTarget(
+                  link: _viewLayerLink,
+                  child: GestureDetector(
+                    onTap: _toggleView,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                        boxShadow: _isViewDropdownOpen
+                            ? [
+                                BoxShadow(
+                                  color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 0, // Changed from 2 to 0
+                                  spreadRadius: 5,
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                      ),
+                      child: Icon(
+                        _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                        size: 20,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -787,17 +805,9 @@ class HomeContentState extends State<HomeContent> {
           ),
         ),
         if (_isSortDropdownOpen)
-          Positioned(
-            top: 72, // або інше значення, щоб меню було під кнопкою
-            right: 13, // вирівняти по правому краю
-            child: _buildSortDropdown(),
-          ),
+          _buildSortDropdown(),
         if (_isViewDropdownOpen)
-          Positioned(
-            top: 72, // або інше значення, щоб меню було під кнопкою
-            right: 60, // трохи лівіше від сортування
-            child: _buildViewModeDropdown(),
-        ),
+          _buildViewModeDropdown(),
       ],
     );
   }

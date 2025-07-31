@@ -48,6 +48,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
   String? _currentUserId;
   Set<String> _favoriteProductIds = {};
   bool _isViewDropdownOpen = false; // New state variable
+  final LayerLink _viewLayerLink = LayerLink(); // LayerLink for view dropdown
 
   @override
   void initState() {
@@ -182,32 +183,37 @@ class _FavoritesContentState extends State<FavoritesContent> {
 
   // Helper method to build the dropdown menu for view modes
   Widget _buildViewModeDropdown() {
-    return Container(
-      width: 220,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: const Color.fromRGBO(16, 24, 40, 0.03),
-            blurRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEAECF0), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
-          _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined), // Added this line
-          _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
-        ],
+    return CompositedTransformFollower(
+      link: _viewLayerLink,
+      showWhenUnlinked: false,
+      offset: const Offset(0, 52), // 44px (висота кнопки) + 8px (відступ)
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color.fromRGBO(16, 24, 40, 0.03),
+              blurRadius: 2,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
+            _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined), // Added this line
+            _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
+          ],
+        ),
       ),
     );
   }
@@ -275,34 +281,37 @@ class _FavoritesContentState extends State<FavoritesContent> {
                   Row(
                     children: [
                       const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: _toggleView,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(200),
-                            border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                            boxShadow: _isViewDropdownOpen
-                                ? [
-                                    BoxShadow(
-                                      color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 0,
-                                      spreadRadius: 5,
-                                    ),
-                                  ]
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                          ),
-                          child: Icon(
-                            _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
-                            size: 20,
+                      CompositedTransformTarget(
+                        link: _viewLayerLink,
+                        child: GestureDetector(
+                          onTap: _toggleView,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(200),
+                              border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                              boxShadow: _isViewDropdownOpen
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                        offset: const Offset(0, 1),
+                                        blurRadius: 0,
+                                        spreadRadius: 5,
+                                      ),
+                                    ]
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 2,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                            ),
+                            child: Icon(
+                              _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -595,11 +604,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
       ),
         ),
         if (_isViewDropdownOpen)
-          Positioned(
-            top: 72, // 8px below the button
-            right: 13, // Aligned with the right padding
-            child: _buildViewModeDropdown(),
-          ),
+          _buildViewModeDropdown(),
       ],
     );
   }
