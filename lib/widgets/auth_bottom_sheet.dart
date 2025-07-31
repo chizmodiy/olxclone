@@ -16,8 +16,8 @@ class AuthBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(13, 8, 13, 36),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -111,7 +111,7 @@ class AuthBottomSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(200),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     elevation: 0,
                     shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                   ),
@@ -136,7 +136,7 @@ class AuthBottomSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(200),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     elevation: 0,
                     shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                   ),

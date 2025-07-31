@@ -7,8 +7,8 @@ class BlockedUserBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(13, 8, 13, 36),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -86,7 +86,7 @@ class BlockedUserBottomSheet extends StatelessWidget {
             children: [
               // Primary button
               SizedBox(
-                width: 364,
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     // Детальніше - можна додати логіку
@@ -114,7 +114,7 @@ class BlockedUserBottomSheet extends StatelessWidget {
               const SizedBox(height: 12),
               // Secondary button
               SizedBox(
-                width: 364,
+                width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
                     // Скасувати - можна додати логіку
