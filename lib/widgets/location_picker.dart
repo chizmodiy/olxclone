@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LocationPicker extends StatefulWidget {
   final void Function(latlong.LatLng? latLng, String? address)? onLocationSelected;
@@ -126,12 +127,18 @@ class _LocationPickerState extends State<LocationPicker> {
   }) async {
     final sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
     final url = Uri.parse(
-      'http://localhost:3000/address_search'
+      'https://wcczieoznbopcafdatpk.supabase.co/functions/v1/places-api'
       '?input=${Uri.encodeComponent(query)}'
       '&sessiontoken=$sessionToken'
       '&region=${Uri.encodeComponent(regionName)}',
     );
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjY3ppZW96bmJvcGNhZmRhdHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTc2MTEsImV4cCI6MjA2NjkzMzYxMX0.1OdLDVnzHx9ghZ7D8X2P_lpZ7XvnPtdEKN4ah_guUJ0',
+      },
+    );
     String? error;
     List<Map<String, String>> cities = [];
     if (response.statusCode == 200) {
@@ -160,8 +167,14 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   Future<latlong.LatLng?> getLatLngFromPlaceId(String placeId) async {
-    final url = Uri.parse('http://localhost:3000/place_details?place_id=$placeId');
-    final response = await http.get(url);
+    final url = Uri.parse('https://wcczieoznbopcafdatpk.supabase.co/functions/v1/places-api?place_id=$placeId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjY3ppZW96bmJvcGNhZmRhdHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTc2MTEsImV4cCI6MjA2NjkzMzYxMX0.1OdLDVnzHx9ghZ7D8X2P_lpZ7XvnPtdEKN4ah_guUJ0',
+      },
+    );
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
