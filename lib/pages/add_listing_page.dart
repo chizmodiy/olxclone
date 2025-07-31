@@ -1712,8 +1712,7 @@ class _AddListingPageState extends State<AddListingPage> {
         if (!_isNegotiablePrice) ...[
           const SizedBox(height: 8),
           Container(
-            height: 44, // Фіксована висота 44 пікселі
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
@@ -1732,6 +1731,7 @@ class _AddListingPageState extends State<AddListingPage> {
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
               ],
+              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
               decoration: InputDecoration(
                 hintText: 'Введіть ціну',
                 hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
@@ -1739,7 +1739,6 @@ class _AddListingPageState extends State<AddListingPage> {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
             ),
           ),
         ],

@@ -745,7 +745,7 @@ class _EditListingPageState extends State<EditListingPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: AppColors.zinc50,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(200),
             border: Border.all(color: AppColors.zinc200, width: 1),
             boxShadow: const [
               BoxShadow(
@@ -758,6 +758,9 @@ class _EditListingPageState extends State<EditListingPage> {
           child: TextField(
             controller: _priceController,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
             decoration: InputDecoration(
               hintText: 'Введіть ціну',

@@ -540,13 +540,20 @@ class _LocationPickerState extends State<LocationPicker> {
                   controller: _citySearchController,
                   textAlignVertical: TextAlignVertical.center,
                   maxLines: 1,
-                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                  style: AppTextStyles.body1Regular.copyWith(
+                    color: AppColors.color2,
+                    height: 1.0,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Введіть назву міста, вулиці, адреси або закладу',
-                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    hintStyle: AppTextStyles.body1Regular.copyWith(
+                      color: AppColors.color5,
+                      height: 1.0,
+                    ),
                     border: InputBorder.none,
-                    isDense: false,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                    alignLabelWithHint: true,
                   ),
                   onChanged: (value) {
                     _onCitySearchChanged();
