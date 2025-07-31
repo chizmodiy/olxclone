@@ -6,6 +6,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class LocationPicker extends StatefulWidget {
   final void Function(latlong.LatLng? latLng, String? address)? onLocationSelected;
@@ -311,12 +314,13 @@ class _LocationPickerState extends State<LocationPicker> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Color(0xFFEAECF0), width: 1),
-                    boxShadow: [
+                    border: Border.all(color: AppColors.zinc200),
+                    boxShadow: const [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
+                        color: Color.fromRGBO(16, 24, 40, 0.03),
+                        offset: Offset(0, 4),
                         blurRadius: 6,
-                        offset: const Offset(0, 4),
+                        spreadRadius: -2,
                       ),
                     ],
                   ),
@@ -349,7 +353,7 @@ class _LocationPickerState extends State<LocationPicker> {
                             width: double.infinity,
                             padding: const EdgeInsets.only(left: 8, right: 10, top: 10, bottom: 10),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+                              color: isSelected ? AppColors.zinc50 : Colors.transparent,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -357,19 +361,18 @@ class _LocationPickerState extends State<LocationPicker> {
                                 Expanded(
                                   child: Text(
                                     region,
-                                    style: TextStyle(
-                                      color: const Color(0xFF101828),
-                                      fontSize: 16,
-                                      fontFamily: 'Inter',
+                                    style: AppTextStyles.body1Regular.copyWith(
+                                      color: AppColors.color2,
                                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      letterSpacing: 0.16,
                                     ),
                                   ),
                                 ),
                                 if (isSelected)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Icon(Icons.check, color: Color(0xFF015873), size: 20),
+                                  SvgPicture.asset(
+                                    'assets/icons/check.svg',
+                                    width: 20,
+                                    height: 20,
+                                    colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
                                   ),
                               ],
                             ),
@@ -390,7 +393,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.close, size: 20, color: Color(0xFFA1A1AA)),
+                      child: Icon(Icons.close, size: 20, color: AppColors.color5),
                     ),
                   ),
                 ),
@@ -480,14 +483,14 @@ class _LocationPickerState extends State<LocationPicker> {
                   key: _regionFieldKey,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
+                    color: AppColors.zinc50,
                     borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: Color(0xFFE4E4E7), width: 1),
-                    boxShadow: [
+                    border: Border.all(color: AppColors.zinc200, width: 1),
+                    boxShadow: const [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
                         blurRadius: 2,
-                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
@@ -497,18 +500,18 @@ class _LocationPickerState extends State<LocationPicker> {
                       Expanded(
                         child: Text(
                           _selectedRegion ?? 'Локація',
-                          style: TextStyle(
-                            color: _selectedRegion == null ? Color(0xFFA1A1AA) : Color(0xFF101828),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.16,
-                            height: 1.2,
+                          style: AppTextStyles.body1Regular.copyWith(
+                            color: _selectedRegion != null ? AppColors.color2 : AppColors.color5,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667085)),
+                      SvgPicture.asset(
+                        'assets/icons/chevron_down.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                      ),
                     ],
                   ),
                 ),
@@ -521,14 +524,14 @@ class _LocationPickerState extends State<LocationPicker> {
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFFAFAFA),
+                color: AppColors.zinc50,
                 borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: Color(0xFFE4E4E7), width: 1),
-                boxShadow: [
+                border: Border.all(color: AppColors.zinc200, width: 1),
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Color.fromRGBO(16, 24, 40, 0.05),
+                    offset: Offset(0, 1),
                     blurRadius: 2,
-                    offset: const Offset(0, 1),
                   ),
                 ],
               ),
@@ -538,24 +541,13 @@ class _LocationPickerState extends State<LocationPicker> {
                 child: TextField(
                   controller: _citySearchController,
                   textAlignVertical: TextAlignVertical.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                  ),
-                  decoration: const InputDecoration(
+                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                  decoration: InputDecoration(
                     hintText: 'Введіть назву міста, вулиці, адреси або закладу',
-                    hintStyle: TextStyle(
-                      color: Color(0xFFA1A1AA),
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.16,
-                    ),
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
                     border: InputBorder.none,
                     isDense: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onChanged: (value) {
                     _onCitySearchChanged();
@@ -603,13 +595,13 @@ class _LocationPickerState extends State<LocationPicker> {
                 margin: const EdgeInsets.only(top: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: AppColors.zinc200),
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Color.fromRGBO(16, 24, 40, 0.05),
                       blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -621,7 +613,10 @@ class _LocationPickerState extends State<LocationPicker> {
                     final city = cityObj['name']!;
                     final placeId = cityObj['placeId']!;
                     return ListTile(
-                      title: Text(city),
+                      title: Text(
+                        city,
+                        style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                      ),
                       onTap: () async {
                         final latLng = await getLatLngFromPlaceId(placeId);
                         setState(() {
@@ -682,21 +677,17 @@ class _LocationPickerState extends State<LocationPicker> {
             child: ElevatedButton.icon(
               icon: const Icon(Icons.my_location),
               label: const Text('Моє місцезнаходження'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(200),
-                  side: const BorderSide(color: Color(0xFFE4E4E7)),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                ),
+                          style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.color2,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(200),
+                side: BorderSide(color: AppColors.zinc200),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              textStyle: AppTextStyles.body1Medium,
+            ),
               onPressed: _setToCurrentLocation,
             ),
           ),
