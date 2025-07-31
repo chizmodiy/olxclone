@@ -297,110 +297,108 @@ class _LocationPickerState extends State<LocationPicker> {
     final size = renderBox?.size ?? Size.zero;
     final overlay = Overlay.of(context);
     _regionDropdownOverlay = OverlayEntry(
-      builder: (context) => CompositedTransformFollower(
-        link: _regionDropdownLayerLink,
-        showWhenUnlinked: false,
-        offset: const Offset(0, 4),
-        child: Material(
-          color: Colors.transparent,
-          child: SizedBox(
-            width: size.width,
-            height: 200,
-            child: Stack(
-              children: [
-                Container(
-                  width: size.width,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.03),
-                        offset: Offset(0, 4),
-                        blurRadius: 6,
-                        spreadRadius: -2,
-                      ),
-                    ],
-                  ),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: _regions.length,
-                    itemBuilder: (context, index) {
-                      final region = _regions[index];
-                      final isSelected = region == _selectedRegion;
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            _selectedRegion = region;
-                          });
-                          _onCitySearchChanged();
-                          _hideRegionDropdown();
-                          final regionLatLng = await getLatLngFromRegion(region);
-                          if (regionLatLng != null) {
-                            setState(() {
-                              _mapCenter = regionLatLng;
-                              _selectedLatLng = null;
-                            });
-                            _mapController.move(regionLatLng, 8);
-                          }
-                                                },
-                        child: Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.only(left: 8, right: 10, top: 10, bottom: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.zinc50 : Colors.transparent,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    region,
-                                    style: AppTextStyles.body1Regular.copyWith(
-                                      color: AppColors.color2,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                if (isSelected)
-                                  SvgPicture.asset(
-                                    'assets/icons/check.svg',
-                                    width: 20,
-                                    height: 20,
-                                    colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: GestureDetector(
-                    onTap: _hideRegionDropdown,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.close, size: 20, color: AppColors.color5),
-                    ),
-                  ),
-                ),
-              ],
+      builder: (context) => Stack(
+        children: [
+          // Прозорий фон для закриття кліком
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _hideRegionDropdown,
+              child: Container(
+                color: Colors.transparent,
+              ),
             ),
           ),
-        ),
+          // Dropdown
+          CompositedTransformFollower(
+            link: _regionDropdownLayerLink,
+            showWhenUnlinked: false,
+            offset: const Offset(0, 8),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: size.width,
+                constraints: const BoxConstraints(maxHeight: 320),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.zinc200),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(16, 24, 40, 0.03),
+                      offset: Offset(0, 4),
+                      blurRadius: 6,
+                      spreadRadius: -2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        itemCount: _regions.length,
+                        itemBuilder: (context, index) {
+                          final region = _regions[index];
+                          final isSelected = region == _selectedRegion;
+                          return GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                _selectedRegion = region;
+                              });
+                              _onCitySearchChanged();
+                              _hideRegionDropdown();
+                              final regionLatLng = await getLatLngFromRegion(region);
+                              if (regionLatLng != null) {
+                                setState(() {
+                                  _mapCenter = regionLatLng;
+                                  _selectedLatLng = null;
+                                });
+                                _mapController.move(regionLatLng, 8);
+                              }
+                            },
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.only(left: 8, right: 10, top: 10, bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.zinc50 : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        region,
+                                        style: AppTextStyles.body1Regular.copyWith(
+                                          color: AppColors.color2,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      SvgPicture.asset(
+                                        'assets/icons/check.svg',
+                                        width: 20,
+                                        height: 20,
+                                        colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
     overlay.insert(_regionDropdownOverlay!);
