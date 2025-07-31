@@ -205,9 +205,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   void _hideComplaint() {
     Navigator.of(context).pop();
-    _complaintTitleController.clear();
-    _complaintDescriptionController.clear();
-    _selectedComplaintType = 'Товар не відповідає опису';
+      _complaintTitleController.clear();
+      _complaintDescriptionController.clear();
+      _selectedComplaintType = 'Товар не відповідає опису';
   }
 
   Future<void> _submitComplaint() async {
@@ -1120,37 +1120,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               _product?.phoneNumber != null && _product!.phoneNumber!.isNotEmpty)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                            children: [
                                 // WhatsApp contact
                                 if (_product?.whatsapp != null && _product!.whatsapp!.isNotEmpty)
                                   _buildContactItem(
-                                    'assets/icons/whatsapp.svg',
+                                      'assets/icons/whatsapp.svg',
                                     _product!.whatsapp!,
                                     isSocialIcon: true,
                                   ),
                                 // Telegram contact
                                 if (_product?.telegram != null && _product!.telegram!.isNotEmpty)
                                   _buildContactItem(
-                                    'assets/icons/telegram.svg',
+                                      'assets/icons/telegram.svg',
                                     _product!.telegram!,
                                     isSocialIcon: true,
                                   ),
                                 // Viber contact
                                 if (_product?.viber != null && _product!.viber!.isNotEmpty)
                                   _buildContactItem(
-                                    'assets/icons/viber.svg',
+                                      'assets/icons/viber.svg',
                                     _product!.viber!,
                                     isSocialIcon: true,
                                   ),
                                 // Phone contact
                                 if (_product?.phoneNumber != null && _product!.phoneNumber!.isNotEmpty)
                                   _buildContactItem(
-                                    'assets/icons/phone.svg',
+                                      'assets/icons/phone.svg',
                                     _product!.phoneNumber!,
                                     isSocialIcon: false,
-                                  ),
+                              ),
                               ],
-                            ),
+                              ),
                         ],
                       ),
                     ],

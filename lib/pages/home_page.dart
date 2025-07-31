@@ -236,6 +236,10 @@ class HomeContentState extends State<HomeContent> {
   void _toggleView() {
     setState(() {
       _isViewDropdownOpen = !_isViewDropdownOpen;
+      // Закриваємо sort dropdown якщо відкриваємо view dropdown
+      if (_isViewDropdownOpen) {
+        _isSortDropdownOpen = false;
+      }
     });
   }
 
@@ -457,6 +461,10 @@ class HomeContentState extends State<HomeContent> {
                     onTap: () {
                       setState(() {
                         _isSortDropdownOpen = !_isSortDropdownOpen;
+                        // Закриваємо view dropdown якщо відкриваємо sort dropdown
+                        if (_isSortDropdownOpen) {
+                          _isViewDropdownOpen = false;
+                        }
                       });
                     },
                     child: Container(
@@ -832,6 +840,20 @@ class HomeContentState extends State<HomeContent> {
             ],
           ),
         ),
+        if (_isSortDropdownOpen || _isViewDropdownOpen)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isSortDropdownOpen = false;
+                _isViewDropdownOpen = false;
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
         if (_isSortDropdownOpen)
           _buildSortDropdown(),
         if (_isViewDropdownOpen)

@@ -23,10 +23,11 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
   final ProfileService _profileService = ProfileService();
+  final GlobalKey<HomeContentState> _homeContentKey = GlobalKey<HomeContentState>();
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(),
+    HomePage(key: _homeContentKey),
     const FavoritesPage(),
     const ViewedPage(),
     const ChatPage(),
@@ -178,7 +179,9 @@ class _GeneralPageState extends State<GeneralPage> {
                   }
                   final result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
                   if (result == true && _selectedIndex == 0) {
-                    // _homeContentKey.currentState?.refreshProducts(); // This line is removed
+                    // Додаємо невелику затримку для забезпечення оновлення
+                    await Future.delayed(const Duration(milliseconds: 500));
+                    _homeContentKey.currentState?.refreshProducts();
                   }
                 },
                 backgroundColor: Colors.transparent,

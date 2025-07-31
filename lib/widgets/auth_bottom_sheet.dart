@@ -84,7 +84,7 @@ class AuthBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Увійдіть у свій профіль, щоб перевірити, чи не отримали ви важливих оновлень.',
+                    'кдіть у свій профіль, щоб перевірити, чи не отримали ви важливих оновлень.',
                     textAlign: TextAlign.center,
                                          style: AppTextStyles.body1Regular.copyWith(
                        color: AppColors.color7,
