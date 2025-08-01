@@ -137,7 +137,7 @@ class _ChatPageState extends State<ChatPage> {
       backgroundColor: Colors.white,
       appBar: const CommonHeader(),
       body: Padding(
-        padding: const EdgeInsets.only(top: 20, left: 13, right: 13),
+        padding: const EdgeInsets.only(top: 20, left: 13, right: 13, bottom: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

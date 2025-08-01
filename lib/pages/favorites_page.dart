@@ -21,7 +21,7 @@ class FavoritesPage extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CommonHeader(),
       body: Padding(
-        padding: EdgeInsets.only(top: 20),
+        padding: EdgeInsets.only(top: 20, bottom: 8),
         child: FavoritesContent(),
       ),
     );

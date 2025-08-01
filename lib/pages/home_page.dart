@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: const CommonHeader(),
       body: Padding(
-        padding: const EdgeInsets.only(top: 20),
+        padding: const EdgeInsets.only(top: 20, bottom: 8),
         child: HomeContent(key: key),
       ),
     );

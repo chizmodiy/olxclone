@@ -96,7 +96,7 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 39),
+          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 47),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
