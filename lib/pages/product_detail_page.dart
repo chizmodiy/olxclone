@@ -282,7 +282,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildContactItem(String iconPath, String text, {required bool isSocialIcon}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           SvgPicture.asset(
@@ -404,7 +404,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildMessageInput() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -450,10 +450,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   letterSpacing: 0.16,
                 ),
               ),
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => setState(() {}              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             height: 44,
@@ -622,6 +622,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildMainContent(double imageHeight) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 22),
       child: Column(
         children: [
           // First section - Image gallery
@@ -660,72 +661,76 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
                 // Navigation buttons
                 Positioned(
-                  left: 12,
-                  right: 12,
-                  top: 36,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildNavigationButton(
-                        iconPath: 'assets/icons/chevron-states.svg',
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      Row( // Group share and edit buttons
-                        children: [
-                          _buildNavigationButton(
-                            iconPath: 'assets/icons/share-07.svg',
-                            onTap: () {
-                              // Share functionality coming soon
-                            },
-                          ),
-                          const SizedBox(width: 12), // 12px gap
-                          GestureDetector(
-                            onTap: () async {
-                              if (_product != null) {
-                                final result = await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => EditListingPage(listing: _product!.toListing()),
-                                  ),
-                                );
-                                
-                                // Якщо редагування було успішним, оновлюємо дані
-                                if (result == true) {
-                                  setState(() {
-                                    // Оновлюємо дані продукту
-                                    _loadProduct();
-                                  });
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 36),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildNavigationButton(
+                          iconPath: 'assets/icons/chevron-states.svg',
+                          onTap: () => Navigator.pop(context),
+                        ),
+                        Row( // Group share and edit buttons
+                          children: [
+                            _buildNavigationButton(
+                              iconPath: 'assets/icons/share-07.svg',
+                              onTap: () {
+                                // Share functionality coming soon
+                              },
+                            ),
+                            const SizedBox(width: 12), // 12px gap
+                            GestureDetector(
+                              onTap: () async {
+                                if (_product != null) {
+                                  final result = await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => EditListingPage(listing: _product!.toListing()),
+                                    ),
+                                  );
+                                  
+                                  // Якщо редагування було успішним, оновлюємо дані
+                                  if (result == true) {
+                                    setState(() {
+                                      // Оновлюємо дані продукту
+                                      _loadProduct();
+                                    });
+                                  }
                                 }
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: ShapeDecoration(
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(
-                                    width: 1,
-                                    color: Color(0xFFE4E4E7),
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    side: const BorderSide(
+                                      width: 1,
+                                      color: Color(0xFFE4E4E7),
+                                    ),
+                                    borderRadius: BorderRadius.circular(200),
                                   ),
-                                  borderRadius: BorderRadius.circular(200),
+                                  shadows: const [
+                                    BoxShadow(
+                                      color: Color(0x0C101828),
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1),
+                                    )
+                                  ],
                                 ),
-                                shadows: const [
-                                  BoxShadow(
-                                    color: Color(0x0C101828),
-                                    blurRadius: 2,
-                                    offset: Offset(0, 1),
-                                  )
-                                ],
-                              ),
-                              child: SvgPicture.asset(
-                                'assets/icons/edit-0333.svg',
-                                width: 20,
-                                height: 20,
+                                child: SvgPicture.asset(
+                                  'assets/icons/edit-0333.svg',
+                                  width: 20,
+                                  height: 20,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 // Page indicators
@@ -1093,7 +1098,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 16),
                   // Contacts section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1109,7 +1114,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           letterSpacing: 0.14,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1160,37 +1165,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          const SizedBox(height: 40),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton(
-                onPressed: _startChatWithOwner,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF015873),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    side: const BorderSide(color: Color(0xFF015873), width: 1),
+          // Показуємо кнопку "Написати" тільки якщо це не наше оголошення
+          if (_currentUserId != null && _product != null && _currentUserId != _product!.userId)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: _startChatWithOwner,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF015873),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: const BorderSide(color: Color(0xFF015873), width: 1),
+                    ),
+                    elevation: 4,
+                    shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                   ),
-                  elevation: 4,
-                  shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                ),
-                child: const Text(
-                  'Написати',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Inter',
-                    height: 1.4,
-                    letterSpacing: 0.14,
+                  child: const Text(
+                    'Написати',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Inter',
+                      height: 1.4,
+                      letterSpacing: 0.14,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
