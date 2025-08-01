@@ -166,21 +166,28 @@ class _CommentsState extends State<Comments> {
                       final isFavorite = _favoriteProductIds.contains(product.id);
                       return Stack(
                         children: [
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            width: double.infinity,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              image: product.photos.isNotEmpty
-                                  ? DecorationImage(
-                                      image: NetworkImage(product.photos.first),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Stack(
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pushNamed(
+                                '/product-detail',
+                                arguments: {'id': product.id},
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              width: double.infinity,
+                              height: 160,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                image: product.photos.isNotEmpty
+                                    ? DecorationImage(
+                                        image: NetworkImage(product.photos.first),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
                               children: [
                                 Container(
                                   width: double.infinity,
@@ -260,6 +267,7 @@ class _CommentsState extends State<Comments> {
                               ],
                             ),
                           ),
+                        ),
                         ],
                       );
                     },

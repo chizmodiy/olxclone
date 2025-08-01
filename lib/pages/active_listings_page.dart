@@ -218,7 +218,10 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
 
                                         
                                         onTap: () {
-                                          // TODO: Перехід до деталей оголошення
+                                          Navigator.of(context).pushNamed(
+                                            '/product-detail',
+                                            arguments: {'id': product.id},
+                                          );
                                         },
                                       ),
                                     ),

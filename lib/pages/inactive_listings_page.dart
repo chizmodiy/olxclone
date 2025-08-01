@@ -197,7 +197,12 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
                                         images: product.photos,
 
                                         
-                                        onTap: () {},
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(
+                                            '/product-detail',
+                                            arguments: {'id': product.id},
+                                          );
+                                        },
                                       ),
                                     ),
                                   );
