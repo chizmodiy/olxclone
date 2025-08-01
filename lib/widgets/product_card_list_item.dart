@@ -166,7 +166,7 @@ class ProductCardListItem extends StatelessWidget {
                         if (onFavoriteToggle != null)
                           GestureDetector(
                             onTap: onFavoriteToggle,
-                            child: const _HeartRoundedIcon(),
+                            child: _HeartRoundedIcon(isFavorite: isFavorite),
                     ),
                   ],
                 ),
@@ -181,7 +181,9 @@ class ProductCardListItem extends StatelessWidget {
 
 // Додаю кастомний Widget для сердечка
 class _HeartRoundedIcon extends StatelessWidget {
-  const _HeartRoundedIcon({super.key});
+  final bool isFavorite;
+  
+  const _HeartRoundedIcon({super.key, required this.isFavorite});
 
   @override
   Widget build(BuildContext context) {
@@ -189,17 +191,21 @@ class _HeartRoundedIcon extends StatelessWidget {
       width: 20,
       height: 20,
       child: CustomPaint(
-        painter: _HeartRoundedPainter(),
+        painter: _HeartRoundedPainter(isFavorite: isFavorite),
       ),
     );
   }
 }
 
 class _HeartRoundedPainter extends CustomPainter {
+  final bool isFavorite;
+  
+  const _HeartRoundedPainter({required this.isFavorite});
+  
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF015873)
+      ..color = isFavorite ? const Color(0xFF015873) : const Color(0xFF838583)
       ..style = PaintingStyle.fill;
     final path = Path();
     path.moveTo(size.width * 0.6713, size.height * 0.125); // 13.4259, 2.5
