@@ -227,9 +227,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                             const SizedBox(height: 24),
                             // Ім'я та прізвище
                             Container(
-                              width: double.infinity,
-                              height: 44,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              width: 364,
+                              height: 48,
                               alignment: Alignment.centerLeft,
                               decoration: ShapeDecoration(
                                 color: const Color(0xFFFAFAFA),
@@ -251,7 +250,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 textAlignVertical: TextAlignVertical.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: "Ім’я та прізвище",
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  hintText: "Ім'я та прізвище",
                                   hintStyle: TextStyle(
                                     color: Color(0xFFA1A1AA),
                                     fontSize: 16,
@@ -274,9 +274,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                             const SizedBox(height: 12),
                             // Телефон (disabled)
                             Container(
-                              width: double.infinity,
-                              height: 44,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              width: 364,
+                              height: 48,
                               alignment: Alignment.centerLeft,
                               decoration: ShapeDecoration(
                                 color: const Color(0xFFFAFAFA),
@@ -299,6 +298,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 textAlignVertical: TextAlignVertical.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                   hintText: "+380 95 354 8756",
                                   hintStyle: TextStyle(
                                     color: Colors.black,
@@ -331,10 +331,11 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                     padding: const EdgeInsets.only(left: 13, right: 13, bottom: 34, top: 0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: double.infinity,
-                          height: 44,
+                          width: 364,
+                          height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF015873),
@@ -342,7 +343,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 borderRadius: BorderRadius.circular(200),
                                 side: const BorderSide(color: Color(0xFF015873)),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
                               elevation: 0,
                             ),
                             onPressed: _saveProfile,
@@ -359,8 +360,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
-                          width: double.infinity,
-                          height: 44,
+                          width: 364,
+                          height: 48,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.white,
@@ -368,7 +369,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(200),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
                               elevation: 0,
                             ),
                             onPressed: () => Navigator.of(context).pop(),

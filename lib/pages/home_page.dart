@@ -90,7 +90,7 @@ class HomeContentState extends State<HomeContent> {
   }
 
   Future<void> _loadProducts() async {
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
@@ -283,6 +283,9 @@ class HomeContentState extends State<HomeContent> {
       _currentPage = 0;
       _hasMore = true;
       _errorMessage = null;
+      _searchQuery = '';
+      _currentFilters = {};
+      _sortBy = null;
     });
     _loadProducts();
   }
@@ -687,7 +690,12 @@ class HomeContentState extends State<HomeContent> {
                   onRefresh: () async {
                     setState(() {
                       _products = [];
+                      _currentPage = 0;
+                      _hasMore = true;
                       _errorMessage = null;
+                      _searchQuery = '';
+                      _currentFilters = {};
+                      _sortBy = null;
                     });
                     await _loadProducts();
                   },
