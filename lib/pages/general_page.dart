@@ -60,9 +60,63 @@ class _GeneralPageState extends State<GeneralPage> {
   }
 
   void _onItemTapped(int index) {
+    // Перевіряємо, чи це кнопка чату (індекс 3) і чи користувач не авторизований
+    if (index == 3) {
+      final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+      if (currentUserId == null) {
+        // Показуємо AuthBottomSheet для неавторизованих користувачів
+        _showAuthBottomSheet();
+        return;
+      }
+    }
+    
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _showAuthBottomSheet() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            // Затемнення фону з блюром
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Bottom sheet
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AuthBottomSheet(
+                onLoginPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                  Navigator.of(context).pushNamed('/auth');
+                },
+                onCancelPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showBlockedUserBottomSheet() {

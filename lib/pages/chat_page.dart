@@ -28,8 +28,6 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadChats();
-    
-
   }
 
   Future<void> _loadChats() async {
