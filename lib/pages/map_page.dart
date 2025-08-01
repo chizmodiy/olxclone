@@ -11,6 +11,8 @@ import '../services/profile_service.dart';
 import '../pages/filter_page.dart'; // Додаю імпорт FilterPage
 import '../widgets/blocked_user_bottom_sheet.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widgets/auth_bottom_sheet.dart';
+import 'dart:ui';
 
 class Pin extends StatelessWidget {
   final String count;
@@ -439,7 +441,7 @@ class _MapPageState extends State<MapPage> {
             left: 0,
             right: 0,
             child: Container(
-              height: 64,
+              height: 120,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment(0.5, 0.0),
@@ -459,8 +461,8 @@ class _MapPageState extends State<MapPage> {
             left: 0,
             right: 0,
             child: Container(
-              height: 64,
-              padding: const EdgeInsets.fromLTRB(13, 16, 13, 8),
+              height: 120,
+              padding: const EdgeInsets.fromLTRB(13, 42, 13, 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -475,19 +477,81 @@ class _MapPageState extends State<MapPage> {
                     ),
                   ),
                   // Аватар користувача
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/profile');
+                  Builder(
+                    builder: (context) {
+                      final user = Supabase.instance.client.auth.currentUser;
+                      final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          if (user == null) {
+                            // Показуємо bottom sheet для розлогінених користувачів
+                            showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (context) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                insetPadding: EdgeInsets.zero,
+                                child: Stack(
+                                  children: [
+                                    // Затемнення фону з блюром
+                                    Positioned.fill(
+                                      child: GestureDetector(
+                                        onTap: () => Navigator.of(context).pop(),
+                                        child: ClipRect(
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                                            child: Container(
+                                              color: Colors.black.withOpacity(0.3),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // Bottom sheet
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      child: AuthBottomSheet(
+                                        title: 'Тут буде ваш профіль',
+                                        subtitle: 'Увійдіть у профіль, щоб керувати своїми даними та налаштуваннями.',
+                                        onLoginPressed: () {
+                                          Navigator.of(context).pop(); // Закриваємо bottom sheet
+                                          Navigator.of(context).pushNamed('/auth');
+                                        },
+                                        onCancelPressed: () {
+                                          Navigator.of(context).pop(); // Закриваємо bottom sheet
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          } else {
+                            Navigator.pushNamed(context, '/profile');
+                          }
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: avatarUrl != null
+                                ? DecorationImage(
+                                    image: NetworkImage(avatarUrl),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                            color: avatarUrl == null ? Colors.grey[300] : null,
+                          ),
+                          child: avatarUrl == null
+                              ? const Icon(Icons.person, color: Colors.white, size: 24)
+                              : null,
+                        ),
+                      );
                     },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey[300],
-                      ),
-                      child: const Icon(Icons.person, color: Colors.white),
-                    ),
                   ),
                 ],
               ),
@@ -495,7 +559,7 @@ class _MapPageState extends State<MapPage> {
           ),
           // Overlay-група: кнопка повернення + пошук/фільтр
           Positioned(
-            top: 88, // 64px хедер + 24px відступ
+            top: 144, // 120px хедер + 24px відступ
             left: 13,
             right: 13,
             child: Column(
