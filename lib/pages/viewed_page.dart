@@ -172,51 +172,54 @@ class _ViewedContentState extends State<ViewedContent> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Column(
-            children: [
-              Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F3F3),
-                  borderRadius: BorderRadius.circular(200),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: const InputDecoration(
-                          hintText: 'Пошук',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF838583),
+          // Показуємо пошук тільки для авторизованих користувачів
+          if (_currentUserId != null) ...[
+            const SizedBox(height: 20),
+            Column(
+              children: [
+                Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F3F3),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.search_rounded, color: const Color(0xFF838583), size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Пошук',
+                            hintStyle: TextStyle(
+                              color: Color(0xFF838583),
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
+                              letterSpacing: 0.16,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
                             fontSize: 16,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w400,
                             height: 1.5,
-                            letterSpacing: 0.16,
                           ),
-                          border: InputBorder.none,
+                          onChanged: _onSearchChanged,
                         ),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                        onChanged: _onSearchChanged,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
           Expanded(
             child: _errorMessage != null

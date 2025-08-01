@@ -278,26 +278,28 @@ class _FavoritesContentState extends State<FavoritesContent> {
                       height: 1.2,
                     ),
                   ),
-                  Row(
-                    children: [
-                      const SizedBox(width: 12),
-                      CompositedTransformTarget(
-                        link: _viewLayerLink,
-                        child: GestureDetector(
-                          onTap: _toggleView,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(200),
-                              border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-                              boxShadow: _isViewDropdownOpen
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                        offset: const Offset(0, 1),
-                                        blurRadius: 0,
-                                        spreadRadius: 5,
+                  // Показуємо кнопку вибору варіантів відображення тільки для авторизованих користувачів
+                  if (_currentUserId != null)
+                    Row(
+                      children: [
+                        const SizedBox(width: 12),
+                        CompositedTransformTarget(
+                          link: _viewLayerLink,
+                          child: GestureDetector(
+                            onTap: _toggleView,
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(200),
+                                border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                                boxShadow: _isViewDropdownOpen
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color.fromRGBO(16, 24, 40, 0.10),
+                                          offset: const Offset(0, 1),
+                                          blurRadius: 0,
+                                          spreadRadius: 5,
                                       ),
                                     ]
                                   : [
@@ -603,7 +605,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
         ],
       ),
         ),
-        if (_isViewDropdownOpen)
+        if (_isViewDropdownOpen && _currentUserId != null)
           _buildViewModeDropdown(),
       ],
     );
