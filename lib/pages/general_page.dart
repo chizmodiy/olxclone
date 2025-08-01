@@ -216,6 +216,8 @@ class _GeneralPageState extends State<GeneralPage> {
                               right: 0,
                               bottom: 0,
                               child: AuthBottomSheet(
+                                title: 'Тут будуть ваші оголошення',
+                                subtitle: 'Увійдіть у профіль, щоб переглядати, створювати або зберігати оголошення.',
                                 onLoginPressed: () {
                                   Navigator.of(context).pop(); // Закриваємо bottom sheet
                                   Navigator.of(context).pushNamed('/auth');

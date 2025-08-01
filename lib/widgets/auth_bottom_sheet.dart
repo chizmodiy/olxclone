@@ -6,11 +6,15 @@ import '../theme/app_text_styles.dart';
 class AuthBottomSheet extends StatelessWidget {
   final VoidCallback? onLoginPressed;
   final VoidCallback? onCancelPressed;
+  final String title;
+  final String subtitle;
 
   const AuthBottomSheet({
     super.key,
     this.onLoginPressed,
     this.onCancelPressed,
+    this.title = 'Тут будуть ваші сповіщення',
+    this.subtitle = 'Увійдіть у свій профіль, щоб перевірити, чи не отримали ви важливих оновлень.',
   });
 
   @override
@@ -74,7 +78,7 @@ class AuthBottomSheet extends StatelessWidget {
               Column(
                 children: [
                   Text(
-                    'Тут будуть ваші сповіщення',
+                    title,
                     textAlign: TextAlign.center,
                     style: AppTextStyles.heading1Semibold.copyWith(
                       color: Colors.black,
@@ -84,13 +88,13 @@ class AuthBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'кдіть у свій профіль, щоб перевірити, чи не отримали ви важливих оновлень.',
+                    subtitle,
                     textAlign: TextAlign.center,
-                                         style: AppTextStyles.body1Regular.copyWith(
-                       color: AppColors.color7,
-                       height: 22.4 / 16,
-                       letterSpacing: 0.16,
-                     ),
+                    style: AppTextStyles.body1Regular.copyWith(
+                      color: AppColors.color7,
+                      height: 22.4 / 16,
+                      letterSpacing: 0.16,
+                    ),
                   ),
                 ],
               ),

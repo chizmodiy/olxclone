@@ -61,6 +61,8 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
                           right: 0,
                           bottom: 0,
                           child: AuthBottomSheet(
+                            title: 'Тут буде ваш профіль',
+                            subtitle: 'Увійдіть у профіль, щоб керувати своїми даними та налаштуваннями.',
                             onLoginPressed: () {
                               Navigator.of(context).pop(); // Закриваємо bottom sheet
                               Navigator.of(context).pushNamed('/auth');

@@ -176,13 +176,15 @@ class HomeContentState extends State<HomeContent> {
               right: 0,
               bottom: 0,
               child: AuthBottomSheet(
-        onLoginPressed: () {
-          Navigator.of(context).pop(); // Закриваємо bottom sheet
-          Navigator.of(context).pushNamed('/auth');
-        },
-        onCancelPressed: () {
-          Navigator.of(context).pop(); // Закриваємо bottom sheet
-        },
+                title: 'Тут будуть ваші оголошення',
+                subtitle: 'Увійдіть у профіль, щоб переглядати, створювати або зберігати оголошення.',
+                onLoginPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                  Navigator.of(context).pushNamed('/auth');
+                },
+                onCancelPressed: () {
+                  Navigator.of(context).pop(); // Закриваємо bottom sheet
+                },
               ),
             ),
           ],
