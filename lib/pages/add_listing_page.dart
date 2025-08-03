@@ -1848,28 +1848,91 @@ class _AddListingPageState extends State<AddListingPage> {
     return Container(
       height: 44, // Фіксована висота 44 пікселі
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.zinc50,
         borderRadius: BorderRadius.circular(200),
         border: Border.all(color: AppColors.zinc200),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(16, 24, 40, 0.05),
+            offset: Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
       ),
-      child: TextField(
-        controller: controller,
-        keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
-        inputFormatters: isTelegramInput 
-            ? []
-            : [
-                FilteringTextInputFormatter.digitsOnly,
-                _PhoneNumberFormatter(),
-              ],
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: AppTextStyles.body2Regular.copyWith(color: AppColors.color5),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          border: InputBorder.none,
-          prefixText: isTelegramInput ? null : '+380 ',
-          prefixStyle: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
-        ),
-        style: AppTextStyles.body2Regular.copyWith(color: AppColors.color8),
+      child: Row(
+        children: [
+          if (!isTelegramInput) ...[
+            const SizedBox(width: 16),
+            // Прапор України
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF0057B8), // Синій колір прапора
+              ),
+              child: ClipOval(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0057B8), // Синій колір
+                      ),
+                    ),
+                    Container(
+                      width: 20,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFD700), // Жовтий колір
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Префікс +380
+            Text(
+              '+380',
+              style: AppTextStyles.body1Regular.copyWith(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: TextField(
+              controller: controller,
+              keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
+              inputFormatters: isTelegramInput 
+                  ? []
+                  : [
+                      FilteringTextInputFormatter.digitsOnly,
+                      _PhoneNumberFormatter(),
+                    ],
+              decoration: InputDecoration(
+                hintText: isTelegramInput ? hintText : '(XX) XXX-XX-XX',
+                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                contentPadding: EdgeInsets.only(
+                  left: isTelegramInput ? 16 : 0,
+                  right: 16,
+                  top: 12,
+                  bottom: 12,
+                ),
+                border: InputBorder.none,
+              ),
+              style: AppTextStyles.body1Regular.copyWith(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
