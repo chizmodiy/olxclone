@@ -111,8 +111,12 @@ class Product {
 
   String get formattedPrice {
     if (isFree) return 'Віддам безкоштовно';
-    if (isNegotiable) return 'Договірна';
-    if (price == null) return 'Ціна не вказана';
+    if (price == null) {
+      if (isNegotiable) {
+        return 'Договірна';
+      }
+      return 'Ціна не вказана';
+    }
     
     final currencySymbol = switch(currency?.toLowerCase()) {
       'uah' => '₴',
@@ -121,7 +125,13 @@ class Product {
       _ => '₴',
     };
     
-    return '$currencySymbol${price!.toStringAsFixed(2)}';
+    final priceText = '$currencySymbol${price!.toStringAsFixed(2)}';
+    
+    if (isNegotiable) {
+      return '$priceText (Договірна)';
+    }
+    
+    return priceText;
   }
 
   // Додаємо getter для сумісності зі старим кодом

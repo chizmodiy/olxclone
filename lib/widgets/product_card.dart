@@ -139,7 +139,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (isNegotiable)
+                if (isNegotiable && price == 'Договірна')
                   Positioned(
                     top: 6,
                     left: 6,

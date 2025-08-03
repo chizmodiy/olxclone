@@ -1750,16 +1750,15 @@ class _AddListingPageState extends State<AddListingPage> {
               Expanded(
                 child: TextField(
                   controller: _priceController,
-                  enabled: !_isNegotiablePrice,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                   ],
                   style: AppTextStyles.body1Regular.copyWith(
-                    color: _isNegotiablePrice ? AppColors.color5 : AppColors.color2,
+                    color: AppColors.color2,
                   ),
                   decoration: InputDecoration(
-                    hintText: _isNegotiablePrice ? 'Договірна ціна' : '0.0₴',
+                    hintText: '0.0₴',
                     hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
                     border: InputBorder.none,
                     isDense: true,
@@ -1787,10 +1786,9 @@ class _AddListingPageState extends State<AddListingPage> {
                 setState(() {
                   _isNegotiablePrice = !_isNegotiablePrice;
                   if (_isNegotiablePrice) {
-                    _priceController.clear();
-                    print('Debug: Договірна ціна увімкнена - поле очищено');
+                    print('Debug: Договірна ціна увімкнена');
                   } else {
-                    print('Debug: Договірна ціна вимкнена - поле активне');
+                    print('Debug: Договірна ціна вимкнена');
                   }
                 });
               },
@@ -2071,15 +2069,26 @@ class _AddListingPageState extends State<AddListingPage> {
   String? _validateExtraFields() {
     String? errorMessage; // Make errorMessage nullable
 
+    print('Debug: Starting extra fields validation...');
+    print('  subcategory: ${_selectedSubcategory?.name}');
+    print('  extra fields count: ${_selectedSubcategory?.extraFields.length}');
+    print('  extra field values: $_extraFieldValues');
+
     for (var field in _selectedSubcategory!.extraFields) {
+      print('  checking field: ${field.name} (required: ${field.isRequired})');
       if (field.isRequired &&
           (!_extraFieldValues.containsKey(field.id) ||
               _extraFieldValues[field.id] == null ||
               (_extraFieldValues[field.id] is String &&
                   _extraFieldValues[field.id].isEmpty))) {
         errorMessage = 'Будь ласка, заповніть всі обов\'язкові поля.';
+        print('Debug: Extra fields validation failed - missing required field: ${field.name}');
         break;
       }
+    }
+    
+    if (errorMessage == null) {
+      print('Debug: Extra fields validation passed successfully');
     }
     return errorMessage; // Return nullable errorMessage
   }
@@ -2087,38 +2096,71 @@ class _AddListingPageState extends State<AddListingPage> {
   String? _validateForm() {
     String? errorMessage;
 
+    print('Debug: Starting form validation...');
+    print('  title: "${_titleController.text}"');
+    print('  description: "${_descriptionController.text}"');
+    print('  category: ${_selectedCategory?.name}');
+    print('  subcategory: ${_selectedSubcategory?.name}');
+    print('  region: ${_selectedRegion?.name}');
+    print('  isForSale: $_isForSale');
+    print('  isNegotiablePrice: $_isNegotiablePrice');
+    print('  price: "${_priceController.text}"');
+    print('  currency: $_selectedCurrency');
+    print('  phone: "${_phoneController.text}"');
+    print('  whatsapp: "${_whatsappController.text}"');
+    print('  telegram: "${_telegramController.text}"');
+    print('  viber: "${_viberController.text}"');
+    print('  images count: ${_selectedImages.length}');
+
     // Check title
     if (_titleController.text.isEmpty) {
       errorMessage = 'Введіть заголовок оголошення';
+      print('Debug: Validation failed - empty title');
     }
     // Check description
     else if (_descriptionController.text.isEmpty) {
       errorMessage = 'Введіть опис оголошення';
+      print('Debug: Validation failed - empty description');
     }
     // Check category
     else if (_selectedCategory == null) {
       errorMessage = 'Оберіть категорію';
+      print('Debug: Validation failed - no category selected');
     }
     // Check subcategory - only required for paid listings
     else if (_isForSale && _selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
+      print('Debug: Validation failed - no subcategory selected for paid listing');
     } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
+      print('Debug: Validation failed - no region selected');
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
+      print('Debug: Validation failed - free listing has price or currency');
     } else if (_isForSale && !_isNegotiablePrice &&
         (_priceController.text.isEmpty ||
             double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
       errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
+      print('Debug: Validation failed - invalid price for non-negotiable listing');
+    } else if (_isForSale && _isNegotiablePrice &&
+        _priceController.text.isNotEmpty &&
+        (double.tryParse(_priceController.text) == null ||
+            (double.tryParse(_priceController.text) ?? 0) <= 0)) {
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0 або залиште поле порожнім';
+      print('Debug: Validation failed - invalid price for negotiable listing');
     } else if (_phoneController.text.isEmpty && 
                _whatsappController.text.isEmpty && 
                _telegramController.text.isEmpty && 
                _viberController.text.isEmpty) {
       errorMessage = 'Будь ласка, введіть хоча б один спосіб зв\'язку';
+      print('Debug: Validation failed - no contact method provided');
     } else if (_selectedImages.isEmpty) {
       errorMessage = 'Додайте хоча б одне зображення';
+      print('Debug: Validation failed - no images selected');
+    } else {
+      print('Debug: Form validation passed successfully');
     }
     return errorMessage;
   }
@@ -2133,8 +2175,16 @@ class _AddListingPageState extends State<AddListingPage> {
     bool priceValid;
     if (_isForSale) {
       if (_isNegotiablePrice) {
-        priceValid = true; // Договірна ціна - завжди валідна
-        print('Debug: Договірна ціна активна - ціна вважається валідною');
+        // Договірна ціна - валідна якщо поле порожнє або містить дійсну ціну
+        final priceText = _priceController.text;
+        if (priceText.isEmpty) {
+          priceValid = true;
+          print('Debug: Договірна ціна активна - поле порожнє, валідна');
+        } else {
+          final priceValue = double.tryParse(priceText);
+          priceValid = priceValue != null && priceValue > 0;
+          print('Debug: Договірна ціна активна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
+        }
       } else {
         final priceText = _priceController.text;
         final priceValue = double.tryParse(priceText);
@@ -2157,17 +2207,41 @@ class _AddListingPageState extends State<AddListingPage> {
     
     print('Debug: Форма валідна: $isValid (title: $titleValid, desc: $descriptionValid, cat: $categoryValid, subcat: $subcategoryValid, region: $regionValid, price: $priceValid, contact: $contactValid, images: $imagesValid)');
     
+    if (!isValid) {
+      print('Debug: Form is not valid. Reasons:');
+      if (!titleValid) print('  - Title is empty');
+      if (!descriptionValid) print('  - Description is empty');
+      if (!categoryValid) print('  - Category not selected');
+      if (!subcategoryValid) print('  - Subcategory not selected');
+      if (!regionValid) print('  - Region not selected');
+      if (!priceValid) print('  - Price validation failed');
+      if (!contactValid) print('  - Contact validation failed');
+      if (!imagesValid) print('  - Images validation failed');
+    }
+    
     return isValid;
   }
 
   Future<void> _createListing() async {
     final formValidationMessage = _validateForm();
     if (formValidationMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(formValidationMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
     final extraFieldsValidationMessage = _validateExtraFields();
     if (extraFieldsValidationMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(extraFieldsValidationMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -2210,6 +2284,18 @@ class _AddListingPageState extends State<AddListingPage> {
         locationString = _selectedCity!.name;
       }
 
+        print('Debug: Creating listing with parameters:');
+        print('  title: ${_titleController.text}');
+        print('  description: ${_descriptionController.text}');
+        print('  categoryId: ${_selectedCategory!.id}');
+        print('  subcategoryId: ${_isForSale ? _selectedSubcategory!.id : _selectedCategory!.id}');
+        print('  location: $locationString');
+        print('  isFree: ${!_isForSale}');
+        print('  currency: ${_isForSale ? _selectedCurrency : null}');
+        print('  price: ${_isForSale ? double.tryParse(_priceController.text) : null}');
+        print('  isNegotiable: ${_isForSale ? _isNegotiablePrice : null}');
+        print('  images count: ${imagesToUpload.length}');
+        
         final listingId = await listingService.createListing(
           title: _titleController.text,
           description: _descriptionController.text,
@@ -2218,7 +2304,7 @@ class _AddListingPageState extends State<AddListingPage> {
         location: locationString,
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
-          price: _isForSale ? (_isNegotiablePrice ? null : double.tryParse(_priceController.text)) : null,
+          price: _isForSale ? double.tryParse(_priceController.text) : null,
           isNegotiable: _isForSale ? _isNegotiablePrice : null,
           phoneNumber: _phoneController.text.isNotEmpty ? _phoneController.text : null,
           whatsapp: _whatsappController.text.isNotEmpty ? _whatsappController.text : null,
@@ -2231,10 +2317,18 @@ class _AddListingPageState extends State<AddListingPage> {
         latitude: _selectedLatitude,
         longitude: _selectedLongitude,
         );
+        
+        print('Debug: Listing created successfully with ID: $listingId');
 
         Navigator.of(context).pop(true);
       } catch (error) {
-        // Error handling without showing message
+        print('Error creating listing: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка створення оголошення: ${error.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
     } finally {
       setState(() {
         _isLoading = false;
@@ -2534,7 +2628,12 @@ class _AddListingPageState extends State<AddListingPage> {
                   height: 44,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isFormValid ? _createListing : null,
+                    onPressed: _isFormValid ? () {
+                      print('Debug: Confirm button pressed, form is valid');
+                      _createListing();
+                    } : () {
+                      print('Debug: Confirm button pressed, but form is not valid');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isFormValid 
                           ? AppColors.primaryColor 

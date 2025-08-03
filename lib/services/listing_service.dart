@@ -39,17 +39,25 @@ class ListingService {
     required List<XFile> images,
   }) async {
     try {
-      // Validate price and currency based on isFree
+      // Validate price and currency based on isFree and isNegotiable
       if (isFree) {
         if (price != null || currency != null) {
           throw Exception('Free listings cannot have price or currency');
         }
       } else {
-        if (price == null || currency == null) {
-          throw Exception('Non-free listings must have price and currency');
-        }
-        if (price < 0) {
-          throw Exception('Price cannot be negative');
+        if (isNegotiable == true) {
+          // For negotiable listings, price can be null or any valid price
+          if (price != null && price < 0) {
+            throw Exception('Price cannot be negative');
+          }
+        } else {
+          // For non-negotiable listings, price and currency are required
+          if (price == null || currency == null) {
+            throw Exception('Non-free listings must have price and currency');
+          }
+          if (price < 0) {
+            throw Exception('Price cannot be negative');
+          }
         }
       }
 
@@ -93,9 +101,12 @@ class ListingService {
       }).select('id').single();
 
       final listingId = response['id'] as String;
+      
+      print('Debug: ListingService.createListing - listing created successfully with ID: $listingId');
 
       return listingId;
     } catch (error) {
+      print('Debug: ListingService.createListing - error: $error');
       throw Exception('Failed to create listing: $error');
     }
   }
@@ -225,17 +236,25 @@ class ListingService {
     List<String>? existingImageUrls,
   }) async {
     try {
-      // Validate price and currency based on isFree
+      // Validate price and currency based on isFree and isNegotiable
       if (isFree) {
         if (price != null || currency != null) {
           throw Exception('Free listings cannot have price or currency');
         }
       } else {
-        if (price == null || currency == null) {
-          throw Exception('Non-free listings must have price and currency');
-        }
-        if (price < 0) {
-          throw Exception('Price cannot be negative');
+        if (isNegotiable == true) {
+          // For negotiable listings, price can be null or any valid price
+          if (price != null && price < 0) {
+            throw Exception('Price cannot be negative');
+          }
+        } else {
+          // For non-negotiable listings, price and currency are required
+          if (price == null || currency == null) {
+            throw Exception('Non-free listings must have price and currency');
+          }
+          if (price < 0) {
+            throw Exception('Price cannot be negative');
+          }
         }
       }
 
@@ -258,6 +277,8 @@ class ListingService {
         }
       }
 
+      print('Debug: ListingService.updateListing - updating listing with ID: $listingId');
+      
       // Update the listing
       await _client.from('listings').update({
         'title': title,
@@ -282,9 +303,9 @@ class ListingService {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', listingId);
 
-      print('Listing updated successfully');
+      print('Debug: ListingService.updateListing - listing updated successfully');
     } catch (error) {
-      print('=== Error in updateListing ===');
+      print('Debug: ListingService.updateListing - error: $error');
       print('Error type: ${error.runtimeType}');
       print('Error details: $error');
       throw Exception('Failed to update listing: $error');

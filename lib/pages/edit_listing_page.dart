@@ -1722,9 +1722,6 @@ class _EditListingPageState extends State<EditListingPage> {
               onTap: () {
                 setState(() {
                   _isNegotiablePrice = !_isNegotiablePrice;
-                  if (_isNegotiablePrice) {
-                    _priceController.clear();
-                  }
                 });
               },
               child: Row(
@@ -1760,39 +1757,37 @@ class _EditListingPageState extends State<EditListingPage> {
             ),
           ],
         ),
-        if (!_isNegotiablePrice) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.zinc50,
-              borderRadius: BorderRadius.circular(200),
-              border: Border.all(color: AppColors.zinc200, width: 1),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(16, 24, 40, 0.05),
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: _priceController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              decoration: InputDecoration(
-                hintText: 'Введіть ціну',
-                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.zinc50,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(color: AppColors.zinc200, width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(16, 24, 40, 0.05),
+                offset: Offset(0, 1),
+                blurRadius: 2,
               ),
-              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-            ),
+            ],
           ),
-        ],
+          child: TextField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: InputDecoration(
+              hintText: 'Введіть ціну',
+              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+          ),
+        ),
       ],
     );
   }
@@ -1985,10 +1980,16 @@ class _EditListingPageState extends State<EditListingPage> {
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
-    } else if (_isForSale &&
+    } else if (_isForSale && !_isNegotiablePrice &&
         (_priceController.text.isEmpty ||
-            double.tryParse(_priceController.text) == null)) {
-      errorMessage = 'Будь ласка, введіть дійсну ціну';
+            double.tryParse(_priceController.text) == null ||
+            (double.tryParse(_priceController.text) ?? 0) <= 0)) {
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
+    } else if (_isForSale && _isNegotiablePrice &&
+        _priceController.text.isNotEmpty &&
+        (double.tryParse(_priceController.text) == null ||
+            (double.tryParse(_priceController.text) ?? 0) <= 0)) {
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0 або залиште поле порожнім';
     } else if (_selectedMessenger.isEmpty) {
       errorMessage = 'Будь ласка, оберіть спосіб зв\'язку';
     } else if (_selectedMessenger == 'phone' &&
@@ -2068,6 +2069,7 @@ class _EditListingPageState extends State<EditListingPage> {
         isFree: !_isForSale,
         currency: _isForSale ? _selectedCurrency : null,
         price: _isForSale ? double.tryParse(_priceController.text) : null,
+        isNegotiable: _isForSale ? _isNegotiablePrice : null,
         phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
         whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
         telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
