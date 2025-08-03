@@ -81,6 +81,8 @@ class _AddListingPageState extends State<AddListingPage> {
     super.initState();
     _loadCategories();
     _loadRegions();
+    _loadUserPhone();
+    _addFormListeners();
     
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -93,6 +95,64 @@ class _AddListingPageState extends State<AddListingPage> {
       }
     });
     // _citySearchController.addListener(() => _onCitySearchChanged(_citySearchController.text)); // REMOVE THIS LINE
+  }
+
+  void _addFormListeners() {
+    _titleController.addListener(() => setState(() {}));
+    _descriptionController.addListener(() => setState(() {}));
+    _priceController.addListener(() => setState(() {}));
+    _phoneController.addListener(() => setState(() {}));
+    _whatsappController.addListener(() => setState(() {}));
+    _telegramController.addListener(() => setState(() {}));
+    _viberController.addListener(() => setState(() {}));
+  }
+
+  Future<void> _loadUserPhone() async {
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null && currentUser.phone != null) {
+        // Видаляємо префікс +380 з номера для відображення
+        String phoneNumber = currentUser.phone!;
+        if (phoneNumber.startsWith('+380')) {
+          phoneNumber = phoneNumber.substring(4); // Видаляємо +380
+        }
+        
+        setState(() {
+          _phoneController.text = phoneNumber;
+          // Інші поля залишаються порожніми
+        });
+      }
+    } catch (e) {
+      // Якщо не вдалося завантажити номер, залишаємо поля порожніми
+    }
+  }
+
+  void _autoFillUserPhone(String messengerType) {
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null && currentUser.phone != null) {
+        // Видаляємо префікс +380 з номера для відображення
+        String phoneNumber = currentUser.phone!;
+        if (phoneNumber.startsWith('+380')) {
+          phoneNumber = phoneNumber.substring(4); // Видаляємо +380
+        }
+        
+        setState(() {
+          switch (messengerType) {
+            case 'phone':
+              _phoneController.text = phoneNumber;
+              break;
+            case 'whatsapp':
+            case 'viber':
+            case 'telegram':
+              // Для інших месенджерів не заповнюємо автоматично
+              break;
+          }
+        });
+      }
+    } catch (e) {
+      // Якщо не вдалося завантажити номер, залишаємо поля порожніми
+    }
   }
 
   void _showBlockedUserBottomSheet() {
@@ -1795,6 +1855,9 @@ class _AddListingPageState extends State<AddListingPage> {
         setState(() {
           _selectedMessenger = type;
         });
+        
+        // Автоматично заповнюємо номер телефону користувача при зміні месенджера
+        _autoFillUserPhone(type);
       },
                 child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -2043,26 +2106,34 @@ class _AddListingPageState extends State<AddListingPage> {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
     } else if (_isForSale &&
         (_priceController.text.isEmpty ||
-            double.tryParse(_priceController.text) == null)) {
-      errorMessage = 'Будь ласка, введіть дійсну ціну';
-    } else if (_selectedMessenger.isEmpty) {
-      errorMessage = 'Будь ласка, оберіть спосіб зв\'язку';
-    } else if (_selectedMessenger == 'phone' &&
-        _phoneController.text.isEmpty) {
-      errorMessage = 'Будь ласка, введіть номер телефону';
-    } else if (_selectedMessenger == 'whatsapp' &&
-        _whatsappController.text.isEmpty) {
-      errorMessage = 'Будь ласка, введіть номер WhatsApp';
-    } else if (_selectedMessenger == 'telegram' &&
-        _telegramController.text.isEmpty) {
-      errorMessage = 'Будь ласка, введіть ім\'я користувача Telegram';
-    } else if (_selectedMessenger == 'viber' &&
-        _viberController.text.isEmpty) {
-      errorMessage = 'Будь ласка, введіть номер Viber';
+            double.tryParse(_priceController.text) == null ||
+            (double.tryParse(_priceController.text) ?? 0) <= 0)) {
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
+    } else if (_phoneController.text.isEmpty && 
+               _whatsappController.text.isEmpty && 
+               _telegramController.text.isEmpty && 
+               _viberController.text.isEmpty) {
+      errorMessage = 'Будь ласка, введіть хоча б один спосіб зв\'язку';
     } else if (_selectedImages.isEmpty) {
       errorMessage = 'Додайте хоча б одне зображення';
     }
     return errorMessage;
+  }
+
+  bool get _isFormValid {
+    return _titleController.text.isNotEmpty &&
+           _descriptionController.text.isNotEmpty &&
+           _selectedCategory != null &&
+           (_isForSale ? _selectedSubcategory != null : true) &&
+           _selectedRegion != null &&
+           (_isForSale ? (_priceController.text.isNotEmpty && 
+                         double.tryParse(_priceController.text) != null && 
+                         (double.tryParse(_priceController.text) ?? 0) > 0) : true) &&
+           (_phoneController.text.isNotEmpty || 
+            _whatsappController.text.isNotEmpty || 
+            _telegramController.text.isNotEmpty || 
+            _viberController.text.isNotEmpty) &&
+           _selectedImages.isNotEmpty;
   }
 
   Future<void> _createListing() async {
@@ -2124,10 +2195,10 @@ class _AddListingPageState extends State<AddListingPage> {
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
           price: _isForSale ? double.tryParse(_priceController.text) : null,
-          phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
-          whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
-          telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
-          viber: _selectedMessenger == 'viber' ? _viberController.text : null,
+          phoneNumber: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+          whatsapp: _whatsappController.text.isNotEmpty ? _whatsappController.text : null,
+          telegram: _telegramController.text.isNotEmpty ? _telegramController.text : null,
+          viber: _viberController.text.isNotEmpty ? _viberController.text : null,
         customAttributes: _isForSale ? finalCustomAttributes : {}, // Empty attributes for free listings
         images: imagesToUpload,
         address: _selectedAddress,
@@ -2438,20 +2509,22 @@ class _AddListingPageState extends State<AddListingPage> {
                   height: 44,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _createListing,
+                    onPressed: _isFormValid ? _createListing : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
+                      backgroundColor: _isFormValid 
+                          ? AppColors.primaryColor 
+                          : const Color(0xFFF4F4F5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                child: Text(
+                    child: Text(
                       'Підтвердити',
                       style: AppTextStyles.body2Semibold.copyWith(
-                        color: Colors.white,
+                        color: _isFormValid ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ),
-                ),
-              ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
