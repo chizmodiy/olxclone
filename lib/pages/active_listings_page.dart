@@ -224,7 +224,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                         title: product.title,
                                         price: product.formattedPrice,
                                         images: product.photos,
-
+                                        isNegotiable: product.isNegotiable,
                                         
                                         onTap: () {
                                           Navigator.of(context).pushNamed(

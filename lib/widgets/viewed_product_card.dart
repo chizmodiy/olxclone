@@ -10,6 +10,7 @@ class ViewedProductCard extends StatelessWidget {
   final String? date;
   final String? location;
   final List<String> images;
+  final bool isNegotiable;
   final VoidCallback? onTap;
 
   const ViewedProductCard({
@@ -20,6 +21,7 @@ class ViewedProductCard extends StatelessWidget {
     this.date,
     this.location,
     required this.images,
+    this.isNegotiable = false,
     this.onTap,
   });
 
@@ -44,32 +46,62 @@ class ViewedProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Зображення з правильним заокругленням
-            Container(
-              width: 68,
-              height: 80,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  bottomLeft: Radius.circular(8),
+            Stack(
+              children: [
+                Container(
+                  width: 68,
+                  height: 80,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      bottomLeft: Radius.circular(8),
+                    ),
+                  ),
+                  child: images.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: images.first,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.zinc200,
+                            child: const Icon(Icons.broken_image, color: AppColors.color5),
+                          ),
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        )
+                      : Container(
+                          color: AppColors.zinc200,
+                          child: const Center(
+                            child: Icon(Icons.image, size: 40, color: AppColors.color5),
+                          ),
+                        ),
                 ),
-              ),
-              child: images.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: images.first,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.zinc200,
-                        child: const Icon(Icons.broken_image, color: AppColors.color5),
+                // Мітка "Договірна"
+                if (isNegotiable)
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
                       ),
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                  : Container(
-                      color: AppColors.zinc200,
-                      child: const Center(
-                        child: Icon(Icons.image, size: 40, color: AppColors.color5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Договірна',
+                        style: const TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 10,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
+                        ),
                       ),
                     ),
+                  ),
+              ],
             ),
             Expanded(
               child: Container(

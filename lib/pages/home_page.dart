@@ -794,6 +794,7 @@ class HomeContentState extends State<HomeContent> {
                                     date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                     location: product.location,
                                     images: product.photos,
+                                    isNegotiable: product.isNegotiable,
                                     isFavorite: _favoriteProductIds.contains(product.id),
                                     onFavoriteToggle: () => _toggleFavorite(product),
                                     onTap: () {

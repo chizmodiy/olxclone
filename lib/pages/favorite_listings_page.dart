@@ -226,6 +226,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
                                       title: product.title,
                                       price: product.formattedPrice,
                                       images: product.photos,
+                                      isNegotiable: product.isNegotiable,
                                       isFavorite: _favoriteProductIds.contains(product.id),
                                       onFavoriteToggle: () => _toggleFavorite(product),
                                       onTap: () {

@@ -442,6 +442,7 @@ class _ViewedContentState extends State<ViewedContent> {
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                   location: product.location,
                                   images: product.photos,
+                                  isNegotiable: product.isNegotiable,
                                   onTap: () {
                                     Navigator.of(context).pushNamed(
                                       '/product-detail',

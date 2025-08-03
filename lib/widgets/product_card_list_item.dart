@@ -11,6 +11,7 @@ class ProductCardListItem extends StatelessWidget {
   final String? location;
   final List<String> images;
   final bool isFavorite;
+  final bool isNegotiable;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onTap;
 
@@ -23,6 +24,7 @@ class ProductCardListItem extends StatelessWidget {
     this.location,
     required this.images,
     this.isFavorite = false,
+    this.isNegotiable = false,
     this.onFavoriteToggle,
     this.onTap,
   });
@@ -45,32 +47,62 @@ class ProductCardListItem extends StatelessWidget {
         child: Row(
           children: [
             // Зображення
-            Container(
-              width: 104,
-              height: 104,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
+            Stack(
+              children: [
+                Container(
+                  width: 104,
+                  height: 104,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                  ),
+                  child: images.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: images.first,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.zinc200,
+                            child: const Icon(Icons.broken_image, color: AppColors.color5),
+                          ),
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        )
+                      : Container(
+                          color: AppColors.zinc200,
+                          child: const Center(
+                            child: Icon(Icons.image, size: 40, color: AppColors.color5),
+                          ),
+                        ),
                 ),
-              ),
-              child: images.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: images.first,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.zinc200,
-                        child: const Icon(Icons.broken_image, color: AppColors.color5),
+                // Мітка "Договірна"
+                if (isNegotiable)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
                       ),
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                    )
-                  : Container(
-                      color: AppColors.zinc200,
-                      child: const Center(
-                        child: Icon(Icons.image, size: 40, color: AppColors.color5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        'Договірна',
+                        style: const TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                        ),
                       ),
                     ),
+                  ),
+              ],
             ),
             // Контент
             Expanded(

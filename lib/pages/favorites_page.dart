@@ -548,13 +548,11 @@ class _FavoritesContentState extends State<FavoritesContent> {
                                         child: ProductCardListItem(
                                           id: product.id, // Pass product ID
                                           title: product.title,
-                                          price: product.isNegotiable
-                                              ? 'Договірна'
-                                              : NumberFormat.currency(locale: 'uk_UA', symbol:
-                                              '₴').format(product.priceValue),
+                                          price: product.formattedPrice,
                                           date: DateFormat('dd.MM.yyyy').format(product.createdAt),
                                           location: product.location,
                                           images: product.photos,
+                                          isNegotiable: product.isNegotiable,
                                           isFavorite: _favoriteProductIds.contains(product.id),
                                           onFavoriteToggle: () => _toggleFavorite(product),
                                           onTap: () {

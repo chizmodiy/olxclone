@@ -127,10 +127,6 @@ class Product {
     
     final priceText = '$currencySymbol${price!.toStringAsFixed(2)}';
     
-    if (isNegotiable) {
-      return '$priceText (Договірна)';
-    }
-    
     return priceText;
   }
 
