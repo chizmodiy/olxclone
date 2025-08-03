@@ -1671,9 +1671,12 @@ class _AddListingPageState extends State<AddListingPage> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.zinc50,
+            color: _isNegotiablePrice ? AppColors.zinc100 : AppColors.zinc50,
             borderRadius: BorderRadius.circular(200),
-            border: Border.all(color: AppColors.zinc200, width: 1),
+            border: Border.all(
+              color: _isNegotiablePrice ? AppColors.zinc200 : AppColors.zinc200, 
+              width: 1
+            ),
             boxShadow: const [
               BoxShadow(
                 color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -1687,13 +1690,16 @@ class _AddListingPageState extends State<AddListingPage> {
               Expanded(
                 child: TextField(
                   controller: _priceController,
+                  enabled: !_isNegotiablePrice,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                  style: AppTextStyles.body1Regular.copyWith(
+                    color: _isNegotiablePrice ? AppColors.color5 : AppColors.color2,
+                  ),
                   decoration: InputDecoration(
-                    hintText: '0.0₴',
+                    hintText: _isNegotiablePrice ? 'Договірна ціна' : '0.0₴',
                     hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
                     border: InputBorder.none,
                     isDense: true,
@@ -1725,26 +1731,43 @@ class _AddListingPageState extends State<AddListingPage> {
                   }
                 });
               },
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 width: 40,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.zinc50,
+                  color: _isNegotiablePrice 
+                      ? AppColors.primaryColor 
+                      : AppColors.zinc50,
                   borderRadius: BorderRadius.circular(133.33),
                   border: Border.all(
-                    color: AppColors.zinc200,
+                    color: _isNegotiablePrice 
+                        ? AppColors.primaryColor 
+                        : AppColors.zinc200,
                     width: 1.33,
                   ),
+                  boxShadow: _isNegotiablePrice 
+                      ? [
+                          BoxShadow(
+                            color: const Color(0x4CA5A3AE),
+                            blurRadius: 5.33,
+                            offset: const Offset(0, 2.67),
+                            spreadRadius: 0,
+                          )
+                        ]
+                      : null,
                 ),
                 child: Row(
+                  mainAxisAlignment: _isNegotiablePrice 
+                      ? MainAxisAlignment.end 
+                      : MainAxisAlignment.start,
                   children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                    Container(
                       width: 16,
                       height: 16,
                       decoration: BoxDecoration(
                         color: _isNegotiablePrice 
-                            ? AppColors.primaryColor 
+                            ? Colors.white 
                             : AppColors.zinc200,
                         shape: BoxShape.circle,
                       ),
