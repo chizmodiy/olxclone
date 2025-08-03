@@ -1788,6 +1788,9 @@ class _AddListingPageState extends State<AddListingPage> {
                   _isNegotiablePrice = !_isNegotiablePrice;
                   if (_isNegotiablePrice) {
                     _priceController.clear();
+                    print('Debug: Договірна ціна увімкнена - поле очищено');
+                  } else {
+                    print('Debug: Договірна ціна вимкнена - поле активне');
                   }
                 });
               },
@@ -2104,7 +2107,7 @@ class _AddListingPageState extends State<AddListingPage> {
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
-    } else if (_isForSale &&
+    } else if (_isForSale && !_isNegotiablePrice &&
         (_priceController.text.isEmpty ||
             double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
@@ -2121,19 +2124,40 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   bool get _isFormValid {
-    return _titleController.text.isNotEmpty &&
-           _descriptionController.text.isNotEmpty &&
-           _selectedCategory != null &&
-           (_isForSale ? _selectedSubcategory != null : true) &&
-           _selectedRegion != null &&
-           (_isForSale ? (_priceController.text.isNotEmpty && 
-                         double.tryParse(_priceController.text) != null && 
-                         (double.tryParse(_priceController.text) ?? 0) > 0) : true) &&
-           (_phoneController.text.isNotEmpty || 
-            _whatsappController.text.isNotEmpty || 
-            _telegramController.text.isNotEmpty || 
-            _viberController.text.isNotEmpty) &&
-           _selectedImages.isNotEmpty;
+    final titleValid = _titleController.text.isNotEmpty;
+    final descriptionValid = _descriptionController.text.isNotEmpty;
+    final categoryValid = _selectedCategory != null;
+    final subcategoryValid = _isForSale ? _selectedSubcategory != null : true;
+    final regionValid = _selectedRegion != null;
+    
+    bool priceValid;
+    if (_isForSale) {
+      if (_isNegotiablePrice) {
+        priceValid = true; // Договірна ціна - завжди валідна
+        print('Debug: Договірна ціна активна - ціна вважається валідною');
+      } else {
+        final priceText = _priceController.text;
+        final priceValue = double.tryParse(priceText);
+        priceValid = priceText.isNotEmpty && priceValue != null && priceValue > 0;
+        print('Debug: Звичайна ціна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
+      }
+    } else {
+      priceValid = true; // Безкоштовні оголошення не потребують ціни
+    }
+    
+    final contactValid = (_phoneController.text.isNotEmpty || 
+                         _whatsappController.text.isNotEmpty || 
+                         _telegramController.text.isNotEmpty || 
+                         _viberController.text.isNotEmpty);
+    final imagesValid = _selectedImages.isNotEmpty;
+    
+    final isValid = titleValid && descriptionValid && categoryValid && 
+                   subcategoryValid && regionValid && priceValid && 
+                   contactValid && imagesValid;
+    
+    print('Debug: Форма валідна: $isValid (title: $titleValid, desc: $descriptionValid, cat: $categoryValid, subcat: $subcategoryValid, region: $regionValid, price: $priceValid, contact: $contactValid, images: $imagesValid)');
+    
+    return isValid;
   }
 
   Future<void> _createListing() async {
@@ -2194,7 +2218,8 @@ class _AddListingPageState extends State<AddListingPage> {
         location: locationString,
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
-          price: _isForSale ? double.tryParse(_priceController.text) : null,
+          price: _isForSale ? (_isNegotiablePrice ? null : double.tryParse(_priceController.text)) : null,
+          isNegotiable: _isForSale ? _isNegotiablePrice : null,
           phoneNumber: _phoneController.text.isNotEmpty ? _phoneController.text : null,
           whatsapp: _whatsappController.text.isNotEmpty ? _whatsappController.text : null,
           telegram: _telegramController.text.isNotEmpty ? _telegramController.text : null,

@@ -13,6 +13,7 @@ class ProductCard extends StatelessWidget {
   final bool showLabel;
   final String? labelText;
   final bool isFavorite;
+  final bool isNegotiable;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onTap;
 
@@ -27,6 +28,7 @@ class ProductCard extends StatelessWidget {
     this.showLabel = false,
     this.labelText,
     this.isFavorite = false,
+    this.isNegotiable = false,
     this.onFavoriteToggle,
     this.onTap,
   });
@@ -127,6 +129,31 @@ class ProductCard extends StatelessWidget {
                       ),
                       child: Text(
                         labelText!,
+                        style: const TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (isNegotiable)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        'Договірна',
                         style: const TextStyle(
                           color: Color(0xFF52525B),
                           fontSize: 12,

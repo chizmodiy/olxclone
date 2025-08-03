@@ -54,6 +54,9 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    final isNegotiable = json['is_negotiable'] as bool? ?? false;
+    print('Debug: Product ${json['id']} - isNegotiable: $isNegotiable');
+    
     return Product(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -76,7 +79,7 @@ class Product {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       photos: (json['photos'] as List<dynamic>?)?.cast<String>() ?? [],
-      isNegotiable: json['is_negotiable'] as bool? ?? false,
+      isNegotiable: isNegotiable,
       address: json['address'] as String?,
       region: json['region'] as String?,
       latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
