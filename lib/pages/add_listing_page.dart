@@ -1660,12 +1660,61 @@ class _AddListingPageState extends State<AddListingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Заголовок "Ціна"
+        Text(
+          'Ціна',
+          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+        ),
+        const SizedBox(height: 6),
+        // Поле вводу ціни
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.zinc50,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(color: AppColors.zinc200, width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(16, 24, 40, 0.05),
+                offset: Offset(0, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _priceController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                  decoration: InputDecoration(
+                    hintText: '0.0₴',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Слайдер "Договірна"
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Ціна',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              'Договірна',
+              style: AppTextStyles.body2Medium.copyWith(
+                color: const Color(0xFF09090B),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             GestureDetector(
               onTap: () {
@@ -1676,72 +1725,36 @@ class _AddListingPageState extends State<AddListingPage> {
                   }
                 });
               },
-              child: Row(
-                children: [
-            Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _isNegotiablePrice ? AppColors.primaryColor : AppColors.zinc200,
-                        width: 1,
+              child: Container(
+                width: 40,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.zinc50,
+                  borderRadius: BorderRadius.circular(133.33),
+                  border: Border.all(
+                    color: AppColors.zinc200,
+                    width: 1.33,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: _isNegotiablePrice 
+                            ? AppColors.primaryColor 
+                            : AppColors.zinc200,
+                        shape: BoxShape.circle,
                       ),
-                      borderRadius: BorderRadius.circular(4),
-                      color: _isNegotiablePrice ? AppColors.primaryColor : Colors.white,
                     ),
-                    child: _isNegotiablePrice
-                        ? Icon(
-                            Icons.check,
-                            size: 16,
-                            color: Colors.white,
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Договірна',
-                    style: AppTextStyles.body2Medium.copyWith(
-                      color: _isNegotiablePrice ? AppColors.primaryColor : AppColors.color8,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        if (!_isNegotiablePrice) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.zinc50,
-              borderRadius: BorderRadius.circular(200),
-              border: Border.all(color: AppColors.zinc200, width: 1),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(16, 24, 40, 0.05),
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: _priceController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-              decoration: InputDecoration(
-                hintText: 'Введіть ціну',
-                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
