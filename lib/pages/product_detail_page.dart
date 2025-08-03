@@ -1695,6 +1695,26 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
   void initState() {
     super.initState();
     _selectedComplaintType = widget.initialType;
+    
+    // Додаємо слухачі для оновлення стану кнопки
+    widget.titleController.addListener(() {
+      setState(() {});
+    });
+    widget.descriptionController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  bool get _isFormValid {
+    return widget.titleController.text.trim().isNotEmpty &&
+           widget.descriptionController.text.trim().isNotEmpty;
+  }
+
+  @override
+  void dispose() {
+    widget.titleController.removeListener(() {});
+    widget.descriptionController.removeListener(() {});
+    super.dispose();
   }
 
   Widget _buildComplaintTypeChip(String type) {
@@ -1736,15 +1756,17 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
       ),
       child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE4E4E7),
-                borderRadius: BorderRadius.circular(2.5),
+            Center(
+              child: Container(
+                width: 36,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE4E4E7),
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -1786,15 +1808,9 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  const SizedBox(height: 16),
+                  const Divider(color: Color(0xFFE4E4E7)),
+                  const SizedBox(height: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1812,6 +1828,7 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
                       const SizedBox(height: 6),
                       TextField(
                         controller: widget.titleController,
+                        maxLines: 1,
                         decoration: InputDecoration(
                           hintText: 'Введіть назву товару',
                           hintStyle: const TextStyle(
@@ -1857,6 +1874,36 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
+                        'Тип скарги',
+                        style: TextStyle(
+                          color: Color(0xFF52525B),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                          letterSpacing: 0.14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildComplaintTypeChip('Товар не відповідає опису'),
+                          _buildComplaintTypeChip('Не отримав товар'),
+                          _buildComplaintTypeChip('Продавець не відповідав'),
+                          _buildComplaintTypeChip('Проблема з оплатою'),
+                          _buildComplaintTypeChip('Неналежна поведінка'),
+                          _buildComplaintTypeChip('Інше'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
                         'Опис скарги',
                         style: TextStyle(
                           color: Color(0xFF52525B),
@@ -1870,9 +1917,7 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
                       const SizedBox(height: 6),
                       TextField(
                         controller: widget.descriptionController,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
+                        maxLines: 5,
                         decoration: InputDecoration(
                           hintText: 'Опишіть свою скаргу',
                           alignLabelWithHint: false,
@@ -1919,17 +1964,19 @@ class _ComplaintBottomSheetState extends State<ComplaintBottomSheet> {
                     width: double.infinity,
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: widget.onSubmit,
+                      onPressed: _isFormValid ? widget.onSubmit : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF015873),
+                        backgroundColor: _isFormValid 
+                            ? const Color(0xFF015873)
+                            : const Color(0xFFF4F4F5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(200),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Надіслати скаргу',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: _isFormValid ? Colors.white : Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
