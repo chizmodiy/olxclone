@@ -94,8 +94,11 @@ class _ViewedContentState extends State<ViewedContent> {
       final products = await _productService.getProductsByIds(viewedProductIds);
       print('Debug: Loaded ${products.length} products from ${viewedProductIds.length} IDs');
 
+      // Фільтруємо тільки активні оголошення
+      final activeProducts = products.where((p) => p.status == 'active' || p.status == null).toList();
+
       setState(() {
-        _products = products; // Directly assign as we're not paginating here based on viewed IDs
+        _products = activeProducts; // Directly assign as we're not paginating here based on viewed IDs
         _isLoading = false;
         _hasMore = false; // No more pages, all loaded at once
       });

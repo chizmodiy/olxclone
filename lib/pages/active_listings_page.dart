@@ -74,13 +74,15 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       _errorMessage = null;
     });
     try {
-      final products = await _productService.getProducts(
-        limit: 100,
-        offset: 0,
-        // Додаємо фільтр по userId та status
-      );
-      // Фільтруємо по userId та status == 'active' (якщо поле status є)
-      final filtered = products.where((p) => p.userId == _currentUserId && (p.customAttributes?['status'] == 'active' || p.customAttributes?['status'] == null)).toList();
+      final products = await _productService.getUserProducts(_currentUserId!);
+      // Фільтруємо по status == 'active' або null (активні оголошення)
+      final filtered = products.where((p) => p.status == 'active' || p.status == null).toList();
+      print('=== ЗАВАНТАЖЕННЯ АКТИВНИХ ОГОЛОШЕНЬ ===');
+      print('Всього оголошень користувача: ${products.length}');
+      print('Активних оголошень: ${filtered.length}');
+      for (var product in products) {
+        print('Оголошення ID: ${product.id}, Статус: ${product.status}');
+      }
       setState(() {
         _products = filtered;
         _filteredProducts = filtered;
@@ -116,11 +118,11 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 47),
+          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Хедер з іконкою повернення
+              // Хедер з іконкою повернення та кнопкою оновлення
               Row(
                 children: [
                   IconButton(
@@ -128,15 +130,21 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Активні',
-                    style: TextStyle(
-                      color: Color(0xFF161817),
-                      fontSize: 24,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 1.20,
+                  const Expanded(
+                    child: Text(
+                      'Активні',
+                      style: TextStyle(
+                        color: Color(0xFF161817),
+                        fontSize: 24,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        height: 1.20,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.black, size: 20),
+                    onPressed: () => _loadProducts(),
                   ),
                 ],
               ),
@@ -210,6 +218,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                         });
                                       },
                                       listingService: _listingService,
+                                      productService: _productService,
                                       child: ProductCardListItem(
                                         id: product.id,
                                         title: product.title,
@@ -247,6 +256,7 @@ class _SwipeableCard extends StatefulWidget {
   final String productTitle;
   final VoidCallback? onRemove;
   final ListingService listingService;
+  final ProductService productService;
   const _SwipeableCard({
     required this.child,
     required this.isOpened,
@@ -255,6 +265,7 @@ class _SwipeableCard extends StatefulWidget {
     required this.productId,
     required this.productTitle,
     required this.listingService,
+    required this.productService,
     this.onRemove,
   });
 
@@ -265,7 +276,7 @@ class _SwipeableCard extends StatefulWidget {
 class _SwipeableCardState extends State<_SwipeableCard> {
   bool _actionVisible = false;
   static const double overlayWidth = 364.0;
-  static const double cardHeight = 85.0;
+  static const double cardHeight = 105.0;
 
   @override
   void didUpdateWidget(covariant _SwipeableCard oldWidget) {
@@ -363,12 +374,25 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                                 ),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    await widget.listingService.updateListingStatus(widget.productId, 'inactive');
-                                    setState(() {
-                                      _actionVisible = false;
-                                      widget.onClose();
-                                    });
-                                    if (widget.onRemove != null) widget.onRemove!();
+                                    try {
+                                      await widget.listingService.updateListingStatus(widget.productId, 'inactive');
+                                      print('Оголошення ${widget.productId} деактивовано');
+                                      
+                                      // Перевіряємо статус після деактивації
+                                      final product = await widget.productService.getProductByIdWithDetails(widget.productId);
+                                      if (product != null) {
+                                        print('Перевірка після деактивації - ID: ${product.id}, Статус: ${product.status}');
+                                      }
+                                      
+                                      setState(() {
+                                        _actionVisible = false;
+                                        widget.onClose();
+                                      });
+                                      // Оновлюємо список після деактивації
+                                      if (widget.onRemove != null) widget.onRemove!();
+                                    } catch (e) {
+                                      print('Помилка деактивації: $e');
+                                    }
                                   },
                                   child: _trySvgOrIcon('assets/icons/slash-circle-01.svg', Icons.block),
                                 ),

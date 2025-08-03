@@ -38,7 +38,8 @@ class ProductService {
       final response = await _supabase
           .from('listings')
           .select()
-          .in_('id', productIds);
+          .in_('id', productIds)
+          .or('status.is.null,status.eq.active'); // Фільтруємо тільки активні оголошення
       
       print('Debug: Raw response: $response');
       final products = (response as List).map((json) => Product.fromJson(json)).toList();
@@ -47,6 +48,45 @@ class ProductService {
     } catch (e) {
       print('Debug: Error in getProductsByIds: $e');
       return [];
+    }
+  }
+
+  // Новий метод для отримання всіх оголошень користувача (включаючи неактивні)
+  Future<List<Product>> getUserProducts(String userId) async {
+    try {
+      print('Debug: Fetching all products for user: $userId');
+      final response = await _supabase
+          .from('listings')
+          .select()
+          .eq('user_id', userId);
+      
+      print('Debug: Raw response for user products: $response');
+      final products = (response as List).map((json) => Product.fromJson(json)).toList();
+      print('Debug: Parsed ${products.length} products for user');
+      return products;
+    } catch (e) {
+      print('Debug: Error in getUserProducts: $e');
+      return [];
+    }
+  }
+
+  // Метод для отримання одного оголошення з детальною інформацією
+  Future<Product?> getProductByIdWithDetails(String productId) async {
+    try {
+      print('Debug: Fetching product with ID: $productId');
+      final response = await _supabase
+          .from('listings')
+          .select()
+          .eq('id', productId)
+          .single();
+      
+      print('Debug: Raw response for product: $response');
+      final product = Product.fromJson(response);
+      print('Debug: Parsed product - ID: ${product.id}, Status: ${product.status}');
+      return product;
+    } catch (e) {
+      print('Debug: Error in getProductByIdWithDetails: $e');
+      return null;
     }
   }
 
@@ -78,6 +118,7 @@ class ProductService {
           request: SearchForHits(
             indexName: algoliaIndexName,
             query: searchQuery,
+            filters: 'status:active OR status:null', // Фільтруємо тільки активні оголошення
           ),
         );
         final hits = response.hits;
@@ -163,6 +204,9 @@ class ProductService {
           query = query.eq('custom_attributes->condition', condition);
         }
 
+        // Фільтруємо тільки активні оголошення (status = 'active' або null)
+        query = query.or('status.is.null,status.eq.active');
+
         // Додаємо сортування
         if (sortBy == 'price_asc') {
           query = query.order('price', ascending: true) as PostgrestFilterBuilder;
@@ -190,7 +234,8 @@ class ProductService {
           .from('listings')
           .select()
           .not('latitude', 'is', null)
-          .not('longitude', 'is', null);
+          .not('longitude', 'is', null)
+          .or('status.is.null,status.eq.active'); // Фільтруємо тільки активні оголошення
       return (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
       return [];

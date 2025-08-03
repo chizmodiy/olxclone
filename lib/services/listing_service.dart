@@ -151,10 +151,28 @@ class ListingService {
   // Оновлений метод для оновлення статусу оголошення
   Future<void> updateListingStatus(String listingId, String status) async {
     try {
-      await _client.from('listings').update({
+      print('=== ОНОВЛЕННЯ СТАТУСУ ОГОЛОШЕННЯ ===');
+      print('ID оголошення: $listingId');
+      print('Новий статус: $status');
+      
+      // Спочатку перевіримо поточний статус
+      final currentResponse = await _client.from('listings').select('status').eq('id', listingId).single();
+      print('Поточний статус: ${currentResponse['status']}');
+      
+      // Оновлюємо статус
+      final updateResponse = await _client.from('listings').update({
         'status': status,
       }).eq('id', listingId);
+      
+      print('Відповідь оновлення: $updateResponse');
+      
+      // Перевіряємо оновлений статус
+      final updatedResponse = await _client.from('listings').select('status').eq('id', listingId).single();
+      print('Оновлений статус: ${updatedResponse['status']}');
+      
+      print('Статус успішно оновлено на: $status');
     } catch (e) {
+      print('Помилка оновлення статусу: $e');
       throw Exception('Не вдалося оновити статус оголошення: $e');
     }
   }

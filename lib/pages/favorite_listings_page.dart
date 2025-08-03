@@ -63,9 +63,11 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
       final products = await _productService.getProductsByIds(
         _favoriteProductIds.toList(),
       );
+      // Фільтруємо тільки активні оголошення
+      final activeProducts = products.where((p) => p.status == 'active' || p.status == null).toList();
       setState(() {
-        _products = products;
-        _filteredProducts = products;
+        _products = activeProducts;
+        _filteredProducts = activeProducts;
         _isLoading = false;
       });
     } catch (e) {
@@ -135,7 +137,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 47),
+          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

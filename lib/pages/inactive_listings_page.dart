@@ -48,6 +48,13 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Оновлюємо список при поверненні на сторінку
+    _loadProducts();
+  }
+
   Future<void> _loadProducts() async {
     if (_currentUserId == null) return;
     setState(() {
@@ -55,12 +62,15 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
       _errorMessage = null;
     });
     try {
-      final products = await _productService.getProducts(
-        limit: 100,
-        offset: 0,
-      );
-      // Фільтруємо по userId та status == 'inactive'
-      final filtered = products.where((p) => p.userId == _currentUserId && (p.customAttributes?['status'] == 'inactive')).toList();
+      final products = await _productService.getUserProducts(_currentUserId!);
+      // Фільтруємо по status == 'inactive'
+      final filtered = products.where((p) => p.status == 'inactive').toList();
+      print('=== ЗАВАНТАЖЕННЯ НЕАКТИВНИХ ОГОЛОШЕНЬ ===');
+      print('Всього оголошень користувача: ${products.length}');
+      print('Неактивних оголошень: ${filtered.length}');
+      for (var product in products) {
+        print('Оголошення ID: ${product.id}, Статус: ${product.status}');
+      }
       setState(() {
         _products = filtered;
         _filteredProducts = filtered;
@@ -96,11 +106,11 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 47),
+          padding: const EdgeInsets.only(left: 13, right: 13, top: 24, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Хедер з іконкою повернення
+              // Хедер з іконкою повернення та кнопкою оновлення
               Row(
                 children: [
                   IconButton(
@@ -108,15 +118,21 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Неактивні',
-                    style: TextStyle(
-                      color: Color(0xFF161817),
-                      fontSize: 24,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 1.20,
+                  const Expanded(
+                    child: Text(
+                      'Неактивні',
+                      style: TextStyle(
+                        color: Color(0xFF161817),
+                        fontSize: 24,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        height: 1.20,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.black, size: 20),
+                    onPressed: () => _loadProducts(),
                   ),
                 ],
               ),
@@ -245,7 +261,7 @@ class _InactiveSwipeableCard extends StatefulWidget {
 class _InactiveSwipeableCardState extends State<_InactiveSwipeableCard> {
   bool _actionVisible = false;
   static const double overlayWidth = 364.0;
-  static const double cardHeight = 85.0;
+  static const double cardHeight = 105.0;
 
   @override
   void didUpdateWidget(covariant _InactiveSwipeableCard oldWidget) {
