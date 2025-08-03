@@ -410,27 +410,142 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   Future<void> _setToCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
+    try {
+      // Перевіряємо чи увімкнені сервіси геолокації
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Показуємо повідомлення користувачу
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Будь ласка, увімкніть геолокацію в налаштуваннях телефону'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Перевіряємо дозволи
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            _showPermissionRequestDialog();
+          }
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          _showLocationPermissionDialog();
+        }
+        return;
+      }
+
+      // Отримуємо поточну позицію
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+      
+      final latLng = latlong.LatLng(pos.latitude, pos.longitude);
+      final cityName = await getCityNameFromLatLng(latLng);
+      
+      setState(() {
+        _selectedLatLng = latLng;
+        _mapCenter = latLng;
+        _selectedCityName = cityName;
+        _selectedPlaceId = null;
+      });
+      
+      _mapController.move(latLng, 11);
+      if (widget.onLocationSelected != null) {
+        widget.onLocationSelected!(latLng, cityName);
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ваша локація встановлена'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка отримання локації: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
-    if (permission == LocationPermission.deniedForever) return;
-    final pos = await Geolocator.getCurrentPosition();
-    final latLng = latlong.LatLng(pos.latitude, pos.longitude);
-    final cityName = await getCityNameFromLatLng(latLng);
-    setState(() {
-      _selectedLatLng = latLng;
-      _mapCenter = latLng;
-      _selectedCityName = cityName;
-      _selectedPlaceId = null;
-    });
-    _mapController.move(latLng, 11);
-    if (widget.onLocationSelected != null) {
-      widget.onLocationSelected!(latLng, cityName);
-    }
+  }
+
+  void _showPermissionRequestDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Дозвіл на геолокацію'),
+          content: const Text(
+            'Для використання функції "Моє місцеположення" потрібен дозвіл на доступ до геолокації. '
+            'Будь ласка, надайте дозвіл для продовження.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Скасувати'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Повторно запитуємо дозвіл
+                await _setToCurrentLocation();
+              },
+              child: const Text('Надати дозвіл'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLocationPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Дозвіл на геолокацію'),
+          content: const Text(
+            'Для використання функції "Моє місцеположення" потрібен дозвіл на доступ до геолокації. '
+            'Дозвіл був відхилений назавжди. Будь ласка, увімкніть його в налаштуваннях додатку.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Скасувати'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Відкриваємо налаштування додатку
+                await Geolocator.openAppSettings();
+              },
+              child: const Text('Налаштування'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
