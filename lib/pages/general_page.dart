@@ -235,9 +235,34 @@ class _GeneralPageState extends State<GeneralPage> {
                   }
                   final result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
                   if (result == true && _selectedIndex == 0) {
-                    // Додаємо невелику затримку для забезпечення оновлення
-                    await Future.delayed(const Duration(milliseconds: 500));
-                    _homeContentKey.currentState?.refreshProducts();
+                    print('Debug: AddListingPage returned true, refreshing products');
+                    // Додаємо більшу затримку для забезпечення оновлення
+                    await Future.delayed(const Duration(milliseconds: 1000));
+                    print('Debug: Calling refreshProducts() on HomeContent');
+                    final homeState = _homeContentKey.currentState;
+                    if (homeState != null) {
+                      print('Debug: HomeContent state found, calling refreshProducts');
+                      homeState.refreshProducts();
+                    } else {
+                      print('Debug: HomeContent state is null');
+                    }
+                    
+                    // Альтернативний спосіб - примусове оновлення через setState
+                    setState(() {
+                      // Це примусить перебудувати HomePage
+                    });
+                    
+                    // Додаткове оновлення після побудови кадру
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      print('Debug: Post frame callback - calling refreshProducts again');
+                      final homeState = _homeContentKey.currentState;
+                      if (homeState != null) {
+                        print('Debug: HomeContent state found in post frame callback');
+                        homeState.refreshProducts();
+                      } else {
+                        print('Debug: HomeContent state is null in post frame callback');
+                      }
+                    });
                   }
                 },
                 backgroundColor: Colors.transparent,

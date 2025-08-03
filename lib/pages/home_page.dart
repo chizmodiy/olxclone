@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
       appBar: const CommonHeader(),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 8),
-        child: HomeContent(),
+        child: HomeContent(key: key),
       ),
     );
   }
@@ -280,6 +280,7 @@ class HomeContentState extends State<HomeContent> {
   }
 
   void refreshProducts() {
+    print('Debug: refreshProducts() called');
     setState(() {
       _products = [];
       _currentPage = 0;
@@ -289,6 +290,7 @@ class HomeContentState extends State<HomeContent> {
       _currentFilters = {};
       _sortBy = null;
     });
+    print('Debug: State reset, calling _loadProducts()');
     _loadProducts();
   }
 
