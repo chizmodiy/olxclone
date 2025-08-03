@@ -170,7 +170,7 @@ class AppTextStyles {
   // Input Styles
   static InputDecoration get inputDecoration => InputDecoration(
     filled: true,
-    fillColor: const Color(0xFFFAFAFA), // Zinc-50
+    fillColor: Colors.white, // Білий колір
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(200),
       borderSide: const BorderSide(
@@ -205,7 +205,7 @@ class AppTextStyles {
 
   static InputDecoration get inputDecorationWithShadow => InputDecoration(
     filled: true,
-    fillColor: const Color(0xFFFAFAFA), // Zinc-50
+    fillColor: Colors.white, // Білий колір
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(200),
       borderSide: const BorderSide(
@@ -240,7 +240,7 @@ class AppTextStyles {
 
   // Container style for input with shadow
   static BoxDecoration get inputContainerDecoration => BoxDecoration(
-    color: const Color(0xFFFAFAFA), // Zinc-50
+    color: Colors.white, // Білий колір
     borderRadius: BorderRadius.circular(200),
     border: Border.all(
       width: 1,

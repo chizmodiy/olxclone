@@ -169,6 +169,13 @@ class _AuthPageState extends State<AuthPage> {
       backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.white,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white,
+          statusBarIconBrightness: Brightness.dark,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0), // 80px from top
@@ -255,7 +262,7 @@ class _AuthPageState extends State<AuthPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.zinc50, // Zinc-50
+            color: Colors.white, // Білий колір
             borderRadius: BorderRadius.circular(200),
             border: Border.all(color: AppColors.zinc200, width: 1), // Zinc-200
             boxShadow: const [
@@ -274,14 +281,18 @@ class _AuthPageState extends State<AuthPage> {
                 height: 20,
               ),
               const SizedBox(width: 8),
+              Text(
+                '+380',
+                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _phoneNumberController,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
                   decoration: InputDecoration(
-                    hintText: '(XX XXX XX XX)',
-                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color2), // Black
+                    hintText: '',
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
@@ -338,7 +349,7 @@ class _AuthPageState extends State<AuthPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.zinc50, // Zinc-50
+            color: Colors.white, // Білий колір
             borderRadius: BorderRadius.circular(200),
             border: Border.all(color: AppColors.zinc200, width: 1), // Zinc-200
             boxShadow: const [
@@ -357,14 +368,18 @@ class _AuthPageState extends State<AuthPage> {
                 height: 20,
               ),
               const SizedBox(width: 8),
+              Text(
+                '+380',
+                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _phoneNumberController,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
                   decoration: InputDecoration(
-                    hintText: '(XX XXX XX XX)',
-                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color2), // Black
+                    hintText: '',
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,

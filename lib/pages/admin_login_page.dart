@@ -81,7 +81,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 120, left: 32, right: 32, bottom: 48),
         child: Center(
@@ -158,7 +158,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                             decoration: InputDecoration(
                               hintText: 'Введіть свій Email',
                               filled: true,
-                              fillColor: const Color(0xFFFAFAFA),
+                              fillColor: Colors.white,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(200),

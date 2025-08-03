@@ -420,7 +420,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
     final initials = _getInitials(user?.email ?? '');
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Container(
