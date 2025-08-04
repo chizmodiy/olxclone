@@ -20,6 +20,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   String? _avatarUrl;
   bool _isLoading = false;
   String? _phone;
+  String? _originalName; // Зберігаємо оригінальне ім'я
   final ProfileService _profileService = ProfileService();
   XFile? _pickedAvatar;
   Uint8List? _avatarBytes;
@@ -75,7 +76,9 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     print('Profile: $profile');
     
     setState(() {
-      _nameController.text = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
+      final fullName = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
+      _nameController.text = fullName;
+      _originalName = fullName; // Зберігаємо оригінальне ім'я
       _avatarUrl = profile?.avatarUrl;
       _phone = phoneNumber ?? '+380951234567'; // Fallback для тестування
       print('Loaded phone: $_phone');
@@ -117,6 +120,16 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     );
     setState(() => _isLoading = false);
     if (mounted) Navigator.of(context).pop();
+  }
+
+  // Перевіряємо, чи змінилося ім'я
+  bool get _hasNameChanged {
+    return _nameController.text.trim() != (_originalName ?? '').trim();
+  }
+
+  // Перевіряємо, чи є у користувача власна іконка
+  bool get _hasCustomAvatar {
+    return _avatarUrl != null && _avatarUrl!.isNotEmpty;
   }
 
   @override
@@ -197,26 +210,29 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 ),
                                 Row(
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      decoration: ShapeDecoration(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(200),
+                                    // Показуємо "Видалити" тільки якщо є власна іконка
+                                    if (_hasCustomAvatar)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        decoration: ShapeDecoration(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Видалити',
+                                          style: TextStyle(
+                                            color: Color(0xFFB8362D),
+                                            fontSize: 14,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.40,
+                                            letterSpacing: 0.14,
+                                          ),
                                         ),
                                       ),
-                                      child: const Text(
-                                        'Видалити',
-                                        style: TextStyle(
-                                          color: Color(0xFFB8362D),
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w600,
-                                          height: 1.40,
-                                          letterSpacing: 0.14,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
+                                    if (_hasCustomAvatar)
+                                      const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       decoration: ShapeDecoration(
@@ -264,9 +280,10 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               child: TextField(
                                 controller: _nameController,
                                 textAlignVertical: TextAlignVertical.center,
+                                textAlign: TextAlign.left,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                   hintText: "Ім'я та прізвище",
                                   hintStyle: TextStyle(
                                     color: Color(0xFFA1A1AA),
@@ -366,19 +383,25 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                           height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF015873),
+                              backgroundColor: _hasNameChanged 
+                                ? const Color(0xFF015873)
+                                : const Color(0xFFE4E4E7), // Сірий колір коли неактивна
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(200),
-                                side: const BorderSide(color: Color(0xFF015873)),
+                                side: BorderSide(
+                                  color: _hasNameChanged 
+                                    ? const Color(0xFF015873)
+                                    : const Color(0xFFE4E4E7),
+                                ),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
                               elevation: 0,
                             ),
-                            onPressed: _saveProfile,
-                            child: const Text(
+                            onPressed: _hasNameChanged ? _saveProfile : null,
+                            child: Text(
                               'Підтвердити',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: _hasNameChanged ? Colors.white : const Color(0xFFA1A1AA),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: 0.16,
