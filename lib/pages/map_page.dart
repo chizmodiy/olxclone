@@ -13,6 +13,7 @@ import '../widgets/blocked_user_bottom_sheet.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/auth_bottom_sheet.dart';
 import 'dart:ui';
+import 'dart:async'; // Додаю для Timer
 
 class Pin extends StatelessWidget {
   final String count;
@@ -302,6 +303,8 @@ class _MapPageState extends State<MapPage> {
   String _searchQuery = '';
   Map<String, dynamic> _currentFilters = {}; // Додаю збереження фільтрів
   final ProfileService _profileService = ProfileService();
+  Timer? _debounceTimer; // Додаю таймер для дебаунсу
+  final TextEditingController _searchController = TextEditingController(); // Додаю контролер пошуку
 
   void _goHome() {
     // Знайти GeneralPage в дереві і викликати зміну вкладки
@@ -319,13 +322,35 @@ class _MapPageState extends State<MapPage> {
     _loadProducts();
   }
 
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    print('Debug: Search changed to: "$value"');
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      print('Debug: Executing search for: "$value"');
+      setState(() {
+        _searchQuery = value;
+        _products = []; // Очищаємо продукти для перезавантаження
+        _loading = true;
+      });
+      _loadProducts();
+    });
+  }
+
   Future<void> _loadProducts() async {
     setState(() {
       _loading = true;
     });
+    print('Debug: Loading products with search: "$_searchQuery"');
     // Використовуємо getProducts з фільтрами, потім залишаємо тільки продукти з координатами
     final products = await _productService.getProducts(
-      searchQuery: _searchQuery,
+      searchQuery: _searchQuery, // Передаємо пошуковий запит
       categoryId: _currentFilters['category'],
       subcategoryId: _currentFilters['subcategory'],
       minPrice: _currentFilters['minPrice'],
@@ -345,7 +370,12 @@ class _MapPageState extends State<MapPage> {
       limit: 1000, // Щоб завантажити всі продукти для карти
       offset: 0,
     );
+    print('Debug: Raw products from service: ${products.length}');
+    if (products.isNotEmpty) {
+      print('Debug: First product title: "${products.first.title}"');
+    }
     final productsWithCoords = products.where((p) => p.latitude != null && p.longitude != null).toList();
+    print('Debug: Loaded ${products.length} products, ${productsWithCoords.length} with coordinates');
     setState(() {
       _products = productsWithCoords;
       _loading = false;
@@ -371,15 +401,32 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = _searchQuery.isEmpty
-        ? _products
-        : _products.where((p) => p.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-    final markers = filteredProducts.map((product) {
+    // Використовуємо продукти, які вже відфільтровані сервером
+    print('Debug: Building map with ${_products.length} products, search: "$_searchQuery"');
+    final markers = _products.map((product) {
       return Marker(
         width: 28,
         height: 32,
         point: LatLng(product.latitude!, product.longitude!),
-        child: const Pin(count: '1'),
+        child: GestureDetector(
+          onTap: () async {
+            await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              builder: (context) => Comments(products: [product]),
+            );
+          },
+          child: const Pin(count: '1'),
+        ),
       );
     }).toList();
 
@@ -389,55 +436,77 @@ class _MapPageState extends State<MapPage> {
         children: [
           // Карта на всю ширину і висоту
           Positioned.fill(
-            child: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                center: LatLng(49.0, 32.0),
-                zoom: 6,
-                minZoom: 5,
-                maxZoom: 16,
-              ),
+            child: Stack(
               children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: LatLng(49.0, 32.0),
+                    zoom: 6,
+                    minZoom: 5,
+                    maxZoom: 16,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: ['a', 'b', 'c'],
+                    ),
+                    if (!_loading)
+                      MarkerClusterLayerWidget(
+                        key: ValueKey('${_products.length}_${_searchQuery}'), // Додаємо key для оновлення
+                        options: MarkerClusterLayerOptions(
+                          maxClusterRadius: 80,
+                          maxZoom: 14,
+                          size: const Size(40, 40),
+                          markers: markers,
+                          builder: (context, markers) {
+                            return Pin(count: markers.length.toString());
+                          },
+                          onClusterTap: (cluster) async {
+                            // Визначаємо центр кластера
+                            final clusterCenter = cluster.bounds.center;
+                            
+                            // Анімуємо приближення до кластера
+                            await _mapController.move(clusterCenter, _mapController.zoom + 1);
+                            
+                            // Якщо це фінальний кластер (не розпадається далі), показуємо bottom sheet
+                            if (_mapController.zoom >= 14) {
+                              // Збираємо продукти з маркерів цього кластера
+                              final productsInCluster = cluster.markers
+                                  .map((m) => _products.firstWhere((p) =>
+                                      p.latitude == m.point.latitude &&
+                                      p.longitude == m.point.longitude))
+                                  .toList();
+                              await showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                ),
+                                constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                                ),
+                                builder: (context) => Comments(products: productsInCluster),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                  ],
                 ),
-                if (!_loading)
-                  MarkerClusterLayerWidget(
-                    options: MarkerClusterLayerOptions(
-                      maxClusterRadius: 70,
-                      maxZoom: 13,
-                      size: const Size(40, 40),
-                      markers: markers,
-                      builder: (context, markers) {
-                        return Pin(count: markers.length.toString());
-                      },
-                      onClusterTap: (cluster) async {
-                        // Визначаємо, чи це фінальний кластер (не розпадається далі)
-                        final currentZoom = _mapController.zoom;
-                        if (currentZoom >= 13) {
-                          // Збираємо продукти з маркерів цього кластера
-                          final productsInCluster = cluster.markers
-                              .map((m) => _products.firstWhere((p) =>
-                                  p.latitude == m.point.latitude &&
-                                  p.longitude == m.point.longitude))
-                              .toList();
-                          await showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                topRight: Radius.circular(16),
-                              ),
-                            ),
-                            constraints: BoxConstraints(
-                              maxHeight: MediaQuery.of(context).size.height * 0.7,
-                            ),
-                            builder: (context) => Comments(products: productsInCluster),
-                          );
-                        }
-                      },
+                // Індикатор завантаження
+                if (_loading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -627,16 +696,42 @@ class _MapPageState extends State<MapPage> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
-                                decoration: const InputDecoration(
-                                  hintText: 'Пошук',
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText: 'Пошук оголошень...',
                                   border: InputBorder.none,
-                                  hintStyle: TextStyle(
+                                  hintStyle: const TextStyle(
                                     color: Color(0xFF838583),
                                     fontSize: 16,
                                     fontFamily: 'Inter',
                                     fontWeight: FontWeight.w400,
                                     height: 1.5,
                                   ),
+                                  suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, color: Color(0xFF838583)),
+                                        onPressed: () {
+                                          print('Debug: Clearing search');
+                                          _searchController.clear();
+                                          setState(() {
+                                            _searchQuery = '';
+                                          });
+                                          _loadProducts();
+                                        },
+                                      )
+                                    : _loading && _searchQuery.isNotEmpty
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF838583)),
+                                            ),
+                                          ),
+                                        )
+                                      : null,
                                 ),
                                 style: const TextStyle(
                                   color: Colors.black,
@@ -646,10 +741,7 @@ class _MapPageState extends State<MapPage> {
                                   height: 1.5,
                                 ),
                                 onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value;
-                                  });
-                                  _loadProducts();
+                                  _onSearchChanged(value);
                                 },
                               ),
                             ),
