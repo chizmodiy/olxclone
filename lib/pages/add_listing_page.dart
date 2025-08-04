@@ -2127,10 +2127,10 @@ class _AddListingPageState extends State<AddListingPage> {
       errorMessage = 'Оберіть категорію';
       print('Debug: Validation failed - no category selected');
     }
-    // Check subcategory - only required for paid listings
-    else if (_isForSale && _selectedSubcategory == null) {
+    // Check subcategory - required for all listings
+    else if (_selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
-      print('Debug: Validation failed - no subcategory selected for paid listing');
+      print('Debug: Validation failed - no subcategory selected');
     } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
       print('Debug: Validation failed - no region selected');
@@ -2169,7 +2169,7 @@ class _AddListingPageState extends State<AddListingPage> {
     final titleValid = _titleController.text.isNotEmpty;
     final descriptionValid = _descriptionController.text.isNotEmpty;
     final categoryValid = _selectedCategory != null;
-    final subcategoryValid = _isForSale ? _selectedSubcategory != null : true;
+    final subcategoryValid = _selectedSubcategory != null; // Require subcategory for all listings
     final regionValid = _selectedRegion != null;
     
     bool priceValid;
@@ -2284,11 +2284,14 @@ class _AddListingPageState extends State<AddListingPage> {
         locationString = _selectedCity!.name;
       }
 
+        // Use selected subcategory (now required for all listings)
+        final subcategoryId = _selectedSubcategory!.id;
+        
         print('Debug: Creating listing with parameters:');
         print('  title: ${_titleController.text}');
         print('  description: ${_descriptionController.text}');
         print('  categoryId: ${_selectedCategory!.id}');
-        print('  subcategoryId: ${_isForSale ? _selectedSubcategory!.id : _selectedCategory!.id}');
+        print('  subcategoryId: $subcategoryId');
         print('  location: $locationString');
         print('  isFree: ${!_isForSale}');
         print('  currency: ${_isForSale ? _selectedCurrency : null}');
@@ -2300,7 +2303,7 @@ class _AddListingPageState extends State<AddListingPage> {
           title: _titleController.text,
           description: _descriptionController.text,
           categoryId: _selectedCategory!.id,
-          subcategoryId: _isForSale ? _selectedSubcategory!.id : _selectedCategory!.id, // Use category ID as subcategory for free listings
+          subcategoryId: subcategoryId, // Use selected subcategory ID
         location: locationString,
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,

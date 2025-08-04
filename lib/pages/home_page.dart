@@ -97,6 +97,9 @@ class HomeContentState extends State<HomeContent> {
       _errorMessage = null;
     });
 
+    print('Debug HomePage: Loading products with filters: $_currentFilters');
+    print('Debug HomePage: isFree filter: ${_currentFilters['isFree']}');
+
     try {
       final products = await _productService.getProducts(
         limit: 10, // Assuming a fixed limit for now
@@ -108,7 +111,7 @@ class HomeContentState extends State<HomeContent> {
         maxPrice: _currentFilters['maxPrice'], // Pass maxPrice filter
         hasDelivery: _currentFilters['hasDelivery'], // Pass hasDelivery filter
         sortBy: _sortBy,
-        isFree: false, // No 'isFree' filtering implemented yet
+        isFree: _currentFilters['isFree'], // Pass isFree filter
         minArea: _currentFilters['minArea'], // Pass minArea filter
         maxArea: _currentFilters['maxArea'], // Pass maxArea filter
         minYear: _currentFilters['minYear'], // Pass minYear filter

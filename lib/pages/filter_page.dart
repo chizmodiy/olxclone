@@ -14,6 +14,7 @@ import 'package:withoutname/services/listing_service.dart'; // Import ListingSer
 import 'package:withoutname/data/subcategories_data.dart'; // Import for getExtraFieldsForSubcategory
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../widgets/error_banner.dart';
 import 'region_selection_page.dart';
 
 class FilterPage extends StatefulWidget {
@@ -56,6 +57,10 @@ class _FilterPageState extends State<FilterPage> {
   String? _selectedBrand; // Selected car brand
   String? _selectedSize; // Selected size for fashion items
   String? _selectedCondition; // Selected condition for fashion items
+  
+  // Валідація полів ціни
+  String? _minPriceError;
+  String? _maxPriceError;
 
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -105,6 +110,8 @@ class _FilterPageState extends State<FilterPage> {
     _selectedBrand = widget.initialFilters['car_brand'];
     _selectedSize = widget.initialFilters['size'];
     _selectedCondition = widget.initialFilters['condition'];
+    
+    print('Debug: Initialized filters - isPriceModePrice: $_isPriceModePrice, isFree: ${widget.initialFilters['isFree']}');
   }
 
   Future<void> _loadPriceRange() async {
@@ -363,7 +370,12 @@ class _FilterPageState extends State<FilterPage> {
       _selectedBrand = null; // Reset brand selection
       _selectedSize = null; // Reset size selection
       _selectedCondition = null; // Reset condition selection
+      _minPriceError = null; // Clear price validation errors
+      _maxPriceError = null; // Clear price validation errors
+      ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
       _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
+      
+      print('Debug: Filters reset - isPriceModePrice: $_isPriceModePrice');
     });
   }
 
@@ -371,6 +383,7 @@ class _FilterPageState extends State<FilterPage> {
     print('Debug: Applying filters...');
     print('Debug: Selected category: ${_selectedCategory?.id}');
     print('Debug: Selected subcategory: ${_selectedSubcategory?.id}');
+    print('Debug: Price mode: ${_isPriceModePrice ? "Price" : "Free"}');
     
     final Map<String, dynamic> filters = {
       'category': _selectedCategory?.id, // Передаємо id, а не name
@@ -381,8 +394,12 @@ class _FilterPageState extends State<FilterPage> {
     if (_isPriceModePrice) {
       filters['minPrice'] = double.tryParse(_minPriceController.text);
       filters['maxPrice'] = double.tryParse(_maxPriceController.text);
+      // Явно очищаємо isFree фільтр у режимі ціни
+      filters['isFree'] = null;
+      print('Debug: Added price filters - min: ${filters['minPrice']}, max: ${filters['maxPrice']}, cleared isFree');
     } else {
       filters['isFree'] = true;
+      print('Debug: Added isFree filter: ${filters['isFree']}');
     }
 
     // Add extra fields filters
@@ -1004,11 +1021,19 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        _updateSliderFromTextFields();
+                        final error = _validatePrice(value, true);
+                        setState(() {
+                          _minPriceError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          _updateSliderFromTextFields();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: '0.0₴',
+                        hintText: '1₴',
                         hintStyle: TextStyle(
                           color: Colors.black,
                           fontSize: 16,
@@ -1076,11 +1101,19 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        _updateSliderFromTextFields();
+                        final error = _validatePrice(value, false);
+                        setState(() {
+                          _maxPriceError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          _updateSliderFromTextFields();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: '100.0₴',
+                        hintText: '1000₴',
                         hintStyle: TextStyle(
                           color: Colors.black,
                           fontSize: 16,
@@ -1104,11 +1137,12 @@ class _FilterPageState extends State<FilterPage> {
               ),
             ],
           ),
-          const SizedBox(height: 36),
+
+          const SizedBox(height: 16), // Відстань 16 пікселів між полями вводу та слайдером
           // Слайдер діапазону з двома важелями
           Container(
             width: double.infinity,
-            height: 66,
+            height: 66, // Збільшено висоту з 58 до 66 пікселів (додано ще 8px)
             child: Column(
               children: [
                 // RangeSlider
@@ -1123,8 +1157,8 @@ class _FilterPageState extends State<FilterPage> {
                       _updateSliderValues(_currentMinPrice, _currentMaxPrice);
                     });
                   },
-                  activeColor: const Color(0xFF015873) /* Primary */,
-                  inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                  activeColor: const Color(0xFF015873) /* Primary */, // Колір активної частини
+                  inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */, // Колір неактивної частини
                 ),
                 // Показуємо поточні значення
                 Padding(
@@ -1159,11 +1193,7 @@ class _FilterPageState extends State<FilterPage> {
         ],
         
         // Заголовок та перемикач для Безкоштовно
-        if (!_isPriceModePrice) ...[
-          const SizedBox(height: 16),
-        ] else ...[
-          const SizedBox(height: 24),
-        ],
+        const SizedBox(height: 16), // Відстань 16 пікселів між слайдером та блоком "Безкоштовно"
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1744,6 +1774,64 @@ class _FilterPageState extends State<FilterPage> {
       _minPriceController.text = _convertFromUAH(minValue, _selectedCurrency).toStringAsFixed(2);
       _maxPriceController.text = _convertFromUAH(maxValue, _selectedCurrency).toStringAsFixed(2);
     });
+  }
+
+  // Метод для валідації ціни
+  String? _validatePrice(String? value, bool isMinPrice) {
+    if (value == null || value.isEmpty) {
+      return null; // Дозволяємо порожні значення
+    }
+    
+    final price = double.tryParse(value);
+    if (price == null) {
+      return 'Введіть дійсне число';
+    }
+    
+    if (price < 0) {
+      return 'Ціна не може бути від\'ємною';
+    }
+    
+    if (price < 1) {
+      return 'Мінімальна ціна: 1';
+    }
+    
+    if (price > 1000000) {
+      return 'Максимальна ціна: 1,000,000';
+    }
+    
+    // Перевіряємо, щоб мінімальна ціна не була більше максимальної
+    if (isMinPrice) {
+      final maxPrice = double.tryParse(_maxPriceController.text);
+      if (maxPrice != null && price > maxPrice) {
+        return 'Мінімальна ціна не може бути більше максимальної';
+      }
+    } else {
+      final minPrice = double.tryParse(_minPriceController.text);
+      if (minPrice != null && price < minPrice) {
+        return 'Максимальна ціна не може бути менше мінімальної';
+      }
+    }
+    
+    return null;
+  }
+
+  // Метод для показу помилки через SnackBar
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: ErrorBanner(
+          message: message,
+          onClose: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   // Метод для оновлення слайдера на основі текстових полів

@@ -39,11 +39,18 @@ class ListingService {
     required List<XFile> images,
   }) async {
     try {
+      print('Debug: ListingService.createListing - parameters:');
+      print('  isFree: $isFree');
+      print('  price: $price');
+      print('  currency: $currency');
+      print('  isNegotiable: $isNegotiable');
+      
       // Validate price and currency based on isFree and isNegotiable
       if (isFree) {
-        if (price != null || currency != null) {
-          throw Exception('Free listings cannot have price or currency');
+        if (price != null && price > 0) {
+          throw Exception('Free listings cannot have a positive price');
         }
+        // Allow null currency and null price for free listings
       } else {
         if (isNegotiable == true) {
           // For negotiable listings, price can be null or any valid price

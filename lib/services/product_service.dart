@@ -181,6 +181,7 @@ class ProductService {
       }
 
       if (isFree != null) {
+        print('Debug ProductService: Adding isFree filter: $isFree');
         query = query.eq('is_free', isFree);
       }
 
