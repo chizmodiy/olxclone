@@ -82,21 +82,27 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
         child: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
-          leading: IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/chevron-states.svg',
-              colorFilter: ColorFilter.mode(AppColors.black, BlendMode.srcIn),
-              width: 24,
-              height: 24,
-            ),
-            onPressed: () {
+          automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () {
               // Return selected subcategory to previous page
               Navigator.pop(context, _selectedSubcategory);
             },
-          ),
-          title: Text(
-            widget.category.name, // Display selected category name as title
-            style: AppTextStyles.heading2Semibold,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.arrow_back,
+                  color: AppColors.black,
+                  size: 24,
+                ),
+                const SizedBox(width: 18),
+                Text(
+                  widget.category.name, // Display selected category name as title
+                  style: AppTextStyles.heading2Semibold,
+                ),
+              ],
+            ),
           ),
           centerTitle: false,
           bottom: PreferredSize(

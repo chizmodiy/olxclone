@@ -113,24 +113,30 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
         child: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
-          leading: IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/chevron-states.svg',
-              colorFilter: ColorFilter.mode(AppColors.black, BlendMode.srcIn),
-              width: 24,
-              height: 24,
-            ),
-            onPressed: () {
+          automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () {
               // Return selected category and subcategory to previous page
               Navigator.pop(context, {
                 'category': _selectedCategory,
                 'subcategory': _selectedSubcategory,
               });
             },
-          ),
-          title: Text(
-            'Категорія',
-            style: AppTextStyles.heading2Semibold,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.arrow_back,
+                  color: AppColors.black,
+                  size: 24,
+                ),
+                const SizedBox(width: 18),
+                Text(
+                  'Категорія',
+                  style: AppTextStyles.heading2Semibold,
+                ),
+              ],
+            ),
           ),
           centerTitle: false,
           bottom: PreferredSize(

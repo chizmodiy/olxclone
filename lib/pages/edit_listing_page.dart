@@ -2105,33 +2105,25 @@ class _EditListingPageState extends State<EditListingPage> {
         scrolledUnderElevation: 0.0,
         toolbarHeight: 70.0,
         centerTitle: true,
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                padding: const EdgeInsets.all(10),
-                child: SvgPicture.asset(
-                  'assets/icons/chevron-states.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                ),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.arrow_back,
+                color: AppColors.color2,
+                size: 24,
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
+              const SizedBox(width: 18),
+              Text(
                 'Редагувати оголошення',
                 style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       body: _isLoading

@@ -56,15 +56,26 @@ class _RegionSelectionPageState extends State<RegionSelectionPage> {
           child: AppBar(
             backgroundColor: AppColors.white,
             elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
+            automaticallyImplyLeading: false,
+            title: GestureDetector(
+              onTap: () {
                 Navigator.pop(context);
               },
-            ),
-            title: Text(
-              'Оберіть область',
-              style: AppTextStyles.heading2Semibold,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.arrow_back,
+                    color: Colors.black,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 18),
+                  Text(
+                    'Оберіть область',
+                    style: AppTextStyles.heading2Semibold,
+                  ),
+                ],
+              ),
             ),
             centerTitle: false,
           ),
