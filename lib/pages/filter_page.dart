@@ -67,66 +67,63 @@ class _FilterPageState extends State<FilterPage> {
 
   final GlobalKey _subcategoryButtonKey = GlobalKey();
 
+  // Додаємо змінні для слайдера
+  double _minPrice = 0.0;
+  double _maxPrice = 100000.0; // Буде оновлено з бази
+  double _currentMinPrice = 0.0;
+  double _currentMaxPrice = 100000.0;
+  double _sliderMinValue = 0.0;
+  double _sliderMaxValue = 100000.0;
+
   @override
   void initState() {
     super.initState();
-    print('Debug: FilterPage initState with initialFilters: ${widget.initialFilters}');
-    _listingService = ListingService(Supabase.instance.client); // Initialize ListingService
+    _loadPriceRange();
     _loadCategories();
-    
+    _initializeFilters();
+  }
+
+  void _initializeFilters() {
     _selectedCurrency = widget.initialFilters['currency'] ?? 'UAH';
-    // Determine initial price mode based on existing filters
-    if (widget.initialFilters['isFree'] == true) {
-      _isPriceModePrice = false;
-    } else {
-      _isPriceModePrice = true; // Default to price mode if no specific filter
-    }
-
-    // Load min/max prices first, then initialize price controllers and slider
-    _loadMinMaxPrices(_selectedCurrency).then((_) {
-      setState(() {
-        _minPriceController.text = (widget.initialFilters['minPrice'] ?? _minAvailablePrice).toStringAsFixed(0);
-        _maxPriceController.text = (widget.initialFilters['maxPrice'] ?? _maxAvailablePrice).toStringAsFixed(0);
-
-        double start = (double.tryParse(_minPriceController.text) ?? _minAvailablePrice).clamp(_minAvailablePrice, _maxAvailablePrice);
-        double end = (double.tryParse(_maxPriceController.text) ?? _maxAvailablePrice).clamp(_minAvailablePrice, _maxAvailablePrice);
-
-        if (start > end) {
-          end = start; // Ensure end is not less than start
-        }
-      });
-    });
-
-    // Initialize area controllers
-    _minAreaController.text = (widget.initialFilters['minArea'] ?? _minAvailableArea).toStringAsFixed(0);
-    _maxAreaController.text = (widget.initialFilters['maxArea'] ?? _maxAvailableArea).toStringAsFixed(0);
+    _isPriceModePrice = widget.initialFilters['isFree'] != true;
     
-    double areaStart = (double.tryParse(_minAreaController.text) ?? _minAvailableArea).clamp(_minAvailableArea, _maxAvailableArea);
-    double areaEnd = (double.tryParse(_maxAreaController.text) ?? _maxAvailableArea).clamp(_minAvailableArea, _maxAvailableArea);
-    
-    if (areaStart > areaEnd) {
-      areaEnd = areaStart;
-    }
-    
-    // Initialize car controllers
-    _minYearController.text = (widget.initialFilters['minYear'] ?? _minAvailableYear).toStringAsFixed(0);
-    _maxYearController.text = (widget.initialFilters['maxYear'] ?? _maxAvailableYear).toStringAsFixed(0);
-    _minEngineHpController.text = (widget.initialFilters['minEnginePowerHp'] ?? _minAvailableEngineHp).toStringAsFixed(0);
-    _maxEngineHpController.text = (widget.initialFilters['maxEnginePowerHp'] ?? _maxAvailableEngineHp).toStringAsFixed(0);
+    // Initialize other filters
+    _minAreaController.text = (widget.initialFilters['minArea'] ?? 0).toString();
+    _maxAreaController.text = (widget.initialFilters['maxArea'] ?? 1000).toString();
+    _minYearController.text = (widget.initialFilters['minYear'] ?? 1900).toString();
+    _maxYearController.text = (widget.initialFilters['maxYear'] ?? 2024).toString();
+    _minEngineHpController.text = (widget.initialFilters['minEnginePowerHp'] ?? 0).toString();
+    _maxEngineHpController.text = (widget.initialFilters['maxEnginePowerHp'] ?? 1000).toString();
     _selectedBrand = widget.initialFilters['car_brand'];
     _selectedSize = widget.initialFilters['size'];
     _selectedCondition = widget.initialFilters['condition'];
+  }
 
-    // Перевіряємо статус користувача після завантаження
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final currentUser = Supabase.instance.client.auth.currentUser;
-      if (currentUser != null) {
-        final userStatus = await _profileService.getUserStatus();
-        if (userStatus == 'blocked') {
-          _showBlockedUserBottomSheet();
-        }
-      }
-    });
+  Future<void> _loadPriceRange() async {
+    try {
+      // Отримуємо мінімальну та максимальну ціни з бази
+      final priceRange = await _getPriceRangeFromDatabase();
+      
+      setState(() {
+        _minPrice = priceRange['min'] ?? 0.0;
+        _maxPrice = priceRange['max'] ?? 100000.0;
+        
+        // Встановлюємо початкові значення на повний діапазон
+        _currentMinPrice = _minPrice; // Початково мінімальна ціна
+        _currentMaxPrice = _maxPrice; // Початково максимальна ціна
+        _sliderMinValue = _minPrice;
+        _sliderMaxValue = _maxPrice;
+        
+        // Оновлюємо текстові поля з початковими значеннями
+        _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
+        _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
+        
+        print('Debug: Loaded price range - min: $_minPrice, max: $_maxPrice');
+        print('Debug: Current values - min: $_currentMinPrice, max: $_currentMaxPrice');
+      });
+    } catch (e) {
+      print('Error loading price range: $e');
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -902,66 +899,58 @@ class _FilterPageState extends State<FilterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Ціна',
-          style: AppTextStyles.body1Semibold,
-        ),
-        const SizedBox(height: 16),
-        // Перемикач ціна/безкоштовно
+        // Заголовок та перемикач
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isPriceModePrice = true;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: _isPriceModePrice ? AppColors.primaryColor : AppColors.white,
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(
-                      color: _isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'Ціна',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.body1Semibold.copyWith(
-                      color: _isPriceModePrice ? AppColors.white : AppColors.zinc600,
-                    ),
-                  ),
-                ),
+            Text(
+              'Ціна',
+              style: TextStyle(
+                color: const Color(0xFF09090B) /* Zinc-950 */,
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+                height: 1.40,
+                letterSpacing: 0.14,
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isPriceModePrice = false;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.white,
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(
-                      color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
-                      width: 1,
-                    ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isPriceModePrice = !_isPriceModePrice;
+                });
+              },
+              child: Container(
+                width: 40,
+                padding: const EdgeInsets.all(4),
+                decoration: ShapeDecoration(
+                  color: _isPriceModePrice 
+                    ? const Color(0xFF015873) /* Primary */
+                    : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(133.33),
                   ),
-                  child: Text(
-                    'Безкоштовно',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.body1Semibold.copyWith(
-                      color: !_isPriceModePrice ? AppColors.white : AppColors.zinc600,
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x4CA5A3AE),
+                      blurRadius: 5.33,
+                      offset: Offset(0, 2.67),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: _isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: ShapeDecoration(
+                        color: Colors.white /* White */,
+                        shape: OvalBorder(),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -969,37 +958,310 @@ class _FilterPageState extends State<FilterPage> {
         ),
         if (_isPriceModePrice) ...[
           const SizedBox(height: 16),
-          // Діапазон цін
+          // Поля вводу цін
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  controller: _minPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'Від',
-                    border: OutlineInputBorder(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
                       borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _minPriceController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '0.0₴',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              Container(
+                width: 8,
+                height: 44,
+                child: Center(
+                  child: Text(
+                    '-',
+                    style: TextStyle(
+                      color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
-                child: TextField(
-                  controller: _maxPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'До',
-                    border: OutlineInputBorder(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
                       borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _maxPriceController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '100.0₴',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 36),
+          // Слайдер діапазону з двома важелями
+          Container(
+            width: double.infinity,
+            height: 66, // Збільшив з 60 до 66 пікселів
+            child: Column(
+              children: [
+                // RangeSlider
+                RangeSlider(
+                  values: RangeValues(_currentMinPrice, _currentMaxPrice),
+                  min: _minPrice,
+                  max: _maxPrice,
+                  onChanged: (RangeValues values) {
+                    setState(() {
+                      _currentMinPrice = values.start;
+                      _currentMaxPrice = values.end;
+                      _updateSliderValues(_currentMinPrice, _currentMaxPrice);
+                    });
+                  },
+                  activeColor: const Color(0xFF015873) /* Primary */,
+                  inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                ),
+                // Показуємо поточні значення
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${_convertFromUAH(_currentMinPrice, _selectedCurrency).toStringAsFixed(0)} ${_getCurrencySymbol()}',
+                        style: TextStyle(
+                          color: const Color(0xFF52525B),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${_convertFromUAH(_currentMaxPrice, _selectedCurrency).toStringAsFixed(0)} ${_getCurrencySymbol()}',
+                        style: TextStyle(
+                          color: const Color(0xFF52525B),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
+        // Перемикач Безкоштовно під блоком ціни
+        if (!_isPriceModePrice) ...[
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Безкоштовно',
+                style: TextStyle(
+                  color: const Color(0xFF09090B) /* Zinc-950 */,
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  height: 1.40,
+                  letterSpacing: 0.14,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isPriceModePrice = !_isPriceModePrice;
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  padding: const EdgeInsets.all(4),
+                  decoration: ShapeDecoration(
+                    color: !_isPriceModePrice 
+                      ? const Color(0xFF015873) /* Primary */
+                      : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(133.33),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x4CA5A3AE),
+                        blurRadius: 5.33,
+                        offset: Offset(0, 2.67),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: !_isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: ShapeDecoration(
+                          color: Colors.white /* White */,
+                          shape: OvalBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  // Перемикач Ціна/Безкоштовно
+  Widget _buildPriceToggle() {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Безкоштовно',
+              style: TextStyle(
+                color: const Color(0xFF09090B) /* Zinc-950 */,
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+                height: 1.40,
+                letterSpacing: 0.14,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isPriceModePrice = !_isPriceModePrice;
+                });
+              },
+              child: Container(
+                width: 40,
+                padding: const EdgeInsets.all(4),
+                decoration: ShapeDecoration(
+                  color: _isPriceModePrice 
+                    ? const Color(0xFF015873) /* Primary */
+                    : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(133.33),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x4CA5A3AE),
+                      blurRadius: 5.33,
+                      offset: Offset(0, 2.67),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: _isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: ShapeDecoration(
+                        color: Colors.white /* White */,
+                        shape: OvalBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -1034,7 +1296,12 @@ class _FilterPageState extends State<FilterPage> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedCurrency = 'UAH'),
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'UAH';
+                      _updateCurrencyValues(); // Оновлюємо значення
+                    });
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     clipBehavior: Clip.antiAlias,
@@ -1104,7 +1371,12 @@ class _FilterPageState extends State<FilterPage> {
               const SizedBox(width: 4),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedCurrency = 'EUR'),
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'EUR';
+                      _updateCurrencyValues(); // Оновлюємо значення
+                    });
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     clipBehavior: Clip.antiAlias,
@@ -1174,7 +1446,12 @@ class _FilterPageState extends State<FilterPage> {
               const SizedBox(width: 4),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedCurrency = 'USD'),
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'USD';
+                      _updateCurrencyValues(); // Оновлюємо значення
+                    });
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     clipBehavior: Clip.antiAlias,
@@ -1426,6 +1703,108 @@ class _FilterPageState extends State<FilterPage> {
           _selectedRegion = region;
         });
       }
+    }
+  }
+
+  // Метод для отримання діапазону цін з бази
+  Future<Map<String, double>> _getPriceRangeFromDatabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      
+      // Отримуємо мінімальну та максимальну ціни з таблиці listings
+      final response = await supabase
+          .from('listings')
+          .select('price')
+          .not('price', 'is', null)
+          .not('is_free', 'eq', true); // Виключаємо безкоштовні оголошення
+      
+      if (response != null && response.isNotEmpty) {
+        final prices = response.map((item) => (item['price'] as num).toDouble()).toList();
+        prices.sort();
+        
+        final minPrice = prices.first;
+        final maxPrice = prices.last;
+        
+        print('Debug: Found price range - min: $minPrice, max: $maxPrice');
+        
+        return {
+          'min': minPrice,
+          'max': maxPrice,
+        };
+      }
+      
+      // Якщо немає даних, повертаємо дефолтні значення
+      return {
+        'min': 0.0,
+        'max': 100000.0,
+      };
+    } catch (e) {
+      print('Error getting price range from database: $e');
+      // Повертаємо дефолтні значення у випадку помилки
+      return {
+        'min': 0.0,
+        'max': 100000.0,
+      };
+    }
+  }
+
+  // Метод для конвертації ціни в гривні
+  double _convertToUAH(double price, String currency) {
+    switch (currency.toUpperCase()) {
+      case 'USD':
+        return price * 38.0; // Приблизний курс долара
+      case 'EUR':
+        return price * 41.0; // Приблизний курс євро
+      case 'UAH':
+      default:
+        return price;
+    }
+  }
+
+  // Метод для конвертації з гривень в обрану валюту
+  double _convertFromUAH(double priceUAH, String currency) {
+    switch (currency.toUpperCase()) {
+      case 'USD':
+        return priceUAH / 38.0;
+      case 'EUR':
+        return priceUAH / 41.0;
+      case 'UAH':
+      default:
+        return priceUAH;
+    }
+  }
+
+  // Метод для оновлення значень слайдера
+  void _updateSliderValues(double minValue, double maxValue) {
+    setState(() {
+      _currentMinPrice = minValue;
+      _currentMaxPrice = maxValue;
+      
+      // Оновлюємо текстові поля з конвертованими значеннями
+      _minPriceController.text = _convertFromUAH(minValue, _selectedCurrency).toStringAsFixed(2);
+      _maxPriceController.text = _convertFromUAH(maxValue, _selectedCurrency).toStringAsFixed(2);
+    });
+  }
+
+  // Метод для оновлення значень при зміні валюти
+  void _updateCurrencyValues() {
+    setState(() {
+      // Оновлюємо текстові поля з новою валютою
+      _minPriceController.text = _convertFromUAH(_currentMinPrice, _selectedCurrency).toStringAsFixed(2);
+      _maxPriceController.text = _convertFromUAH(_currentMaxPrice, _selectedCurrency).toStringAsFixed(2);
+    });
+  }
+
+  // Метод для отримання символу валюти
+  String _getCurrencySymbol() {
+    switch (_selectedCurrency.toUpperCase()) {
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'UAH':
+      default:
+        return '₴';
     }
   }
 } 
