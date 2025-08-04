@@ -82,10 +82,18 @@ class _FilterPageState extends State<FilterPage> {
     _loadCategories();
     _initializeFilters();
   }
-
+    
   void _initializeFilters() {
     _selectedCurrency = widget.initialFilters['currency'] ?? 'UAH';
     _isPriceModePrice = widget.initialFilters['isFree'] != true;
+    
+    // Initialize price filters if they exist
+    if (widget.initialFilters['minPrice'] != null) {
+      _minPriceController.text = widget.initialFilters['minPrice'].toString();
+    }
+    if (widget.initialFilters['maxPrice'] != null) {
+      _maxPriceController.text = widget.initialFilters['maxPrice'].toString();
+    }
     
     // Initialize other filters
     _minAreaController.text = (widget.initialFilters['minArea'] ?? 0).toString();
@@ -114,9 +122,13 @@ class _FilterPageState extends State<FilterPage> {
         _sliderMinValue = _minPrice;
         _sliderMaxValue = _maxPrice;
         
-        // Оновлюємо текстові поля з початковими значеннями
-        _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
-        _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
+        // Оновлюємо текстові поля з початковими значеннями, якщо вони не встановлені
+        if (_minPriceController.text.isEmpty) {
+          _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
+        }
+        if (_maxPriceController.text.isEmpty) {
+          _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
+        }
         
         print('Debug: Loaded price range - min: $_minPrice, max: $_maxPrice');
         print('Debug: Current values - min: $_currentMinPrice, max: $_currentMaxPrice');
@@ -210,16 +222,16 @@ class _FilterPageState extends State<FilterPage> {
 
   void _showBrandSelectionDialog() {
     List<String> brands = ['BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Toyota', 'Honda', 'Ford', 'Chevrolet'];
-
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Оберіть бренд'),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 ListTile(
                   title: Text('Будь-який бренд'),
                   onTap: () {
@@ -563,7 +575,7 @@ class _FilterPageState extends State<FilterPage> {
                 SizedBox(
                   width: 165,
                   child: Text(
-                    'Фільтр',
+              'Фільтр',
                     style: TextStyle(
                       color: const Color(0xFF161817),
                       fontSize: 24,
@@ -585,10 +597,10 @@ class _FilterPageState extends State<FilterPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextButton(
-                      onPressed: _resetFilters,
-                      child: Text(
-                        'Скинути фільтри',
+              TextButton(
+                onPressed: _resetFilters,
+                child: Text(
+                  'Скинути фільтри',
                         style: TextStyle(
                           color: const Color(0xFF015873) /* Primary */,
                           fontSize: 16,
@@ -597,11 +609,11 @@ class _FilterPageState extends State<FilterPage> {
                           height: 1.50,
                           letterSpacing: 0.16,
                         ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
+            ],
+          ),
+        ),
             ],
           ),
         ),
@@ -611,10 +623,10 @@ class _FilterPageState extends State<FilterPage> {
           // Scrollable content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                   // БЛОК 1: Категорія та підкатегорія
                   _buildBlock1(),
                   
@@ -644,13 +656,13 @@ class _FilterPageState extends State<FilterPage> {
               color: AppColors.white,
               border: Border(
                 top: BorderSide(
-                  color: AppColors.zinc200,
-                  width: 1,
+                    color: AppColors.zinc200,
+                    width: 1,
+                  ),
                 ),
-              ),
             ),
             child: Column(
-              children: [
+                  children: [
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -662,12 +674,12 @@ class _FilterPageState extends State<FilterPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
+                      child: Text(
                       'Підтвердити',
                       style: AppTextStyles.body1Semibold.copyWith(color: AppColors.white),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -701,11 +713,11 @@ class _FilterPageState extends State<FilterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
+              GestureDetector(
           onTap: _navigateToCategorySelection,
-          child: Container(
+                child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
               color: const Color(0xFFFAFAFA) /* Zinc-50 */,
@@ -717,20 +729,20 @@ class _FilterPageState extends State<FilterPage> {
                 borderRadius: BorderRadius.circular(200),
               ),
               shadows: [
-                BoxShadow(
+                      BoxShadow(
                   color: Color(0x0C101828),
-                  blurRadius: 2,
+                        blurRadius: 2,
                   offset: Offset(0, 1),
                   spreadRadius: 0,
                 )
-              ],
-            ),
-            child: Row(
+                    ],
+                  ),
+                  child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
+                    children: [
+                      Expanded(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -753,18 +765,18 @@ class _FilterPageState extends State<FilterPage> {
                   ),
                 ),
                 Container(
-                  width: 20,
-                  height: 20,
+                        width: 20,
+                        height: 20,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(),
                   child: Stack(),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
         if (_selectedCategory != null) ...[
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
           GestureDetector(
             onTap: _navigateToSubcategorySelection,
             child: Container(
@@ -778,7 +790,7 @@ class _FilterPageState extends State<FilterPage> {
                     width: 1,
                     color: const Color(0xFFE4E4E7) /* Zinc-200 */,
                   ),
-                  borderRadius: BorderRadius.circular(200),
+                borderRadius: BorderRadius.circular(200),
                 ),
                 shadows: [
                   BoxShadow(
@@ -799,8 +811,8 @@ class _FilterPageState extends State<FilterPage> {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
+                    children: [
+                      Text(
                           _selectedSubcategory?.name ?? 'Оберіть підкатегорію',
                           style: TextStyle(
                             color: _selectedSubcategory == null 
@@ -824,14 +836,14 @@ class _FilterPageState extends State<FilterPage> {
                     child: Stack(),
                   ),
                 ],
-              ),
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  const SizedBox(height: 16),
         GestureDetector(
           onTap: _navigateToRegionSelection,
-          child: Container(
+                          child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             clipBehavior: Clip.antiAlias,
@@ -842,12 +854,12 @@ class _FilterPageState extends State<FilterPage> {
                   width: 1,
                   color: const Color(0xFFE4E4E7) /* Zinc-200 */,
                 ),
-                borderRadius: BorderRadius.circular(200),
+                              borderRadius: BorderRadius.circular(200),
               ),
               shadows: [
-                BoxShadow(
+                                BoxShadow(
                   color: Color(0x0C101828),
-                  blurRadius: 2,
+                                  blurRadius: 2,
                   offset: Offset(0, 1),
                   spreadRadius: 0,
                 )
@@ -899,7 +911,7 @@ class _FilterPageState extends State<FilterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Заголовок та перемикач
+        // Заголовок та перемикач для Ціна
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -917,7 +929,7 @@ class _FilterPageState extends State<FilterPage> {
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _isPriceModePrice = !_isPriceModePrice;
+                  _isPriceModePrice = true;
                 });
               },
               child: Container(
@@ -956,6 +968,8 @@ class _FilterPageState extends State<FilterPage> {
             ),
           ],
         ),
+        
+        // Контент для режиму "Ціна"
         if (_isPriceModePrice) ...[
           const SizedBox(height: 16),
           // Поля вводу цін
@@ -989,6 +1003,9 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _minPriceController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        _updateSliderFromTextFields();
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '0.0₴',
@@ -1058,6 +1075,9 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _maxPriceController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        _updateSliderFromTextFields();
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '100.0₴',
@@ -1088,7 +1108,7 @@ class _FilterPageState extends State<FilterPage> {
           // Слайдер діапазону з двома важелями
           Container(
             width: double.infinity,
-            height: 66, // Збільшив з 60 до 66 пікселів
+            height: 66,
             child: Column(
               children: [
                 // RangeSlider
@@ -1137,75 +1157,13 @@ class _FilterPageState extends State<FilterPage> {
             ),
           ),
         ],
-        // Перемикач Безкоштовно під блоком ціни
+        
+        // Заголовок та перемикач для Безкоштовно
         if (!_isPriceModePrice) ...[
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Безкоштовно',
-                style: TextStyle(
-                  color: const Color(0xFF09090B) /* Zinc-950 */,
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                  height: 1.40,
-                  letterSpacing: 0.14,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isPriceModePrice = !_isPriceModePrice;
-                  });
-                },
-                child: Container(
-                  width: 40,
-                  padding: const EdgeInsets.all(4),
-                  decoration: ShapeDecoration(
-                    color: !_isPriceModePrice 
-                      ? const Color(0xFF015873) /* Primary */
-                      : const Color(0xFFE4E4E7) /* Zinc-200 */,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(133.33),
-                    ),
-                    shadows: [
-                      BoxShadow(
-                        color: Color(0x4CA5A3AE),
-                        blurRadius: 5.33,
-                        offset: Offset(0, 2.67),
-                        spreadRadius: 0,
-                      )
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: !_isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 16,
-                        height: 16,
-                        decoration: ShapeDecoration(
-                          color: Colors.white /* White */,
-                          shape: OvalBorder(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        ] else ...[
+          const SizedBox(height: 24),
         ],
-      ],
-    );
-  }
-
-  // Перемикач Ціна/Безкоштовно
-  Widget _buildPriceToggle() {
-    return Column(
-      children: [
-        const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1223,14 +1181,14 @@ class _FilterPageState extends State<FilterPage> {
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _isPriceModePrice = !_isPriceModePrice;
+                  _isPriceModePrice = false;
                 });
               },
               child: Container(
                 width: 40,
                 padding: const EdgeInsets.all(4),
                 decoration: ShapeDecoration(
-                  color: _isPriceModePrice 
+                  color: !_isPriceModePrice 
                     ? const Color(0xFF015873) /* Primary */
                     : const Color(0xFFE4E4E7) /* Zinc-200 */,
                   shape: RoundedRectangleBorder(
@@ -1246,7 +1204,7 @@ class _FilterPageState extends State<FilterPage> {
                   ],
                 ),
                 child: Row(
-                  mainAxisAlignment: _isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  mainAxisAlignment: !_isPriceModePrice ? MainAxisAlignment.end : MainAxisAlignment.start,
                   children: [
                     Container(
                       width: 16,
@@ -1266,11 +1224,13 @@ class _FilterPageState extends State<FilterPage> {
     );
   }
 
+
+
   Widget _buildCurrencyBlock() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
           'Валюта',
           style: TextStyle(
             color: const Color(0xFF52525B) /* Zinc-600 */,
@@ -1286,15 +1246,15 @@ class _FilterPageState extends State<FilterPage> {
           width: double.infinity,
           decoration: ShapeDecoration(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(200),
+                              borderRadius: BorderRadius.circular(200),
             ),
-          ),
-          child: Row(
+                            ),
+                            child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
+                              children: [
+                                Expanded(
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -1333,8 +1293,8 @@ class _FilterPageState extends State<FilterPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 20,
-                          height: 20,
+                                  width: 20,
+                                  height: 20,
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(),
                           child: SvgPicture.asset(
@@ -1377,8 +1337,8 @@ class _FilterPageState extends State<FilterPage> {
                       _updateCurrencyValues(); // Оновлюємо значення
                     });
                   },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: _selectedCurrency == 'EUR' 
@@ -1391,7 +1351,7 @@ class _FilterPageState extends State<FilterPage> {
                             ? const Color(0xFF015873) /* Primary */
                             : const Color(0xFFE4E4E7) /* Zinc-200 */,
                         ),
-                        borderRadius: BorderRadius.circular(200),
+                              borderRadius: BorderRadius.circular(200),
                       ),
                       shadows: [
                         BoxShadow(
@@ -1401,12 +1361,12 @@ class _FilterPageState extends State<FilterPage> {
                           spreadRadius: 0,
                         )
                       ],
-                    ),
-                    child: Row(
+                            ),
+                            child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+                              children: [
                         Container(
                           width: 20,
                           height: 20,
@@ -1421,9 +1381,9 @@ class _FilterPageState extends State<FilterPage> {
                                 ? Colors.white 
                                 : const Color(0xFF52525B),
                               BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
+                                    ),
+                                  ),
+                                ),
                         const SizedBox(width: 8),
                         Text(
                           'EUR',
@@ -1437,11 +1397,11 @@ class _FilterPageState extends State<FilterPage> {
                             height: 1.40,
                             letterSpacing: 0.14,
                           ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -1519,9 +1479,9 @@ class _FilterPageState extends State<FilterPage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
     );
   }
 
@@ -1783,6 +1743,17 @@ class _FilterPageState extends State<FilterPage> {
       // Оновлюємо текстові поля з конвертованими значеннями
       _minPriceController.text = _convertFromUAH(minValue, _selectedCurrency).toStringAsFixed(2);
       _maxPriceController.text = _convertFromUAH(maxValue, _selectedCurrency).toStringAsFixed(2);
+    });
+  }
+
+  // Метод для оновлення слайдера на основі текстових полів
+  void _updateSliderFromTextFields() {
+    final minPrice = double.tryParse(_minPriceController.text) ?? _minPrice;
+    final maxPrice = double.tryParse(_maxPriceController.text) ?? _maxPrice;
+    
+    setState(() {
+      _currentMinPrice = _convertToUAH(minPrice, _selectedCurrency);
+      _currentMaxPrice = _convertToUAH(maxPrice, _selectedCurrency);
     });
   }
 
