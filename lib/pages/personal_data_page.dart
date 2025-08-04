@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/profile_service.dart';
 import 'dart:io';
 import 'dart:typed_data';
@@ -56,10 +57,28 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
     final profile = await _profileService.getUser(user.id);
+    
+    // Спробуємо отримати номер телефону різними способами
+    String? phoneNumber = user.phone;
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      // Спробуємо отримати з профілю
+      phoneNumber = profile?.phone;
+    }
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      // Спробуємо отримати з email (якщо використовується як телефон)
+      phoneNumber = user.email;
+    }
+    
+    print('User phone: ${user.phone}');
+    print('Profile phone: ${profile?.phone}');
+    print('User email: ${user.email}');
+    print('Profile: $profile');
+    
     setState(() {
       _nameController.text = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
       _avatarUrl = profile?.avatarUrl;
-      _phone = user.phone ?? '';
+      _phone = phoneNumber ?? '+380951234567'; // Fallback для тестування
+      print('Loaded phone: $_phone');
       _isLoading = false;
     });
   }
@@ -273,47 +292,59 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                             Container(
                               width: double.infinity,
                               height: 48,
-                              alignment: Alignment.centerLeft,
-                              decoration: ShapeDecoration(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
                                 color: const Color(0xFFFAFAFA),
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(width: 1, color: Color(0xFFE4E4E7)),
-                                  borderRadius: BorderRadius.circular(200),
-                                ),
-                                shadows: const [
+                                borderRadius: BorderRadius.circular(200),
+                                border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                                boxShadow: const [
                                   BoxShadow(
-                                    color: Color(0x0C101828),
-                                    blurRadius: 2,
+                                    color: Color.fromRGBO(16, 24, 40, 0.05),
                                     offset: Offset(0, 1),
-                                    spreadRadius: 0,
-                                  )
+                                    blurRadius: 2,
+                                  ),
                                 ],
                               ),
-                              child: TextField(
-                                controller: TextEditingController(text: _phone ?? ''),
-                                enabled: false,
-                                textAlignVertical: TextAlignVertical.center,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  hintText: "+380 95 354 8756",
-                                  hintStyle: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.50,
-                                    letterSpacing: 0.16,
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    'assets/icons/UA.svg',
+                                    width: 20,
+                                    height: 20,
                                   ),
-                                ),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.50,
-                                  letterSpacing: 0.16,
-                                ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '+380',
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.50,
+                                      letterSpacing: 0.16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Builder(
+                                      builder: (context) {
+                                        final phoneNumber = _phone?.replaceFirst('+380', '') ?? '';
+                                        print('Displaying phone: $phoneNumber (original: $_phone)');
+                                        return Text(
+                                          phoneNumber,
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.50,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 40),

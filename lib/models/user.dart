@@ -3,6 +3,7 @@ class UserProfile {
   final String? firstName;
   final String? lastName;
   final String? avatarUrl;
+  final String? phone;
   final Set<String> favoriteProducts;
 
   UserProfile({
@@ -10,6 +11,7 @@ class UserProfile {
     this.firstName,
     this.lastName,
     this.avatarUrl,
+    this.phone,
     Set<String>? favoriteProducts,
   }) : favoriteProducts = favoriteProducts ?? {};
 
@@ -30,6 +32,7 @@ class UserProfile {
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
       avatarUrl: json['avatar_url'] as String?,
+      phone: json['phone'] as String?,
       favoriteProducts: (json['favorite_products'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toSet() ?? {},
