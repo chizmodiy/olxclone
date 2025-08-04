@@ -127,32 +127,29 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                           children: [
                             const SizedBox(height: 24),
                             // Хедер
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: ShapeDecoration(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(200),
-                                      ),
+                            GestureDetector(
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.arrow_back,
+                                    color: Color(0xFF27272A),
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 18),
+                                  const Text(
+                                    'Особисті данні',
+                                    style: TextStyle(
+                                      color: Color(0xFF161817),
+                                      fontSize: 24,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.20,
                                     ),
-                                    child: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF27272A)),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Особисті данні',
-                                  style: TextStyle(
-                                    color: Color(0xFF161817),
-                                    fontSize: 24,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.20,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 24),
                             // Аватар + кнопки
@@ -227,7 +224,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                             const SizedBox(height: 24),
                             // Ім'я та прізвище
                             Container(
-                              width: 364,
+                              width: double.infinity,
                               height: 48,
                               alignment: Alignment.centerLeft,
                               decoration: ShapeDecoration(
@@ -274,7 +271,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                             const SizedBox(height: 12),
                             // Телефон (disabled)
                             Container(
-                              width: 364,
+                              width: double.infinity,
                               height: 48,
                               alignment: Alignment.centerLeft,
                               decoration: ShapeDecoration(
@@ -334,7 +331,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: 364,
+                          width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -360,7 +357,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
-                          width: 364,
+                          width: double.infinity,
                           height: 48,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(

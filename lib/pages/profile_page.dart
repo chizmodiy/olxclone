@@ -18,6 +18,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileService _profileService = ProfileService();
+  String? _profileImageUrl; // URL фото профілю
+  bool _hasProfileImage = false; // Чи є фото профілю
 
   @override
   void initState() {
@@ -30,8 +32,28 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userStatus == 'blocked') {
           _showBlockedUserBottomSheet();
         }
+        
+        // Завантажуємо фото профілю
+        await _loadProfileImage();
       }
     });
+  }
+
+  Future<void> _loadProfileImage() async {
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        final profile = await _profileService.getUser(currentUser.id);
+        if (profile != null && profile.avatarUrl != null) {
+          setState(() {
+            _profileImageUrl = profile.avatarUrl;
+            _hasProfileImage = true;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading profile image: $e');
+    }
   }
 
   void _showBlockedUserBottomSheet() {
@@ -101,110 +123,149 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(127),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+                appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(128),
         child: Container(
           width: double.infinity,
-          height: 127,
-          padding: const EdgeInsets.fromLTRB(13, 16, 13, 8),
+          height: 128,
           decoration: const BoxDecoration(
             color: AppColors.primaryColor,
           ),
-          child: Stack(
+          child: Column(
             children: [
-              Positioned(
-                left: 13,
-                bottom: 20,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: SvgPicture.asset(
-                    'assets/icons/chevron-states.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  ),
+              // Верхня частина AppBar (синя)
+              Container(
+                width: double.infinity,
+                height: 80,
+                padding: const EdgeInsets.fromLTRB(13, 16, 13, 0),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 13,
+                      top: 20,
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: SvgPicture.asset(
+                          'assets/icons/chevron-states.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    color: Colors.grey[300],
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 40),
-                ),
+              // Нижня частина AppBar (біла)
+              Container(
+                width: double.infinity,
+                height: 48, // 128 - 80 = 48
+                color: Colors.white,
               ),
             ],
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 13, right: 13, top: 56),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Головне
-            _sectionTitle('Головне'),
-            _profileButton(
-              text: 'Особисті данні',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const PersonalDataPage()),
-                );
-              },
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.only(left: 13, right: 13, top: 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 34), // Місце для аватара
+                // Головне
+                _sectionTitle('Головне'),
+                _profileButton(
+                  text: 'Особисті данні',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const PersonalDataPage()),
+                    );
+                  },
+                ),
+                _profileButton(
+                  text: 'Вийти з облікового запису',
+                  onTap: () async {
+                    await Supabase.instance.client.auth.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                    }
+                  },
+                ),
+                _profileButton(
+                  text: 'Видалити обліковий запис',
+                  onTap: () {},
+                ),
+                const SizedBox(height: 20),
+                // (Аватар між блоками видалено)
+                const SizedBox(height: 20),
+                // Мої оголошення
+                _sectionTitle('Мої оголошення'),
+                _profileButton(
+                  text: 'Активні',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => ActiveListingsPage()),
+                    );
+                  },
+                ),
+                _profileButton(
+                  text: 'Неактивні',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => InactiveListingsPage()),
+                    );
+                  },
+                ),
+                _profileButton(
+                  text: 'Улюблені оголошення',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => FavoriteListingsPage()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-            _profileButton(
-              text: 'Вийти з облікового запису',
-              onTap: () async {
-                await Supabase.instance.client.auth.signOut();
-                if (context.mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                }
-              },
-            ),
-            _profileButton(
-              text: 'Видалити обліковий запис',
-              onTap: () {},
-            ),
-            const SizedBox(height: 20),
-            // (Аватар між блоками видалено)
-            const SizedBox(height: 20),
-            // Мої оголошення
-            _sectionTitle('Мої оголошення'),
-            _profileButton(
-              text: 'Активні',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ActiveListingsPage()),
-                );
-              },
-            ),
-            _profileButton(
-              text: 'Неактивні',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => InactiveListingsPage()),
-                );
-              },
-            ),
-            _profileButton(
-              text: 'Улюблені оголошення',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => FavoriteListingsPage()),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
-      ),
+        // Аватар поверх усього
+        Positioned(
+          top: 46, // Позиція аватара - на межі між синім та білим (80 - 34)
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                shape: BoxShape.circle,
+                border: _hasProfileImage 
+                  ? Border.all(color: Colors.white, width: 1)
+                  : null,
+              ),
+              child: _hasProfileImage && _profileImageUrl != null
+                ? ClipOval(
+                    child: Image.network(
+                      _profileImageUrl!,
+                      width: 66, // 68 - 2 для контуру
+                      height: 66, // 68 - 2 для контуру
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.person, color: Colors.white, size: 40);
+                      },
+                    ),
+                  )
+                : const Icon(Icons.person, color: Colors.white, size: 40),
+            ),
+          ),
+        ),
+      ],
     );
   }
 } 
