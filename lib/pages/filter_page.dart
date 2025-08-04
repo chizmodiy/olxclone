@@ -549,50 +549,22 @@ class _FilterPageState extends State<FilterPage> {
           child: AppBar(
             backgroundColor: AppColors.white,
             elevation: 0,
-            leading: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/chevron-states.svg',
-                colorFilter: ColorFilter.mode(AppColors.black, BlendMode.srcIn),
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () {
+            automaticallyImplyLeading: false, // Прибираємо автоматичну кнопку назад
+            title: GestureDetector(
+              onTap: () {
                 Navigator.pop(context);
               },
-            ),
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(200),
-                    ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.arrow_back,
+                    color: AppColors.black,
+                    size: 24,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 20,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(),
-                        child: Stack(),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 165,
-                  child: Text(
-              'Фільтр',
+                  const SizedBox(width: 18), // Відстань 18 пікселів
+                  Text(
+                    'Фільтр',
                     style: TextStyle(
                       color: const Color(0xFF161817),
                       fontSize: 24,
@@ -601,8 +573,8 @@ class _FilterPageState extends State<FilterPage> {
                       height: 1.20,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             centerTitle: false,
             actions: [
@@ -614,18 +586,18 @@ class _FilterPageState extends State<FilterPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-              TextButton(
-                onPressed: _resetFilters,
+              GestureDetector(
+                onTap: _resetFilters,
                 child: Text(
                   'Скинути фільтри',
-                        style: TextStyle(
-                          color: const Color(0xFF015873) /* Primary */,
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          height: 1.50,
-                          letterSpacing: 0.16,
-                        ),
+                  style: TextStyle(
+                    color: const Color(0xFF015873) /* Primary */,
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
+                    height: 1.50,
+                    letterSpacing: 0.16,
+                  ),
                 ),
               ),
             ],

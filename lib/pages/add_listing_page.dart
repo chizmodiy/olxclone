@@ -2286,7 +2286,7 @@ class _AddListingPageState extends State<AddListingPage> {
 
         // Use selected subcategory (now required for all listings)
         final subcategoryId = _selectedSubcategory!.id;
-        
+
         print('Debug: Creating listing with parameters:');
         print('  title: ${_titleController.text}');
         print('  description: ${_descriptionController.text}');
