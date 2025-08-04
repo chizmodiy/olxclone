@@ -623,12 +623,17 @@ class _FilterPageState extends State<FilterPage> {
                   
                   const SizedBox(height: 24),
                   
-                  // БЛОК 2: Ціна
+                  // БЛОК 2: Валюта
+                  _buildCurrencyBlock(),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // БЛОК 3: Ціна
                   _buildBlock2(),
                   
                   const SizedBox(height: 24),
                   
-                  // БЛОК 3: Додаткові фільтри (залежно від категорії)
+                  // БЛОК 4: Додаткові фільтри (залежно від категорії)
                   if (_selectedSubcategory != null) _buildBlock3(),
                 ],
               ),
@@ -699,11 +704,6 @@ class _FilterPageState extends State<FilterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Категорія',
-          style: AppTextStyles.body1Semibold,
-        ),
-        const SizedBox(height: 8),
         GestureDetector(
           onTap: _navigateToCategorySelection,
           child: Container(
@@ -768,11 +768,6 @@ class _FilterPageState extends State<FilterPage> {
         ),
         if (_selectedCategory != null) ...[
           const SizedBox(height: 16),
-          Text(
-            'Підкатегорія',
-            style: AppTextStyles.body1Semibold,
-          ),
-          const SizedBox(height: 8),
           GestureDetector(
             onTap: _navigateToSubcategorySelection,
             child: Container(
@@ -837,11 +832,6 @@ class _FilterPageState extends State<FilterPage> {
           ),
         ],
         const SizedBox(height: 16),
-        Text(
-          'Область',
-          style: AppTextStyles.body1Semibold,
-        ),
-        const SizedBox(height: 8),
         GestureDetector(
           onTap: _navigateToRegionSelection,
           child: Container(
@@ -921,42 +911,56 @@ class _FilterPageState extends State<FilterPage> {
         Row(
           children: [
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: _isPriceModePrice ? AppColors.primaryColor : AppColors.white,
-                  borderRadius: BorderRadius.circular(200),
-                  border: Border.all(
-                    color: _isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
-                    width: 1,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isPriceModePrice = true;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _isPriceModePrice ? AppColors.primaryColor : AppColors.white,
+                    borderRadius: BorderRadius.circular(200),
+                    border: Border.all(
+                      color: _isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Ціна',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.body1Semibold.copyWith(
-                    color: _isPriceModePrice ? AppColors.white : AppColors.zinc600,
+                  child: Text(
+                    'Ціна',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body1Semibold.copyWith(
+                      color: _isPriceModePrice ? AppColors.white : AppColors.zinc600,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.white,
-                  borderRadius: BorderRadius.circular(200),
-                  border: Border.all(
-                    color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
-                    width: 1,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isPriceModePrice = false;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.white,
+                    borderRadius: BorderRadius.circular(200),
+                    border: Border.all(
+                      color: !_isPriceModePrice ? AppColors.primaryColor : AppColors.zinc200,
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Безкоштовно',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.body1Semibold.copyWith(
-                    color: !_isPriceModePrice ? AppColors.white : AppColors.zinc600,
+                  child: Text(
+                    'Безкоштовно',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body1Semibold.copyWith(
+                      color: !_isPriceModePrice ? AppColors.white : AppColors.zinc600,
+                    ),
                   ),
                 ),
               ),
@@ -964,35 +968,6 @@ class _FilterPageState extends State<FilterPage> {
           ],
         ),
         if (_isPriceModePrice) ...[
-          const SizedBox(height: 16),
-          // Валюта
-          Row(
-            children: [
-              _buildCurrencyButton(
-                currency: 'UAH',
-                iconPath: 'assets/icons/UAH.svg',
-                text: '₴',
-                isSelected: _selectedCurrency == 'UAH',
-                onTap: () => setState(() => _selectedCurrency = 'UAH'),
-              ),
-              const SizedBox(width: 8),
-              _buildCurrencyButton(
-                currency: 'USD',
-                iconPath: 'assets/icons/USD.svg',
-                text: '\$',
-                isSelected: _selectedCurrency == 'USD',
-                onTap: () => setState(() => _selectedCurrency = 'USD'),
-              ),
-              const SizedBox(width: 8),
-              _buildCurrencyButton(
-                currency: 'EUR',
-                iconPath: 'assets/icons/EUR.svg',
-                text: '€',
-                isSelected: _selectedCurrency == 'EUR',
-                onTap: () => setState(() => _selectedCurrency = 'EUR'),
-              ),
-            ],
-          ),
           const SizedBox(height: 16),
           // Діапазон цін
           Row(
@@ -1025,6 +1000,250 @@ class _FilterPageState extends State<FilterPage> {
             ],
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildCurrencyBlock() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Валюта',
+          style: TextStyle(
+            color: const Color(0xFF52525B) /* Zinc-600 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.40,
+            letterSpacing: 0.14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          decoration: ShapeDecoration(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(200),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCurrency = 'UAH'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: _selectedCurrency == 'UAH' 
+                        ? const Color(0xFF015873) /* Primary */
+                        : Colors.white /* White */,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: _selectedCurrency == 'UAH'
+                            ? const Color(0xFF015873) /* Primary */
+                            : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        ),
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                      shadows: [
+                        BoxShadow(
+                          color: Color(0x0C101828),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                          spreadRadius: 0,
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(),
+                          child: SvgPicture.asset(
+                            'assets/icons/UAH.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              _selectedCurrency == 'UAH' 
+                                ? Colors.white 
+                                : const Color(0xFF52525B),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'ГРН',
+                          style: TextStyle(
+                            color: _selectedCurrency == 'UAH' 
+                              ? Colors.white /* White */
+                              : const Color(0xFF52525B) /* Zinc-600 */,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.40,
+                            letterSpacing: 0.14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCurrency = 'EUR'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: _selectedCurrency == 'EUR' 
+                        ? const Color(0xFF015873) /* Primary */
+                        : Colors.white /* White */,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: _selectedCurrency == 'EUR'
+                            ? const Color(0xFF015873) /* Primary */
+                            : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        ),
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                      shadows: [
+                        BoxShadow(
+                          color: Color(0x0C101828),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                          spreadRadius: 0,
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(),
+                          child: SvgPicture.asset(
+                            'assets/icons/EUR.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              _selectedCurrency == 'EUR' 
+                                ? Colors.white 
+                                : const Color(0xFF52525B),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'EUR',
+                          style: TextStyle(
+                            color: _selectedCurrency == 'EUR' 
+                              ? Colors.white /* White */
+                              : const Color(0xFF52525B) /* Zinc-600 */,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.40,
+                            letterSpacing: 0.14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCurrency = 'USD'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      color: _selectedCurrency == 'USD' 
+                        ? const Color(0xFF015873) /* Primary */
+                        : Colors.white /* White */,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: _selectedCurrency == 'USD'
+                            ? const Color(0xFF015873) /* Primary */
+                            : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        ),
+                        borderRadius: BorderRadius.circular(200),
+                      ),
+                      shadows: [
+                        BoxShadow(
+                          color: Color(0x0C101828),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                          spreadRadius: 0,
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(),
+                          child: SvgPicture.asset(
+                            'assets/icons/USD.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              _selectedCurrency == 'USD' 
+                                ? Colors.white 
+                                : const Color(0xFF52525B),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'USD',
+                          style: TextStyle(
+                            color: _selectedCurrency == 'USD' 
+                              ? Colors.white /* White */
+                              : const Color(0xFF52525B) /* Zinc-600 */,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.40,
+                            letterSpacing: 0.14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
