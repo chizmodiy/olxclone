@@ -257,6 +257,80 @@ class HomeContentState extends State<HomeContent> {
     _loadProducts();
   }
 
+  // Helper method to count active filters
+  int _getActiveFiltersCount() {
+    int count = 0;
+    if (_currentFilters.isNotEmpty) {
+      print('Debug: _currentFilters = $_currentFilters');
+      
+      // Категорія + підкатегорія = 1 фільтр
+      bool hasCategoryFilter = false;
+      if (_currentFilters['category'] != null && _currentFilters['category'].toString().isNotEmpty) {
+        hasCategoryFilter = true;
+        print('Debug: Category filter found');
+      }
+      if (_currentFilters['subcategory'] != null && _currentFilters['subcategory'].toString().isNotEmpty) {
+        hasCategoryFilter = true;
+        print('Debug: Subcategory filter found');
+      }
+      if (hasCategoryFilter) {
+        count++;
+        print('Debug: Category/Subcategory filter counted as 1, total = $count');
+      }
+      
+      // Ціна = 1 фільтр
+      bool hasPriceFilter = false;
+      if (_currentFilters['min_price'] != null && _currentFilters['min_price'].toString().isNotEmpty) {
+        hasPriceFilter = true;
+        print('Debug: Min price filter found');
+      }
+      if (_currentFilters['max_price'] != null && _currentFilters['max_price'].toString().isNotEmpty) {
+        hasPriceFilter = true;
+        print('Debug: Max price filter found');
+      }
+      if (hasPriceFilter) {
+        count++;
+        print('Debug: Price filter (min/max) counted as 1, total = $count');
+      }
+      
+      // Безкоштовно = 1 фільтр
+      if (_currentFilters['is_free'] == true) {
+        count++;
+        print('Debug: Free filter found, count = $count');
+      }
+      
+      // Валюта (не гривня) = 1 фільтр
+      if (_currentFilters['currency'] != null && 
+          _currentFilters['currency'].toString().isNotEmpty && 
+          _currentFilters['currency'].toString().toLowerCase() != 'uah') {
+        count++;
+        print('Debug: Currency filter (not UAH) found, count = $count');
+      }
+      
+      // Інші фільтри (якщо є)
+      for (var entry in _currentFilters.entries) {
+        String key = entry.key;
+        if (key != 'category' && key != 'subcategory' && 
+            key != 'min_price' && key != 'max_price' && 
+            key != 'is_free' && key != 'currency') {
+          if (entry.value != null && entry.value.toString().isNotEmpty) {
+            if (entry.value is List) {
+              if ((entry.value as List).isNotEmpty) {
+                count++;
+                print('Debug: Other list filter $key is active, count = $count');
+              }
+            } else {
+              count++;
+              print('Debug: Other filter $key is active, count = $count');
+            }
+          }
+        }
+      }
+    }
+    print('Debug: Total active filters count = $count');
+    return count;
+  }
+
   void _showFilterBottomSheet() async {
     final Map<String, dynamic>? newFilters = await Navigator.push(
       context,
@@ -646,39 +720,68 @@ class HomeContentState extends State<HomeContent> {
                 onTap: () {
                   _showFilterBottomSheet();
                 },
-                child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(200),
-                    border: Border.all(color: const Color(0xFFE4E4E7)),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Фільтр',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                          letterSpacing: 0.14,
+                child: Builder(
+                  builder: (context) {
+                    final activeFiltersCount = _getActiveFiltersCount();
+                    return Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: activeFiltersCount > 0 ? const Color(0xFFF0F9FF) : Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(
+                          color: activeFiltersCount > 0 ? const Color(0xFF015873) : const Color(0xFFE4E4E7)
                         ),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.filter_alt_outlined, 
+                            color: activeFiltersCount > 0 ? const Color(0xFF015873) : Colors.black, 
+                            size: 20
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Фільтр',
+                            style: TextStyle(
+                              color: activeFiltersCount > 0 ? const Color(0xFF015873) : Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                              letterSpacing: 0.14,
+                            ),
+                          ),
+                          if (activeFiltersCount > 0)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF015873),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$activeFiltersCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
