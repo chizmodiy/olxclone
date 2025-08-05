@@ -2347,8 +2347,8 @@ class _AddListingPageState extends State<AddListingPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        elevation: 0.0, // Remove shadow
-        scrolledUnderElevation: 0.0, // Ensure no elevation when scrolled
+        elevation: 0.0,
+        scrolledUnderElevation: 0.0,
         toolbarHeight: 70.0,
         centerTitle: false,
         leading: GestureDetector(
@@ -2366,145 +2366,147 @@ class _AddListingPageState extends State<AddListingPage> {
           style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Divider
-            Container(
-              height: 1,
-              color: AppColors.zinc200,
-            ),
-            const SizedBox(height: 20),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Divider
+                Container(
+                  height: 1,
+                  color: AppColors.zinc200,
+                ),
+                const SizedBox(height: 20),
 
-            // Add Photo Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Додайте фото',
-                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                // Add Photo Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Додайте фото',
+                      style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                    ),
+                    Text(
+                      '${_selectedImages.length}/7',
+                      style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${_selectedImages.length}/7',
-                  style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              onTap: _pickImage,
-              borderRadius: BorderRadius.circular(12), // Apply borderRadius to InkWell for visual feedback
-              child: CustomPaint(
-                painter: DashedBorderPainter(
-                  color: AppColors.zinc200, // Replace with your desired color
-                  strokeWidth: 1.0,
-                  dashWidth: 13.0, // Length of dashes
-                  gapWidth: 13.0, // Length of gaps
-                  borderRadius: 12.0,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.zinc50,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/Featured icon.svg',
-                          width: 40,
-                          height: 40,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Перемістіть зображення',
-                  style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                        'PNG, JPG (max. 200MB)',
-                        style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
-                ),
-              ],
-            ),
-                ),
-              ),
-            ),
-            if (_selectedImages.isNotEmpty)
-                      Padding(
-                padding: const EdgeInsets.only(top: 6.0),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: List.generate(_selectedImages.length, (index) {
-                    final imagePath = _selectedImages[index].path;
-                    return SizedBox(
-                      width: 92,
-                      height: 92,
-                      child: Stack(
-              children: [
-                          Positioned.fill(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: _buildImageWidget(imagePath),
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                setState(() {
-                  _selectedImages.removeAt(index);
-                });
-              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(200),
-                                  color: const Color.fromARGB(0, 255, 255, 255),
-                                ),
-                                child: SvgPicture.asset(
-                                  'assets/icons/x-close.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
-                                ),
-                              ),
-                            ),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: _pickImage,
+                  borderRadius: BorderRadius.circular(12),
+                  child: CustomPaint(
+                    painter: DashedBorderPainter(
+                      color: AppColors.zinc200,
+                      strokeWidth: 1.0,
+                      dashWidth: 13.0,
+                      gapWidth: 13.0,
+                      borderRadius: 12.0,
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.zinc50,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(16, 24, 40, 0.05),
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
                           ),
                         ],
                       ),
-                    );
-                  }),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: SvgPicture.asset(
+                              'assets/icons/Featured icon.svg',
+                              width: 40,
+                              height: 40,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Перемістіть зображення',
+                            style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'PNG, JPG (max. 200MB)',
+                            style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-            ),
-            const SizedBox(height: 20),
+                if (_selectedImages.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: List.generate(_selectedImages.length, (index) {
+                        final imagePath = _selectedImages[index].path;
+                        return SizedBox(
+                          width: 92,
+                          height: 92,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: _buildImageWidget(imagePath),
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImages.removeAt(index);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(200),
+                                      color: const Color.fromARGB(0, 255, 255, 255),
+                                    ),
+                                    child: SvgPicture.asset(
+                                      'assets/icons/x-close.svg',
+                                      width: 20,
+                                      height: 20,
+                                      colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                const SizedBox(height: 20),
 
-            // Title Input Field
-            Text(
-              'Заголовок',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-            ),
-            const SizedBox(height: 6),
+                // Title Input Field
+                Text(
+                  'Заголовок',
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                ),
+                const SizedBox(height: 6),
                 Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                color: AppColors.zinc50,
+                    color: AppColors.zinc50,
                     borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: AppColors.zinc200, width: 1),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
                     boxShadow: const [
                       BoxShadow(
                         color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -2513,33 +2515,33 @@ class _AddListingPageState extends State<AddListingPage> {
                       ),
                     ],
                   ),
-                        child: TextField(
-              controller: _titleController,
-                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                          decoration: InputDecoration(
-                  hintText: 'Введіть текст',
-                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  child: TextField(
+                    controller: _titleController,
+                    style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                    decoration: InputDecoration(
+                      hintText: 'Введіть текст',
+                      hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            // Description Input Field
-            Text(
-              'Опис',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-            ),
-            const SizedBox(height: 6),
+                // Description Input Field
+                Text(
+                  'Опис',
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                ),
+                const SizedBox(height: 6),
                 Container(
-              height: 180,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  height: 180,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                color: AppColors.zinc50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.zinc200, width: 1),
+                    color: AppColors.zinc50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
                     boxShadow: const [
                       BoxShadow(
                         color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -2548,148 +2550,163 @@ class _AddListingPageState extends State<AddListingPage> {
                       ),
                     ],
                   ),
-              child: TextField(
-              controller: _descriptionController,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                decoration: InputDecoration(
-                  hintText: 'Введіть текст',
-                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5), // Zinc-400
-                  border: InputBorder.none,
-                            isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  child: TextField(
+                    controller: _descriptionController,
+                    maxLines: null,
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                    decoration: InputDecoration(
+                      hintText: 'Введіть текст',
+                      hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 20),
+
+                // Category Dropdown
+                _buildCategorySection(),
+                _buildSubcategorySection(),
+                // Додаємо LocationPicker після категорії та підкатегорії
+                const SizedBox(height: 20),
+                LocationPicker(
+                  onLocationSelected: (latLng, address) {
+                    setState(() {
+                      _selectedAddress = address;
+                      _selectedLatitude = latLng?.latitude;
+                      _selectedLongitude = latLng?.longitude;
+                      if (address != null && address.isNotEmpty) {
+                        final region = _regions.firstWhere(
+                          (r) => address.contains(r.name),
+                          orElse: () => _regions.first,
+                        );
+                        _selectedRegion = region;
+                        _selectedRegionName = region.name;
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // Listing Type Toggle
+                _buildListingTypeToggle(),
+                const SizedBox(height: 20),
+
+                // Currency Switch - only show if not free
+                if (_isForSale) ...[
+                  _buildCurrencySection(),
+                  const SizedBox(height: 20),
+                ],
+
+                // Price Input Field - only show if not free
+                if (_isForSale) ...[
+                  _buildPriceSection(),
+                  const SizedBox(height: 20),
+                ],
+
+                // Contact Form Section
+                _buildContactForm(),
+                const SizedBox(height: 20),
+
+                // Extra fields section
+                _buildExtraFieldsSection(),
+                const SizedBox(height: 20),
+
+                // Add bottom padding to account for floating buttons
+                const SizedBox(height: 120),
+              ],
+            ),
+          ),
+          // Floating buttons at the bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 44,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isFormValid ? () {
+                        print('Debug: Confirm button pressed, form is valid');
+                        _createListing();
+                      } : () {
+                        print('Debug: Confirm button pressed, but form is not valid');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isFormValid 
+                            ? AppColors.primaryColor 
+                            : const Color(0xFFF4F4F5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Підтвердити',
+                        style: AppTextStyles.body2Semibold.copyWith(
+                          color: _isFormValid ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 44,
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        // Clear all data
+                        setState(() {
+                          _titleController.clear();
+                          _descriptionController.clear();
+                          _priceController.clear();
+                          _selectedImages.clear();
+                          _selectedCategory = null;
+                          _selectedSubcategory = null;
+                          _selectedRegion = null;
+                          _isForSale = true;
+                          _selectedCurrency = 'UAH';
+                          _isNegotiablePrice = false;
+                          _phoneController.clear();
+                          _whatsappController.clear();
+                          _telegramController.clear();
+                          _viberController.clear();
+                          _selectedMessenger = 'phone';
+                          _extraFieldControllers.forEach((_, controller) => controller.dispose());
+                          _extraFieldControllers.clear();
+                          _extraFieldValues.clear();
+                        });
+                        
+                        // Navigate to main page
+                        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        side: BorderSide(color: AppColors.zinc200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Скасувати',
+                        style: AppTextStyles.body2Semibold.copyWith(
+                          color: AppColors.color8,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Category Dropdown
-            _buildCategorySection(),
-            _buildSubcategorySection(),
-            // Додаємо LocationPicker після категорії та підкатегорії
-            const SizedBox(height: 20),
-            LocationPicker(
-              onLocationSelected: (latLng, address) {
-                setState(() {
-                  _selectedAddress = address;
-                  _selectedLatitude = latLng?.latitude;
-                  _selectedLongitude = latLng?.longitude;
-                  if (address != null && address.isNotEmpty) {
-                    final region = _regions.firstWhere(
-                      (r) => address.contains(r.name),
-                      orElse: () => _regions.first,
-                    );
-                    _selectedRegion = region;
-                    _selectedRegionName = region.name;
-                  }
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Listing Type Toggle
-            _buildListingTypeToggle(),
-            const SizedBox(height: 20),
-
-            // Currency Switch - only show if not free
-            if (_isForSale) ...[
-              _buildCurrencySection(),
-              const SizedBox(height: 20),
-            ],
-
-            // Price Input Field - only show if not free
-            if (_isForSale) ...[
-              _buildPriceSection(),
-              const SizedBox(height: 20),
-            ],
-
-            // Contact Form Section
-            _buildContactForm(),
-            const SizedBox(height: 20),
-
-            // Bottom buttons
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 44,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isFormValid ? () {
-                      print('Debug: Confirm button pressed, form is valid');
-                      _createListing();
-                    } : () {
-                      print('Debug: Confirm button pressed, but form is not valid');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isFormValid 
-                          ? AppColors.primaryColor 
-                          : const Color(0xFFF4F4F5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Підтвердити',
-                      style: AppTextStyles.body2Semibold.copyWith(
-                        color: _isFormValid ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 44,
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () {
-                      // Clear all data
-                setState(() {
-                        _titleController.clear();
-                        _descriptionController.clear();
-                        _priceController.clear();
-                        _selectedImages.clear();
-                        _selectedCategory = null;
-                        _selectedSubcategory = null;
-                        _selectedRegion = null;
-                        _isForSale = true;
-                        _selectedCurrency = 'UAH';
-                        _isNegotiablePrice = false;
-                        _phoneController.clear();
-                        _whatsappController.clear();
-                        _telegramController.clear();
-                        _viberController.clear();
-                        _selectedMessenger = 'phone';
-                        _extraFieldControllers.forEach((_, controller) => controller.dispose());
-                        _extraFieldControllers.clear();
-                        _extraFieldValues.clear();
-                      });
-                      
-                      // Navigate to main page
-                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: AppColors.zinc200),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Скасувати',
-                      style: AppTextStyles.body2Semibold.copyWith(
-                        color: AppColors.color8,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-            ),
-
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
