@@ -129,11 +129,16 @@ class _LocationPickerState extends State<LocationPicker> {
     required String regionName,
   }) async {
     final sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
+    
+    // Додаємо більш точне обмеження пошуку для області
+    final String searchQuery = '$query, $regionName, Україна';
+    
     final url = Uri.parse(
       'https://wcczieoznbopcafdatpk.supabase.co/functions/v1/places-api'
-      '?input=${Uri.encodeComponent(query)}'
+      '?input=${Uri.encodeComponent(searchQuery)}'
       '&sessiontoken=$sessionToken'
-      '&region=${Uri.encodeComponent(regionName)}',
+      '&region=${Uri.encodeComponent(regionName)}'
+      '&components=country:ua',
     );
     final response = await http.get(
       url,
@@ -153,6 +158,15 @@ class _LocationPickerState extends State<LocationPicker> {
           final description = prediction['description']?.toString() ?? '';
           final placeId = prediction['place_id']?.toString() ?? '';
           return {'name': description, 'placeId': placeId};
+        }).toList();
+        
+        // Додаткова фільтрація результатів на клієнтській стороні
+        cities = cities.where((city) {
+          final name = city['name']?.toLowerCase() ?? '';
+          final regionNameLower = regionName.toLowerCase();
+          return name.contains(regionNameLower) || 
+                 name.contains('україна') || 
+                 name.contains('ukraine');
         }).toList();
       } else if (data['status'] == 'ZERO_RESULTS') {
         cities = [];
