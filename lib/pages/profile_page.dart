@@ -9,6 +9,7 @@ import './personal_data_page.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/logout_confirmation_bottom_sheet.dart';
+import '../widgets/delete_account_confirmation_bottom_sheet.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -76,6 +77,17 @@ class _ProfilePageState extends State<ProfilePage> {
       isDismissible: true,
       enableDrag: true,
       builder: (context) => const LogoutConfirmationBottomSheet(),
+    );
+  }
+
+  void _showDeleteAccountConfirmationBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => const DeleteAccountConfirmationBottomSheet(),
     );
   }
 
@@ -206,7 +218,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 _profileButton(
                   text: 'Видалити обліковий запис',
-                  onTap: () {},
+                  onTap: () {
+                    _showDeleteAccountConfirmationBottomSheet();
+                  },
                 ),
                 const SizedBox(height: 20),
                 // (Аватар між блоками видалено)
