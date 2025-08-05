@@ -1091,11 +1091,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 borderRadius: BorderRadius.circular(240),
                                 color: const Color(0xFFE4E4E7),
                               ),
-                              child: const Icon(
-                                Icons.person,
-                                size: 24,
-                                color: Color(0xFF71717A),
-                              ),
+                              child: _userProfile?.avatarUrl != null
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        _userProfile!.avatarUrl!,
+                                        width: 48,
+                                        height: 48,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.person,
+                                            size: 24,
+                                            color: Color(0xFF71717A),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person,
+                                      size: 24,
+                                      color: Color(0xFF71717A),
+                                    ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(

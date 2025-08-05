@@ -22,12 +22,64 @@ class _ChatPageState extends State<ChatPage> {
   List<Map<String, dynamic>> _chats = [];
   bool _loading = true;
   final ProfileService _profileService = ProfileService();
+  RealtimeChannel? _realtimeChannel;
 
   @override
   void initState() {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadChats();
+    _subscribeToChatUpdates();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Оновлюємо список чатів при зміні залежностей (наприклад, при поверненні з діалогу)
+    _loadChats();
+  }
+
+  @override
+  void didUpdateWidget(ChatPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Оновлюємо список чатів при оновленні віджета
+    _loadChats();
+  }
+
+  @override
+  void dispose() {
+    _realtimeChannel?.unsubscribe();
+    super.dispose();
+  }
+
+  void _subscribeToChatUpdates() {
+    final client = Supabase.instance.client;
+    _realtimeChannel = client.channel('public:chat_messages')
+      ..on(
+        RealtimeListenTypes.postgresChanges,
+        ChannelFilter(
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+        ),
+        (payload, [ref]) {
+          // Оновлюємо список чатів при отриманні нового повідомлення
+          _loadChats();
+        },
+      )
+      ..on(
+        RealtimeListenTypes.postgresChanges,
+        ChannelFilter(
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_messages',
+        ),
+        (payload, [ref]) {
+          // Оновлюємо список чатів при оновленні повідомлення (наприклад, позначення як прочитане)
+          _loadChats();
+        },
+      )
+      ..subscribe();
   }
 
   Future<void> _loadChats() async {
@@ -119,7 +171,7 @@ class _ChatPageState extends State<ChatPage> {
             ? ((otherProfile['first_name'] ?? '') + ' ' + (otherProfile['last_name'] ?? ''))
             : 'Користувач',
         'lastMessage': lastMsg != null ? (lastMsg['content'] ?? '[Фото]') : '',
-        'time': lastMsg != null ? (lastMsg['created_at'] as String).substring(11, 16) : '',
+        'time': lastMsg != null ? _formatChatListTime(DateTime.tryParse(lastMsg['created_at'] as String) ?? DateTime.now()) : '',
         'unreadCount': unreadCount.count ?? 0,
       });
     }
@@ -129,7 +181,41 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  String _formatChatListTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    
+    // Форматуємо час
+    final time = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    
+    if (messageDate == today) {
+      return time; // Тільки час для сьогодні
+    } else if (messageDate == yesterday) {
+      return 'Вчора';
+    } else if (now.difference(dateTime).inDays < 7) {
+      // Цього тижня - показуємо короткий день тижня
+      return _shortWeekdayName(dateTime.weekday);
+    } else {
+      // Старіше - показуємо коротку дату
+      return '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}';
+    }
+  }
 
+  String _shortWeekdayName(int weekday) {
+    const names = [
+      '',
+      'Пн',
+      'Вт',
+      'Ср',
+      'Чт',
+      'Пт',
+      'Сб',
+      'Нд',
+    ];
+    return names[weekday];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -375,8 +461,8 @@ class _ChatPageState extends State<ChatPage> {
                               lastMessage: chat['lastMessage'],
                               time: chat['time'],
                               unreadCount: chat['unreadCount'],
-                              onTap: () {
-                                Navigator.of(context).push(
+                              onTap: () async {
+                                await Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => ChatDialogPage(
                                       chatId: chat['chatId'] ?? '',
@@ -390,6 +476,10 @@ class _ChatPageState extends State<ChatPage> {
                                     ),
                                   ),
                                 );
+                                // Оновлюємо список чатів при поверненні
+                                if (mounted) {
+                                  _loadChats();
+                                }
                               },
                             );
                           },
@@ -714,6 +804,13 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Позначаємо повідомлення як прочитані при зміні залежностей
+    _markMessagesAsRead();
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     _textController.dispose();
@@ -741,12 +838,19 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   Future<void> _markMessagesAsRead() async {
     if (_currentUserId == null) return;
     final client = Supabase.instance.client;
-    await client
-        .from('chat_messages')
-        .update({'is_read': true})
-        .eq('chat_id', widget.chatId)
-        .eq('is_read', false)
-        .neq('sender_id', _currentUserId);
+    
+    try {
+      final result = await client
+          .from('chat_messages')
+          .update({'is_read': true})
+          .eq('chat_id', widget.chatId)
+          .eq('is_read', false)
+          .neq('sender_id', _currentUserId);
+      
+      print('Marked messages as read for chat: ${widget.chatId}, result: $result');
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
   }
 
   void _subscribeToNewMessages() {
@@ -761,10 +865,26 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           filter: 'chat_id=eq.${widget.chatId}',
         ),
         (payload, [ref]) {
-                        setState(() {
-            _messages.add(payload['new'] as Map<String, dynamic>);
-          });
-          _scrollToBottom();
+          final newMessage = payload['new'] as Map<String, dynamic>;
+          
+          // Ігноруємо тимчасові повідомлення
+          if (newMessage['is_temp'] == true) return;
+          
+          // Перевіряємо, чи це повідомлення не вже є в списку
+          final messageId = newMessage['id'];
+          final existingMessage = _messages.any((msg) => msg['id'] == messageId);
+          
+          if (!existingMessage) {
+            setState(() {
+              _messages.add(newMessage);
+            });
+            _scrollToBottom();
+          }
+          
+          // Позначаємо нове повідомлення як прочитане, якщо воно не від нас
+          if (newMessage['sender_id'] != _currentUserId) {
+            _markMessagesAsRead();
+          }
         },
       )
       ..subscribe();
@@ -820,6 +940,22 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     final text = _textController.text.trim();
     if ((text.isEmpty && imageUrl == null) || _currentUserId == null) return;
 
+    // Додаємо тимчасове повідомлення для кращого UX
+    final tempMessage = {
+      'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      'chat_id': widget.chatId,
+      'sender_id': _currentUserId,
+      'content': text.isNotEmpty ? text : null,
+      'image_url': imageUrl,
+      'created_at': DateTime.now().toIso8601String(),
+      'is_temp': true,
+    };
+
+    setState(() {
+      _messages.add(tempMessage);
+    });
+    _scrollToBottom();
+
     final client = Supabase.instance.client;
 
     final messageData = {
@@ -829,26 +965,24 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
       'image_url': imageUrl,
     };
 
-    final response =
-        await client.from('chat_messages').insert(messageData).select().single();
+    try {
+      await client.from('chat_messages').insert(messageData).select().single();
 
-    if (imageUrl == null) {
-    _textController.clear();
-    }
+      if (imageUrl == null) {
+        _textController.clear();
+      }
 
-    // Додаємо повідомлення одразу після відправки
-    setState(() {
-      _messages.add({
-        'chat_id': widget.chatId,
-        'sender_id': _currentUserId,
-        'content': text.isNotEmpty ? text : null,
-        'image_url': imageUrl,
-        'created_at':
-            response['created_at'] ?? DateTime.now().toIso8601String(),
-        // додай інші потрібні поля, якщо треба
+      // Видаляємо тимчасове повідомлення після успішного відправлення
+      setState(() {
+        _messages.removeWhere((msg) => msg['is_temp'] == true);
       });
-    });
-    _scrollToBottom();
+    } catch (e) {
+      // Видаляємо тимчасове повідомлення при помилці
+      setState(() {
+        _messages.removeWhere((msg) => msg['is_temp'] == true);
+      });
+      print('Error sending message: $e');
+    }
   }
 
   @override
@@ -967,7 +1101,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                         final text = msg['content'] as String?;
                         final imageUrl = msg['image_url'] as String?;
                         final createdAt = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
-                        final time = '${_weekdayName(createdAt.weekday)} ${createdAt.hour.toString().padLeft(2, '0')}.${createdAt.minute.toString().padLeft(2, '0')}';
+                        final time = _formatMessageTime(createdAt);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: MessageBubble(
@@ -1048,6 +1182,64 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         ],
       ),
     );
+  }
+
+  String _formatMessageTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    
+    // Форматуємо час
+    final time = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    
+    if (messageDate == today) {
+      return 'Сьогодні $time';
+    } else if (messageDate == yesterday) {
+      return 'Вчора $time';
+    } else if (now.difference(dateTime).inDays < 7) {
+      // Цього тижня - показуємо день тижня
+      return '${_weekdayName(dateTime.weekday)} $time';
+    } else {
+      // Старіше - показуємо дату
+      return '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year} $time';
+    }
+  }
+
+  String _formatChatListTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    
+    // Форматуємо час
+    final time = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    
+    if (messageDate == today) {
+      return time; // Тільки час для сьогодні
+    } else if (messageDate == yesterday) {
+      return 'Вчора';
+    } else if (now.difference(dateTime).inDays < 7) {
+      // Цього тижня - показуємо короткий день тижня
+      return _shortWeekdayName(dateTime.weekday);
+    } else {
+      // Старіше - показуємо коротку дату
+      return '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}';
+    }
+  }
+
+  String _shortWeekdayName(int weekday) {
+    const names = [
+      '',
+      'Пн',
+      'Вт',
+      'Ср',
+      'Чт',
+      'Пт',
+      'Сб',
+      'Нд',
+    ];
+    return names[weekday];
   }
 
   String _weekdayName(int weekday) {

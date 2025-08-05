@@ -109,6 +109,89 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     );
   }
 
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  Future<void> _deleteAvatar() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      // Видаляємо аватар з профілю
+      await _profileService.updateUserProfile(
+        userId: user.id,
+        avatarUrl: null,
+      );
+
+      // Видаляємо аватар з метаданів
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(
+          data: {
+            'avatar_url': null,
+          },
+        ),
+      );
+
+      setState(() {
+        _avatarUrl = null;
+        _pickedAvatar = null;
+        _avatarBytes = null;
+      });
+
+      _showSuccessSnackBar('Фото успішно видалено');
+    } catch (e) {
+      print('Error deleting avatar: $e');
+      _showErrorSnackBar('Помилка при видаленні фото');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
     final user = Supabase.instance.client.auth.currentUser;
@@ -146,17 +229,68 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      if (kIsWeb) {
-        final bytes = await picked.readAsBytes();
-        setState(() {
-          _pickedAvatar = picked;
-          _avatarBytes = bytes;
-        });
-      } else {
-        setState(() {
-          _pickedAvatar = picked;
-          _avatarBytes = null;
-        });
+      setState(() => _isLoading = true);
+      
+      try {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user == null) return;
+
+        String? avatarUrl;
+        
+        if (kIsWeb) {
+          // Для веб версії
+          final bytes = await picked.readAsBytes();
+          final fileName = 'avatar_${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final response = await Supabase.instance.client.storage
+              .from('avatars')
+              .uploadBinary(fileName, bytes);
+          
+          avatarUrl = Supabase.instance.client.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
+        } else {
+          // Для мобільної версії
+          final fileName = 'avatar_${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final fileBytes = await picked.readAsBytes();
+          
+          final response = await Supabase.instance.client.storage
+              .from('avatars')
+              .uploadBinary(fileName, fileBytes);
+          
+          avatarUrl = Supabase.instance.client.storage
+              .from('avatars')
+              .getPublicUrl(fileName);
+        }
+
+        if (avatarUrl != null) {
+          // Оновлюємо профіль з новим URL аватара
+          await _profileService.updateUserProfile(
+            userId: user.id,
+            avatarUrl: avatarUrl,
+          );
+
+          // Оновлюємо метадані користувача
+          await Supabase.instance.client.auth.updateUser(
+            UserAttributes(
+              data: {
+                'avatar_url': avatarUrl,
+              },
+            ),
+          );
+
+          setState(() {
+            _avatarUrl = avatarUrl;
+            _pickedAvatar = null;
+            _avatarBytes = null;
+          });
+
+          _showSuccessSnackBar('Фото успішно оновлено');
+        }
+      } catch (e) {
+        print('Error uploading avatar: $e');
+        _showErrorSnackBar('Помилка при завантаженні фото');
+      } finally {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -278,22 +412,25 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                   children: [
                                     // Показуємо "Видалити" тільки якщо є власна іконка
                                     if (_hasCustomAvatar)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                        decoration: ShapeDecoration(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(200),
+                                      GestureDetector(
+                                        onTap: _deleteAvatar,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          decoration: ShapeDecoration(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(200),
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Видалити',
-                                          style: TextStyle(
-                                            color: Color(0xFFB8362D),
-                                            fontSize: 14,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.40,
-                                            letterSpacing: 0.14,
+                                          child: const Text(
+                                            'Видалити',
+                                            style: TextStyle(
+                                              color: Color(0xFFB8362D),
+                                              fontSize: 14,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.40,
+                                              letterSpacing: 0.14,
+                                            ),
                                           ),
                                         ),
                                       ),
