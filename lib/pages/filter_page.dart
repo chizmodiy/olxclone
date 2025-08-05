@@ -1114,52 +1114,20 @@ class _FilterPageState extends State<FilterPage> {
           // Слайдер діапазону з двома важелями
           Container(
             width: double.infinity,
-            height: 66, // Збільшено висоту з 58 до 66 пікселів (додано ще 8px)
-            child: Column(
-              children: [
-                // RangeSlider
-                RangeSlider(
-                  values: RangeValues(_currentMinPrice, _currentMaxPrice),
-                  min: _minPrice,
-                  max: _maxPrice,
-                  onChanged: (RangeValues values) {
-                    setState(() {
-                      _currentMinPrice = values.start;
-                      _currentMaxPrice = values.end;
-                      _updateSliderValues(_currentMinPrice, _currentMaxPrice);
-                    });
-                  },
-                  activeColor: const Color(0xFF015873) /* Primary */, // Колір активної частини
-                  inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */, // Колір неактивної частини
-                ),
-                // Показуємо поточні значення
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${_convertFromUAH(_currentMinPrice, _selectedCurrency).toStringAsFixed(0)} ${_getCurrencySymbol()}',
-                        style: TextStyle(
-                          color: const Color(0xFF52525B),
-                          fontSize: 12,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        '${_convertFromUAH(_currentMaxPrice, _selectedCurrency).toStringAsFixed(0)} ${_getCurrencySymbol()}',
-                        style: TextStyle(
-                          color: const Color(0xFF52525B),
-                          fontSize: 12,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            height: 48, // Зменшено висоту до 48 пікселів (тільки для слайдера)
+            child: RangeSlider(
+              values: RangeValues(_currentMinPrice, _currentMaxPrice),
+              min: _minPrice,
+              max: _maxPrice,
+              onChanged: (RangeValues values) {
+                setState(() {
+                  _currentMinPrice = values.start;
+                  _currentMaxPrice = values.end;
+                  _updateSliderValues(_currentMinPrice, _currentMaxPrice);
+                });
+              },
+              activeColor: const Color(0xFF015873) /* Primary */, // Колір активної частини
+              inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */, // Колір неактивної частини
             ),
           ),
         ],
