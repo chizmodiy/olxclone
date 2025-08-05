@@ -1349,31 +1349,32 @@ class _AddListingPageState extends State<AddListingPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: _citySearchController,
-                          style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                          decoration: InputDecoration(
-                            hintText: 'Введіть місто',
-                            hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.zinc200),
+                      if (_selectedRegion != null && (_selectedCity != null || _citySearchController.text.isNotEmpty))
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: _citySearchController,
+                            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                            decoration: InputDecoration(
+                              hintText: 'Введіть місто',
+                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: AppColors.zinc200),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: AppColors.primaryColor),
+                              ),
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              suffixIcon: _isSearchingCities
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : null,
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.primaryColor),
-                            ),
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            suffixIcon: _isSearchingCities
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : null,
+                            onChanged: (value) => _onCitySearchChanged(value, regionName: _selectedRegion!.name),
                           ),
-                          onChanged: (value) => _onCitySearchChanged(value, regionName: _selectedRegion!.name),
                         ),
-                      ),
                       if (_isSearchingCities)
                         const LinearProgressIndicator(color: AppColors.primaryColor, backgroundColor: Colors.transparent)
                       else
@@ -1857,45 +1858,34 @@ class _AddListingPageState extends State<AddListingPage> {
         // Автоматично заповнюємо номер телефону користувача при зміні месенджера
         _autoFillUserPhone(type);
       },
-                child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryColor : Colors.white,
-                borderRadius: BorderRadius.circular(200),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryColor : AppColors.zinc100,
+          borderRadius: BorderRadius.circular(200),
           border: Border.all(
-            color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
+            color: isSelected ? AppColors.primaryColor : AppColors.zinc100,
             width: 1,
           ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(16, 24, 40, 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
+          boxShadow: isSelected ? const [
+            BoxShadow(
+              color: Color(0x0C101828),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+              spreadRadius: 0,
+            )
+          ] : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 20,
-              height: 20,
-              colorFilter: isSocialIcon 
-                  ? null 
-                  : ColorFilter.mode(
-                      isSelected ? Colors.white : AppColors.color5,
-                      BlendMode.srcIn,
-                    ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextStyles.body2Semibold.copyWith(
-                color: isSelected ? Colors.white : AppColors.color8,
-              ),
-            ),
-          ],
+        child: SvgPicture.asset(
+          iconPath,
+          width: 20,
+          height: 20,
+          colorFilter: isSocialIcon 
+              ? null 
+              : ColorFilter.mode(
+                  isSelected ? Colors.white : AppColors.color5,
+                  BlendMode.srcIn,
+                ),
         ),
       ),
     );
@@ -2006,36 +1996,41 @@ class _AddListingPageState extends State<AddListingPage> {
           'Контактна форма',
           style: AppTextStyles.body1Medium.copyWith(color: AppColors.color8),
         ),
+        const SizedBox(height: 4),
+        Text(
+          'Оберіть спосіб зв\'язку',
+          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color5),
+        ),
         const SizedBox(height: 16),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               _buildMessengerButton(
-                type: 'phone',
-                iconPath: 'assets/icons/phone.svg',
-                label: 'Телефон',
-              ),
-              const SizedBox(width: 8),
-              _buildMessengerButton(
                 type: 'whatsapp',
                 iconPath: 'assets/icons/whatsapp.svg',
-                label: 'WhatsApp',
+                label: '',
               ),
               const SizedBox(width: 8),
               _buildMessengerButton(
                 type: 'telegram',
                 iconPath: 'assets/icons/telegram.svg',
-                label: 'Telegram',
+                label: '',
               ),
               const SizedBox(width: 8),
               _buildMessengerButton(
                 type: 'viber',
                 iconPath: 'assets/icons/viber.svg',
-                label: 'Viber',
-                ),
-              ],
-            ),
+                label: '',
+              ),
+              const SizedBox(width: 8),
+              _buildMessengerButton(
+                type: 'phone',
+                iconPath: 'assets/icons/phone.svg',
+                label: '',
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         if (_selectedMessenger == 'phone')

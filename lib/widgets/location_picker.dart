@@ -632,60 +632,61 @@ class _LocationPickerState extends State<LocationPicker> {
             ),
           ),
           // Інпут пошуку
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.zinc50,
-                borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: AppColors.zinc200, width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(16, 24, 40, 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: CompositedTransformTarget(
-                link: _autocompleteLayerLink,
-                child: TextField(
-                  controller: _citySearchController,
-                  textAlignVertical: TextAlignVertical.center,
-                  maxLines: 1,
-                  style: AppTextStyles.body1Regular.copyWith(
-                    color: AppColors.color2,
-                    height: 1.0,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Введіть назву міста, вулиці, адреси або закладу',
-                    hintStyle: AppTextStyles.body1Regular.copyWith(
-                      color: AppColors.color5,
+          if (_selectedRegion != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.zinc50,
+                  borderRadius: BorderRadius.circular(200),
+                  border: Border.all(color: AppColors.zinc200, width: 1),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: CompositedTransformTarget(
+                  link: _autocompleteLayerLink,
+                  child: TextField(
+                    controller: _citySearchController,
+                    textAlignVertical: TextAlignVertical.center,
+                    maxLines: 1,
+                    style: AppTextStyles.body1Regular.copyWith(
+                      color: AppColors.color2,
                       height: 1.0,
                     ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
-                    alignLabelWithHint: true,
+                    decoration: InputDecoration(
+                      hintText: 'Введіть назву міста, вулиці, адреси або закладу',
+                      hintStyle: AppTextStyles.body1Regular.copyWith(
+                        color: AppColors.color5,
+                        height: 1.0,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (value) {
+                      _onCitySearchChanged();
+                      setState(() {
+                        _citySelected = false;
+                      });
+                    },
+                    onTap: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _showAutocompleteOverlay(context);
+                      });
+                    },
+                    onEditingComplete: _hideAutocompleteOverlay,
                   ),
-                  onChanged: (value) {
-                    _onCitySearchChanged();
-                    setState(() {
-                      _citySelected = false;
-                    });
-                  },
-                  onTap: () {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _showAutocompleteOverlay(context);
-                    });
-                  },
-                  onEditingComplete: _hideAutocompleteOverlay,
                 ),
               ),
             ),
-          ),
           // Loading, error, empty state, results
           if (_isSearchingCities)
             Padding(
