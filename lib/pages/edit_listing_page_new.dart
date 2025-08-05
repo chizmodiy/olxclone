@@ -1024,54 +1024,157 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
           'Валюта',
           style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.zinc50,
             borderRadius: BorderRadius.circular(200),
-            border: Border.all(color: AppColors.zinc200, width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(16, 24, 40, 0.05),
-                offset: Offset(0, 1),
-                blurRadius: 2,
-              ),
-            ],
           ),
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  _getCurrencyDisplayName(_selectedCurrency),
-                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'UAH';
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _selectedCurrency == 'UAH' ? AppColors.primaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(
+                        color: _selectedCurrency == 'UAH' ? AppColors.primaryColor : AppColors.zinc200,
+                        width: 1,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(16, 24, 40, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/currency-grivna-svgrepo-com 1.svg',
+                          width: 21,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            _selectedCurrency == 'UAH' ? Colors.white : AppColors.color5,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'ГРН',
+                          style: AppTextStyles.body2Semibold.copyWith(
+                            color: _selectedCurrency == 'UAH' ? Colors.white : AppColors.color8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (String value) {
-                  setState(() {
-                    _selectedCurrency = value;
-                  });
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: 'UAH',
-                    child: Text('Гривня (₴)'),
+              const SizedBox(width: 4),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'EUR';
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _selectedCurrency == 'EUR' ? AppColors.primaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(
+                        color: _selectedCurrency == 'EUR' ? AppColors.primaryColor : AppColors.zinc200,
+                        width: 1,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(16, 24, 40, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/currency-euro.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            _selectedCurrency == 'EUR' ? Colors.white : AppColors.color5,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'EUR',
+                          style: AppTextStyles.body2Semibold.copyWith(
+                            color: _selectedCurrency == 'EUR' ? Colors.white : AppColors.color8,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  PopupMenuItem(
-                    value: 'USD',
-                    child: Text('Долар США (\$)'),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCurrency = 'USD';
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _selectedCurrency == 'USD' ? AppColors.primaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(
+                        color: _selectedCurrency == 'USD' ? AppColors.primaryColor : AppColors.zinc200,
+                        width: 1,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(16, 24, 40, 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/currency-dollar.svg',
+                          width: 21,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            _selectedCurrency == 'USD' ? Colors.white : AppColors.color5,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'USD',
+                          style: AppTextStyles.body2Semibold.copyWith(
+                            color: _selectedCurrency == 'USD' ? Colors.white : AppColors.color8,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  PopupMenuItem(
-                    value: 'EUR',
-                    child: Text('Євро (€)'),
-                  ),
-                ],
-                child: SvgPicture.asset(
-                  'assets/icons/chevron_down.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
                 ),
               ),
             ],
@@ -1079,19 +1182,6 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         ),
       ],
     );
-  }
-
-  String _getCurrencyDisplayName(String currency) {
-    switch (currency) {
-      case 'UAH':
-        return 'Гривня (₴)';
-      case 'USD':
-        return 'Долар США (\$)';
-      case 'EUR':
-        return 'Євро (€)';
-      default:
-        return 'Гривня (₴)';
-    }
   }
 
   Widget _buildPriceSection() {
