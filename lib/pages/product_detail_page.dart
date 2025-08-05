@@ -12,7 +12,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'chat_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../pages/edit_listing_page_fixed.dart';
+import '../pages/edit_listing_page_new.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -686,7 +686,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   if (_product != null) {
                                     final result = await Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (context) => EditListingPage(listing: _product!.toListing()),
+                                        builder: (context) => EditListingPageNew(listing: _product!.toListing()),
                                       ),
                                     );
                                     

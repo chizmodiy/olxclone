@@ -6,7 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/complaint_modal.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../pages/edit_listing_page_fixed.dart';
+import '../pages/edit_listing_page_new.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
@@ -97,7 +97,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                       onPressed: () async {
                         final result = await Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => EditListingPage(listing: snapshot.data!),
+                            builder: (context) => EditListingPageNew(listing: snapshot.data!),
                           ),
                         );
                         
