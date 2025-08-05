@@ -2260,19 +2260,28 @@ class _AddListingPageState extends State<AddListingPage> {
     }
     
     // Валідація контактних даних
-    bool contactValid = false;
+    bool hasContactInfo = _phoneController.text.isNotEmpty ||
+                         _whatsappController.text.isNotEmpty ||
+                         _telegramController.text.isNotEmpty ||
+                         _viberController.text.isNotEmpty;
+    
+    bool contactValid = true; // За замовчуванням валідна, якщо є хоча б один контакт
     if (_phoneController.text.isNotEmpty) {
-      contactValid = _isValidPhoneWithPrefix(_phoneController.text);
+      contactValid = contactValid && _isValidPhoneWithPrefix(_phoneController.text);
     }
-    if (!contactValid && _whatsappController.text.isNotEmpty) {
-      contactValid = _isValidPhoneWithPrefix(_whatsappController.text);
+    if (_whatsappController.text.isNotEmpty) {
+      contactValid = contactValid && _isValidPhoneWithPrefix(_whatsappController.text);
     }
-    if (!contactValid && _telegramController.text.isNotEmpty) {
-      contactValid = _isValidTelegram(_telegramController.text);
+    if (_telegramController.text.isNotEmpty) {
+      contactValid = contactValid && _isValidTelegram(_telegramController.text);
     }
-    if (!contactValid && _viberController.text.isNotEmpty) {
-      contactValid = _isValidPhoneWithPrefix(_viberController.text);
+    if (_viberController.text.isNotEmpty) {
+      contactValid = contactValid && _isValidPhoneWithPrefix(_viberController.text);
     }
+    
+    // Перевіряємо, що хоча б один контактний метод заповнений
+    contactValid = contactValid && hasContactInfo;
+    
     final imagesValid = _selectedImages.isNotEmpty;
     
     final isValid = titleValid && descriptionValid && categoryValid && 
