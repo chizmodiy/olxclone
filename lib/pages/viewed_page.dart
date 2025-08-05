@@ -443,11 +443,13 @@ class _ViewedContentState extends State<ViewedContent> {
                                   location: product.location,
                                   images: product.photos,
                                   isNegotiable: product.isNegotiable,
-                                  onTap: () {
-                                    Navigator.of(context).pushNamed(
+                                  onTap: () async {
+                                    await Navigator.of(context).pushNamed(
                                       '/product-detail',
                                       arguments: {'id': product.id},
                                     );
+                                    // Оновлюємо список при поверненні
+                                    _loadViewedProducts();
                                   },
                                 ),
                               );

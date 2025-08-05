@@ -83,6 +83,13 @@ class HomeContentState extends State<HomeContent> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Оновлюємо улюблені при поверненні на сторінку
+    _loadFavorites();
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
@@ -906,14 +913,16 @@ class HomeContentState extends State<HomeContent> {
                                     isNegotiable: product.isNegotiable,
                                     isFavorite: _favoriteProductIds.contains(product.id),
                                     onFavoriteToggle: () => _toggleFavorite(product),
-                                    onTap: () {
+                                    onTap: () async {
                                       if (_currentUserId == null) {
                                         _showAuthBottomSheet();
                                       } else {
-                                        Navigator.of(context).pushNamed(
+                                        await Navigator.of(context).pushNamed(
                                           '/product-detail',
                                           arguments: {'id': product.id},
                                         );
+                                        // Оновлюємо улюблені при поверненні
+                                        _loadFavorites();
                                       }
                                     },
                                   ),
@@ -945,14 +954,16 @@ class HomeContentState extends State<HomeContent> {
                                   isNegotiable: product.isNegotiable,
                                   isFavorite: _favoriteProductIds.contains(product.id),
                                   onFavoriteToggle: () => _toggleFavorite(product),
-                                  onTap: () {
+                                  onTap: () async {
                                     if (_currentUserId == null) {
                                       _showAuthBottomSheet();
                                     } else {
-                                      Navigator.of(context).pushNamed(
+                                      await Navigator.of(context).pushNamed(
                                         '/product-detail',
                                         arguments: {'id': product.id},
                                       );
+                                      // Оновлюємо улюблені при поверненні
+                                      _loadFavorites();
                                     }
                                   },
                                 );

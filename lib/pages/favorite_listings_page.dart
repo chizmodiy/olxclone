@@ -229,11 +229,13 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
                                       isNegotiable: product.isNegotiable,
                                       isFavorite: _favoriteProductIds.contains(product.id),
                                       onFavoriteToggle: () => _toggleFavorite(product),
-                                      onTap: () {
-                                        Navigator.of(context).pushNamed(
+                                      onTap: () async {
+                                        await Navigator.of(context).pushNamed(
                                           '/product-detail',
                                           arguments: {'id': product.id},
                                         );
+                                        // Оновлюємо улюблені при поверненні
+                                        _loadFavorites();
                                       },
                                     ),
                                   );

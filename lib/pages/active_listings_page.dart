@@ -226,11 +226,13 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
                                         images: product.photos,
                                         isNegotiable: product.isNegotiable,
                                         
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(
+                                        onTap: () async {
+                                          await Navigator.of(context).pushNamed(
                                             '/product-detail',
                                             arguments: {'id': product.id},
                                           );
+                                          // Оновлюємо список при поверненні
+                                          _loadProducts();
                                         },
                                       ),
                                     ),

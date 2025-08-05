@@ -168,11 +168,13 @@ class _CommentsState extends State<Comments> {
                       return Stack(
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pushNamed(
+                            onTap: () async {
+                              await Navigator.of(context).pushNamed(
                                 '/product-detail',
                                 arguments: {'id': product.id},
                               );
+                              // Оновлюємо улюблені при поверненні
+                              _loadFavorites();
                             },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 16),
