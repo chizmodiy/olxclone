@@ -16,6 +16,7 @@ import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/error_banner.dart';
 import 'region_selection_page.dart';
+import '../services/filter_manager.dart';
 
 class FilterPage extends StatefulWidget {
   final Map<String, dynamic> initialFilters;
@@ -343,6 +344,10 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   void _resetFilters() {
+    // Очищаємо фільтри в FilterManager
+    final FilterManager filterManager = FilterManager();
+    filterManager.clearFilters();
+    
     setState(() {
       _selectedCategory = null;
       _selectedSubcategory = null;
@@ -385,6 +390,7 @@ class _FilterPageState extends State<FilterPage> {
     print('Debug: Selected subcategory: ${_selectedSubcategory?.id}');
     print('Debug: Price mode: ${_isPriceModePrice ? "Price" : "Free"}');
     
+    final FilterManager filterManager = FilterManager();
     final Map<String, dynamic> filters = {
       'category': _selectedCategory?.id, // Передаємо id, а не name
       'subcategory': _selectedSubcategory?.id, // Передаємо id, а не name
@@ -485,6 +491,10 @@ class _FilterPageState extends State<FilterPage> {
 
     print('Debug: Final filters: $filters');
     print('Debug: Navigating back with filters');
+    
+    // Зберігаємо фільтри в FilterManager
+    filterManager.setFilters(filters);
+    
     Navigator.of(context).pop(filters);
   }
 
@@ -631,8 +641,7 @@ class _FilterPageState extends State<FilterPage> {
                   
                   const SizedBox(height: 24),
                   
-                  // БЛОК 4: Додаткові фільтри (залежно від категорії)
-                  if (_selectedSubcategory != null) _buildBlock3(),
+
                 ],
               ),
             ),
@@ -1455,22 +1464,7 @@ class _FilterPageState extends State<FilterPage> {
     );
   }
 
-  Widget _buildBlock3() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Додаткові фільтри',
-          style: AppTextStyles.body1Semibold,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Тут будуть додаткові фільтри залежно від категорії',
-          style: AppTextStyles.body1Regular.copyWith(color: AppColors.zinc400),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildCurrencyButton({
     required String currency,

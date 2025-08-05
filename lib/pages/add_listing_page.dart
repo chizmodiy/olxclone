@@ -1506,11 +1506,8 @@ class _AddListingPageState extends State<AddListingPage> {
               onTap: () {
                 setState(() {
                   _isForSale = false;
-                  // Clear subcategory and extra fields when switching to free
-                  _selectedSubcategory = null;
-                  _extraFieldControllers.forEach((_, controller) => controller.dispose());
-                  _extraFieldControllers.clear();
-                  _extraFieldValues.clear();
+                  // Don't clear subcategory and extra fields when switching to free
+                  // Keep the selected subcategory and extra fields
                 });
               },
                     child: Container(

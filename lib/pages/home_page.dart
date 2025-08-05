@@ -12,6 +12,7 @@ import '../pages/filter_page.dart'; // Import FilterPage
 import 'dart:async'; // Add this import for Timer
 import '../pages/map_page.dart'; // Import MapPage
 import '../widgets/auth_bottom_sheet.dart'; // Import AuthBottomSheet
+import '../services/filter_manager.dart'; // Import FilterManager
 
 enum ViewMode {
   grid8,
@@ -46,6 +47,7 @@ class HomeContentState extends State<HomeContent> {
   final ProductService _productService = ProductService();
   final ProfileService _profileService = ProfileService();
   final ScrollController _scrollController = ScrollController();
+  final FilterManager _filterManager = FilterManager();
   
   List<Product> _products = [];
   bool _isLoading = false;
@@ -58,7 +60,6 @@ class HomeContentState extends State<HomeContent> {
   Set<String> _favoriteProductIds = {};
   bool _isViewDropdownOpen = false; // New state variable
   bool _isSortDropdownOpen = false; // New state variable
-  Map<String, dynamic> _currentFilters = {}; // New state variable for filters
   final TextEditingController _searchController = TextEditingController(); // Search controller
   String _searchQuery = ''; // Current search query
   Timer? _searchDebounceTimer; // Timer for debouncing search
@@ -97,30 +98,31 @@ class HomeContentState extends State<HomeContent> {
       _errorMessage = null;
     });
 
-    print('Debug HomePage: Loading products with filters: $_currentFilters');
-    print('Debug HomePage: isFree filter: ${_currentFilters['isFree']}');
+    final currentFilters = _filterManager.currentFilters;
+    print('Debug HomePage: Loading products with filters: $currentFilters');
+    print('Debug HomePage: isFree filter: ${currentFilters['isFree']}');
 
     try {
       final products = await _productService.getProducts(
         limit: 10, // Assuming a fixed limit for now
         offset: _currentPage * 10,
         searchQuery: _searchQuery, // Передаємо пошуковий запит
-        categoryId: _currentFilters['category'], // Pass category filter
-        subcategoryId: _currentFilters['subcategory'], // Pass subcategory filter
-        minPrice: _currentFilters['minPrice'], // Pass minPrice filter
-        maxPrice: _currentFilters['maxPrice'], // Pass maxPrice filter
-        hasDelivery: _currentFilters['hasDelivery'], // Pass hasDelivery filter
+        categoryId: currentFilters['category'], // Pass category filter
+        subcategoryId: currentFilters['subcategory'], // Pass subcategory filter
+        minPrice: currentFilters['minPrice'], // Pass minPrice filter
+        maxPrice: currentFilters['maxPrice'], // Pass maxPrice filter
+        hasDelivery: currentFilters['hasDelivery'], // Pass hasDelivery filter
         sortBy: _sortBy,
-        isFree: _currentFilters['isFree'], // Pass isFree filter
-        minArea: _currentFilters['minArea'], // Pass minArea filter
-        maxArea: _currentFilters['maxArea'], // Pass maxArea filter
-        minYear: _currentFilters['minYear'], // Pass minYear filter
-        maxYear: _currentFilters['maxYear'], // Pass maxYear filter
-        brand: _currentFilters['car_brand'], // Pass car_brand filter
-        minEngineHp: _currentFilters['minEnginePowerHp'], // Pass minEnginePowerHp filter
-        maxEngineHp: _currentFilters['maxEnginePowerHp'], // Pass maxEnginePowerHp filter
-        size: _currentFilters['size'], // Pass size filter
-        condition: _currentFilters['condition'], // Pass condition filter
+        isFree: currentFilters['isFree'], // Pass isFree filter
+        minArea: currentFilters['minArea'], // Pass minArea filter
+        maxArea: currentFilters['maxArea'], // Pass maxArea filter
+        minYear: currentFilters['minYear'], // Pass minYear filter
+        maxYear: currentFilters['maxYear'], // Pass maxYear filter
+        brand: currentFilters['car_brand'], // Pass car_brand filter
+        minEngineHp: currentFilters['minEnginePowerHp'], // Pass minEnginePowerHp filter
+        maxEngineHp: currentFilters['maxEnginePowerHp'], // Pass maxEnginePowerHp filter
+        size: currentFilters['size'], // Pass size filter
+        condition: currentFilters['condition'], // Pass condition filter
       );
 
       setState(() {
@@ -263,16 +265,17 @@ class HomeContentState extends State<HomeContent> {
   // Helper method to count active filters
   int _getActiveFiltersCount() {
     int count = 0;
-    if (_currentFilters.isNotEmpty) {
-      print('Debug: _currentFilters = $_currentFilters');
+    final currentFilters = _filterManager.currentFilters;
+    if (currentFilters.isNotEmpty) {
+      print('Debug: currentFilters = $currentFilters');
       
       // Категорія + підкатегорія = 1 фільтр
       bool hasCategoryFilter = false;
-      if (_currentFilters['category'] != null && _currentFilters['category'].toString().isNotEmpty) {
+      if (currentFilters['category'] != null && currentFilters['category'].toString().isNotEmpty) {
         hasCategoryFilter = true;
         print('Debug: Category filter found');
       }
-      if (_currentFilters['subcategory'] != null && _currentFilters['subcategory'].toString().isNotEmpty) {
+      if (currentFilters['subcategory'] != null && currentFilters['subcategory'].toString().isNotEmpty) {
         hasCategoryFilter = true;
         print('Debug: Subcategory filter found');
       }
@@ -283,11 +286,11 @@ class HomeContentState extends State<HomeContent> {
       
       // Ціна = 1 фільтр
       bool hasPriceFilter = false;
-      if (_currentFilters['min_price'] != null && _currentFilters['min_price'].toString().isNotEmpty) {
+      if (currentFilters['min_price'] != null && currentFilters['min_price'].toString().isNotEmpty) {
         hasPriceFilter = true;
         print('Debug: Min price filter found');
       }
-      if (_currentFilters['max_price'] != null && _currentFilters['max_price'].toString().isNotEmpty) {
+      if (currentFilters['max_price'] != null && currentFilters['max_price'].toString().isNotEmpty) {
         hasPriceFilter = true;
         print('Debug: Max price filter found');
       }
@@ -297,21 +300,21 @@ class HomeContentState extends State<HomeContent> {
       }
       
       // Безкоштовно = 1 фільтр
-      if (_currentFilters['is_free'] == true) {
+      if (currentFilters['is_free'] == true) {
         count++;
         print('Debug: Free filter found, count = $count');
       }
       
       // Валюта (не гривня) = 1 фільтр
-      if (_currentFilters['currency'] != null && 
-          _currentFilters['currency'].toString().isNotEmpty && 
-          _currentFilters['currency'].toString().toLowerCase() != 'uah') {
+      if (currentFilters['currency'] != null && 
+          currentFilters['currency'].toString().isNotEmpty && 
+          currentFilters['currency'].toString().toLowerCase() != 'uah') {
         count++;
         print('Debug: Currency filter (not UAH) found, count = $count');
       }
       
       // Інші фільтри (якщо є)
-      for (var entry in _currentFilters.entries) {
+      for (var entry in currentFilters.entries) {
         String key = entry.key;
         if (key != 'category' && key != 'subcategory' && 
             key != 'min_price' && key != 'max_price' && 
@@ -339,14 +342,14 @@ class HomeContentState extends State<HomeContent> {
       context,
       MaterialPageRoute(
         builder: (context) => FilterPage(
-          initialFilters: _currentFilters,
+          initialFilters: _filterManager.currentFilters,
         ),
       ),
     );
 
     if (newFilters != null) {
+      _filterManager.setFilters(newFilters);
       setState(() {
-        _currentFilters = newFilters;
         _products = []; // Clear products to reload with new filters
         _currentPage = 0;
         _hasMore = true;
@@ -364,7 +367,7 @@ class HomeContentState extends State<HomeContent> {
       _hasMore = true;
       _errorMessage = null;
       _searchQuery = '';
-      _currentFilters = {};
+      _filterManager.clearFilters();
       _sortBy = null;
     });
     print('Debug: State reset, calling _loadProducts()');
@@ -804,7 +807,7 @@ class HomeContentState extends State<HomeContent> {
                       _hasMore = true;
                       _errorMessage = null;
                       _searchQuery = '';
-                      _currentFilters = {};
+                      _filterManager.clearFilters();
                       _sortBy = null;
                     });
                     await _loadProducts();
