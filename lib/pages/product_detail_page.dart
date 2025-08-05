@@ -51,6 +51,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _showMessageInput = false;
   final TextEditingController _messageController = TextEditingController();
   bool _sendingMessage = false;
+  final MapController _mapController = MapController();
 
   // Мапа категорій
   final Map<String, String> _categories = {
@@ -1011,26 +1012,90 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   if (_product!.latitude != null && _product!.longitude != null) ...[
                     SizedBox(
                       height: 180,
-                      child: FlutterMap(
-                        options: MapOptions(
-                          center: LatLng(_product!.latitude!, _product!.longitude!),
-                          zoom: 14,
-                          interactiveFlags: InteractiveFlag.none,
-                        ),
+                      child: Stack(
                         children: [
-                          TileLayer(
-                            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            subdomains: ['a', 'b', 'c'],
-                          ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                width: 40,
-                                height: 40,
-                                point: LatLng(_product!.latitude!, _product!.longitude!),
-                                child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                          IgnorePointer(
+                            child: FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                center: LatLng(_product!.latitude!, _product!.longitude!),
+                                zoom: 14,
                               ),
-                            ],
+                              children: [
+                                TileLayer(
+                                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  subdomains: ['a', 'b', 'c'],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 40,
+                                      height: 40,
+                                      point: LatLng(_product!.latitude!, _product!.longitude!),
+                                      child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Кнопки керування картою
+                          Positioned(
+                            right: 16,
+                            top: 16,
+                            child: Column(
+                              children: [
+                                // Кнопка збільшення
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFE4E4E7)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.add, size: 20),
+                                    onPressed: () {
+                                      _mapController.move(_mapController.center, _mapController.zoom + 1);
+                                    },
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                // Кнопка зменшення
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFE4E4E7)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.remove, size: 20),
+                                    onPressed: () {
+                                      _mapController.move(_mapController.center, _mapController.zoom - 1);
+                                    },
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

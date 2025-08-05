@@ -2350,26 +2350,20 @@ class _AddListingPageState extends State<AddListingPage> {
         elevation: 0.0, // Remove shadow
         scrolledUnderElevation: 0.0, // Ensure no elevation when scrolled
         toolbarHeight: 70.0,
-        centerTitle: true,
-        title: GestureDetector(
+        centerTitle: false,
+        leading: GestureDetector(
           onTap: () {
             Navigator.of(context).pop();
           },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.arrow_back,
-                color: AppColors.color2,
-                size: 24,
-              ),
-              const SizedBox(width: 18),
-              Text(
-                'Додати оголошення',
-                style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
-              ),
-            ],
+          child: Icon(
+            Icons.arrow_back,
+            color: AppColors.color2,
+            size: 24,
           ),
+        ),
+        title: Text(
+          'Додати оголошення',
+          style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
         ),
       ),
       body: SingleChildScrollView(
