@@ -2383,10 +2383,10 @@ class _AddListingPageState extends State<AddListingPage> {
           currency: _isForSale ? _selectedCurrency : null,
           price: _isForSale ? double.tryParse(_priceController.text) : null,
           isNegotiable: _isForSale ? _isNegotiablePrice : null,
-          phoneNumber: _phoneController.text.isNotEmpty ? _phoneController.text : null,
-          whatsapp: _whatsappController.text.isNotEmpty ? _whatsappController.text : null,
+          phoneNumber: _phoneController.text.isNotEmpty ? '+380${_phoneController.text}' : null,
+          whatsapp: _whatsappController.text.isNotEmpty ? '+380${_whatsappController.text}' : null,
           telegram: _telegramController.text.isNotEmpty ? _telegramController.text : null,
-          viber: _viberController.text.isNotEmpty ? _viberController.text : null,
+          viber: _viberController.text.isNotEmpty ? '+380${_viberController.text}' : null,
         customAttributes: _isForSale ? finalCustomAttributes : {}, // Empty attributes for free listings
         images: imagesToUpload,
         address: _selectedAddress,

@@ -144,6 +144,29 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
       }
       _selectedMessenger = 'viber';
     }
+
+    // Додатково ініціалізуємо інші контактні дані, якщо вони є
+    if (widget.listing.whatsapp != null && _whatsappController.text.isEmpty) {
+      String whatsapp = widget.listing.whatsapp!;
+      if (whatsapp.startsWith('+380')) {
+        _whatsappController.text = whatsapp.substring(4);
+      } else {
+        _whatsappController.text = whatsapp;
+      }
+    }
+    
+    if (widget.listing.telegram != null && _telegramController.text.isEmpty) {
+      _telegramController.text = widget.listing.telegram!;
+    }
+    
+    if (widget.listing.viber != null && _viberController.text.isEmpty) {
+      String viber = widget.listing.viber!;
+      if (viber.startsWith('+380')) {
+        _viberController.text = viber.substring(4);
+      } else {
+        _viberController.text = viber;
+      }
+    }
     
     // Ініціалізуємо зображення
     if (widget.listing.photos.isNotEmpty) {
@@ -219,11 +242,18 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   bool get _isFormValid {
+    // Перевіряємо, що хоча б один контактний метод заповнений
+    bool hasContactInfo = _phoneController.text.isNotEmpty ||
+                         _whatsappController.text.isNotEmpty ||
+                         _telegramController.text.isNotEmpty ||
+                         _viberController.text.isNotEmpty;
+    
     return _titleController.text.isNotEmpty &&
            _descriptionController.text.isNotEmpty &&
            _selectedCategory != null &&
            _selectedSubcategory != null &&
            (_selectedAddress != null && _selectedAddress!.isNotEmpty) &&
+           hasContactInfo &&
            _isValidPhoneWithPrefix(_phoneController.text) &&
            _isValidPhoneWithPrefix(_whatsappController.text) &&
            _isValidTelegram(_telegramController.text) &&
@@ -232,6 +262,22 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   void _validateForm() {
+    // Перевіряємо, що хоча б один контактний метод заповнений
+    bool hasContactInfo = _phoneController.text.isNotEmpty ||
+                         _whatsappController.text.isNotEmpty ||
+                         _telegramController.text.isNotEmpty ||
+                         _viberController.text.isNotEmpty;
+    
+    if (!hasContactInfo) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Будь ласка, заповніть хоча б один контактний метод'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     setState(() {});
   }
 
@@ -407,10 +453,10 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
           price: _isForSale ? double.tryParse(_priceController.text) : null,
-          phoneNumber: _selectedMessenger == 'phone' ? '+380${_phoneController.text}' : null,
-          whatsapp: _selectedMessenger == 'whatsapp' ? '+380${_whatsappController.text}' : null,
-          telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
-          viber: _selectedMessenger == 'viber' ? '+380${_viberController.text}' : null,
+          phoneNumber: _phoneController.text.isNotEmpty ? '+380${_phoneController.text}' : null,
+          whatsapp: _whatsappController.text.isNotEmpty ? '+380${_whatsappController.text}' : null,
+          telegram: _telegramController.text.isNotEmpty ? _telegramController.text : null,
+          viber: _viberController.text.isNotEmpty ? '+380${_viberController.text}' : null,
           customAttributes: customAttributes ?? {},
           newImages: newImagesToUpload,
           existingImageUrls: existingImageUrls,
