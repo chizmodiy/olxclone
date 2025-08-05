@@ -352,6 +352,7 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                         const Spacer(),
                         Container(
                           height: cardHeight,
+                          width: width * 0.4, // 40% від ширини екрану
                           decoration: const BoxDecoration(
                             color: Color(0xFFFAFAFA),
                             borderRadius: BorderRadius.only(
@@ -360,11 +361,10 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                             ),
                           ),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 2),
                                 padding: const EdgeInsets.all(14),
                                 decoration: ShapeDecoration(
                                   color: const Color(0xFFFAFAFA),
@@ -398,7 +398,6 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                                 ),
                               ),
                               Container(
-                                margin: const EdgeInsets.only(right: 8),
                                 padding: const EdgeInsets.all(14),
                                 decoration: ShapeDecoration(
                                   color: const Color(0xFFFAFAFA),
