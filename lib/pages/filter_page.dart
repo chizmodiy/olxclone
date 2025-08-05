@@ -1300,7 +1300,7 @@ class _FilterPageState extends State<FilterPage> {
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(),
                           child: SvgPicture.asset(
-                            'assets/icons/UAH.svg',
+                            'assets/icons/currency-grivna-svgrepo-com 1.svg',
                             width: 20,
                             height: 20,
                             colorFilter: ColorFilter.mode(
@@ -1375,7 +1375,7 @@ class _FilterPageState extends State<FilterPage> {
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(),
                           child: SvgPicture.asset(
-                            'assets/icons/EUR.svg',
+                            'assets/icons/currency-euro.svg',
                             width: 20,
                             height: 20,
                             colorFilter: ColorFilter.mode(
@@ -1383,9 +1383,9 @@ class _FilterPageState extends State<FilterPage> {
                                 ? Colors.white 
                                 : const Color(0xFF52525B),
                               BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
+                            ),
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'EUR',
@@ -1399,11 +1399,11 @@ class _FilterPageState extends State<FilterPage> {
                             height: 1.40,
                             letterSpacing: 0.14,
                           ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -1450,7 +1450,7 @@ class _FilterPageState extends State<FilterPage> {
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(),
                           child: SvgPicture.asset(
-                            'assets/icons/USD.svg',
+                            'assets/icons/currency-dollar.svg',
                             width: 20,
                             height: 20,
                             colorFilter: ColorFilter.mode(
