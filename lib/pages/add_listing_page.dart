@@ -2149,6 +2149,18 @@ class _AddListingPageState extends State<AddListingPage> {
                _viberController.text.isEmpty) {
       errorMessage = 'Будь ласка, введіть хоча б один спосіб зв\'язку';
       print('Debug: Validation failed - no contact method provided');
+    } else if (_phoneController.text.isNotEmpty && !_isValidPhoneWithPrefix(_phoneController.text)) {
+      errorMessage = 'Будь ласка, введіть правильний номер телефону';
+      print('Debug: Validation failed - invalid phone number');
+    } else if (_whatsappController.text.isNotEmpty && !_isValidPhoneWithPrefix(_whatsappController.text)) {
+      errorMessage = 'Будь ласка, введіть правильний номер WhatsApp';
+      print('Debug: Validation failed - invalid WhatsApp number');
+    } else if (_telegramController.text.isNotEmpty && !_isValidTelegram(_telegramController.text)) {
+      errorMessage = 'Будь ласка, введіть правильний номер або username Telegram';
+      print('Debug: Validation failed - invalid Telegram');
+    } else if (_viberController.text.isNotEmpty && !_isValidPhoneWithPrefix(_viberController.text)) {
+      errorMessage = 'Будь ласка, введіть правильний номер Viber';
+      print('Debug: Validation failed - invalid Viber number');
     } else if (_selectedImages.isEmpty) {
       errorMessage = 'Додайте хоча б одне зображення';
       print('Debug: Validation failed - no images selected');
@@ -2156,6 +2168,65 @@ class _AddListingPageState extends State<AddListingPage> {
       print('Debug: Form validation passed successfully');
     }
     return errorMessage;
+  }
+
+  // Функція для валідації номера телефону
+  bool _isValidPhoneNumber(String phone) {
+    // Видаляємо всі символи крім цифр
+    final digitsOnly = phone.replaceAll(RegExp(r'[^\d]'), '');
+    
+    // Якщо номер починається з 380, перевіряємо повний формат
+    if (digitsOnly.startsWith('380') && digitsOnly.length == 12) {
+      return true; // +380XXXXXXXXX
+    }
+    
+    // Якщо номер починається з 0, перевіряємо формат 0XXXXXXXXX
+    if (digitsOnly.startsWith('0') && digitsOnly.length == 10) {
+      return true; // 0XXXXXXXXX
+    }
+    
+    // Якщо номер не починається з 0 і має 9 цифр, додаємо 0 на початок
+    if (digitsOnly.length == 9 && !digitsOnly.startsWith('0')) {
+      final fullNumber = '0$digitsOnly';
+      return fullNumber.length == 10; // Перевіряємо, що тепер це 10 цифр
+    }
+    
+    // Якщо номер має 9 цифр і не починається з 0, це валідний український номер
+    if (digitsOnly.length == 9 && !digitsOnly.startsWith('0')) {
+      return true; // XXXXXXXXX (9 цифр без коду)
+    }
+    
+    return false;
+  }
+
+  // Функція для валідації номера з префіксом +380
+  bool _isValidPhoneWithPrefix(String phone) {
+    // Якщо номер починається з +380, видаляємо префікс і перевіряємо решту
+    if (phone.startsWith('+380')) {
+      final numberWithoutPrefix = phone.substring(4); // Видаляємо +380
+      final digitsOnly = numberWithoutPrefix.replaceAll(RegExp(r'[^\d]'), '');
+      return digitsOnly.length == 9; // Має бути 9 цифр після +380
+    }
+    
+    // Якщо номер не починається з +380, використовуємо звичайну валідацію
+    return _isValidPhoneNumber(phone);
+  }
+
+  // Функція для валідації Telegram username або номера
+  bool _isValidTelegram(String telegram) {
+    // Якщо це номер телефону
+    if (telegram.contains(RegExp(r'\d'))) {
+      return _isValidPhoneNumber(telegram);
+    }
+    
+    // Якщо це username (починається з @ або без нього)
+    final username = telegram.startsWith('@') ? telegram.substring(1) : telegram;
+    if (username.length >= 5 && username.length <= 32) {
+      // Перевіряємо, що username містить тільки літери, цифри та підкреслення
+      return RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username);
+    }
+    
+    return false;
   }
 
   bool get _isFormValid {
@@ -2188,10 +2259,20 @@ class _AddListingPageState extends State<AddListingPage> {
       priceValid = true; // Безкоштовні оголошення не потребують ціни
     }
     
-    final contactValid = (_phoneController.text.isNotEmpty || 
-                         _whatsappController.text.isNotEmpty || 
-                         _telegramController.text.isNotEmpty || 
-                         _viberController.text.isNotEmpty);
+    // Валідація контактних даних
+    bool contactValid = false;
+    if (_phoneController.text.isNotEmpty) {
+      contactValid = _isValidPhoneWithPrefix(_phoneController.text);
+    }
+    if (!contactValid && _whatsappController.text.isNotEmpty) {
+      contactValid = _isValidPhoneWithPrefix(_whatsappController.text);
+    }
+    if (!contactValid && _telegramController.text.isNotEmpty) {
+      contactValid = _isValidTelegram(_telegramController.text);
+    }
+    if (!contactValid && _viberController.text.isNotEmpty) {
+      contactValid = _isValidPhoneWithPrefix(_viberController.text);
+    }
     final imagesValid = _selectedImages.isNotEmpty;
     
     final isValid = titleValid && descriptionValid && categoryValid && 
