@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../services/user_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../services/profile_service.dart';
+import '../widgets/logout_confirmation_bottom_sheet.dart';
 
 // Додаю ActionIconButton і SVG одразу після імпортів
 class _ActionIconButton extends StatelessWidget {
@@ -246,6 +247,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       isDismissible: false, // Неможливо закрити
       enableDrag: false, // Неможливо перетягувати
       builder: (context) => const BlockedUserBottomSheet(),
+    );
+  }
+
+  void _showLogoutConfirmationBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => const LogoutConfirmationBottomSheet(),
     );
   }
 
@@ -494,11 +506,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                 ListTile(
                                   leading: const Icon(Icons.logout, size: 20),
                                   title: const Text('Вийти', style: TextStyle(fontSize: 16)),
-                                  onTap: () async {
-                                    await Supabase.instance.client.auth.signOut();
-                                    if (context.mounted) {
-                                      Navigator.of(context).pushNamedAndRemoveUntil('/admin', (route) => false);
-                                    }
+                                  onTap: () {
+                                    _showLogoutConfirmationBottomSheet();
                                   },
                                 ),
                               ],

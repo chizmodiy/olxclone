@@ -8,6 +8,7 @@ import './favorite_listings_page.dart';
 import './personal_data_page.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../widgets/logout_confirmation_bottom_sheet.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -64,6 +65,17 @@ class _ProfilePageState extends State<ProfilePage> {
       isDismissible: false, // Неможливо закрити
       enableDrag: false, // Неможливо перетягувати
       builder: (context) => const BlockedUserBottomSheet(),
+    );
+  }
+
+  void _showLogoutConfirmationBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => const LogoutConfirmationBottomSheet(),
     );
   }
 
@@ -188,11 +200,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 _profileButton(
                   text: 'Вийти з облікового запису',
-                  onTap: () async {
-                    await Supabase.instance.client.auth.signOut();
-                    if (context.mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                    }
+                  onTap: () {
+                    _showLogoutConfirmationBottomSheet();
                   },
                 ),
                 _profileButton(
