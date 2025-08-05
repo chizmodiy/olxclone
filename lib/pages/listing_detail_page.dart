@@ -181,11 +181,27 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                   style: AppTextStyles.body1Regular,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Місцезнаходження: ${listing.location}',
-                  style: AppTextStyles.body2Regular,
-                ),
-                const SizedBox(height: 8),
+                // Локація
+                if (listing.location.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        color: AppColors.primaryColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          listing.location,
+                          style: AppTextStyles.body1Regular.copyWith(
+                            color: AppColors.color2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
                 if (listing.phoneNumber != null)
                   ListTile(
                     leading: const Icon(Icons.phone),
@@ -210,6 +226,31 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                     title: Text(listing.viber!),
                     onTap: () {/* TODO: Add Viber functionality */},
                   ),
+                const SizedBox(height: 16),
+                // Користувач
+                Text(
+                  'Користувач',
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppColors.zinc100,
+                      child: Icon(
+                        Icons.person,
+                        color: AppColors.color5,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Користувач', // TODO: Замінити на реальне ім'я користувача
+                      style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                    ),
+                  ],
+                ),
               ],
             ),
           );
