@@ -296,30 +296,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             colorFilter: isSocialIcon ? null : const ColorFilter.mode(Color(0xFFA1A1AA), BlendMode.srcIn),
           ),
           const SizedBox(width: 7),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: text));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Скопійовано в буфер обміну'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Color(0xFF101828),
-                  fontSize: 16,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                  letterSpacing: 0.16,
-                ),
-              ),
-            ),
-          ),
           GestureDetector(
             onTap: () {
               Clipboard.setData(ClipboardData(text: text));
@@ -330,11 +306,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
               );
             },
-            child: SvgPicture.asset(
-              'assets/icons/copy-01.svg',
-              width: 20,
-              height: 20,
-              colorFilter: const ColorFilter.mode(Color(0xFFA1A1AA), BlendMode.srcIn),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Color(0xFF101828),
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                    letterSpacing: 0.16,
+                  ),
+                ),
+                const SizedBox(width: 7),
+                Icon(
+                  Icons.copy,
+                  size: 20,
+                  color: const Color(0xFFA1A1AA),
+                ),
+              ],
             ),
           ),
         ],
