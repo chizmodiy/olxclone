@@ -285,186 +285,188 @@ class _EditListingPageState extends State<EditListingPage> {
         elevation: 0.0,
         scrolledUnderElevation: 0.0,
         toolbarHeight: 70.0,
-        centerTitle: true,
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                padding: const EdgeInsets.all(10),
-                child: SvgPicture.asset(
-                  'assets/icons/chevron-states.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.color2, BlendMode.srcIn),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Редагувати оголошення',
-                style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
-              ),
-            ),
-          ],
+        centerTitle: false,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Icon(
+            Icons.arrow_back,
+            color: AppColors.color2,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          'Редагувати оголошення',
+          style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
         ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 1,
-                      color: AppColors.zinc200,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Заголовок',
-                      style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.zinc50,
-                        borderRadius: BorderRadius.circular(200),
-                        border: Border.all(color: AppColors.zinc200, width: 1),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(16, 24, 40, 0.05),
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _titleController,
-                        style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                        decoration: InputDecoration(
-                          hintText: 'Введіть текст',
-                          hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 1,
+                          color: AppColors.zinc200,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Опис',
-                      style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 180,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.zinc50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.zinc200, width: 1),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(16, 24, 40, 0.05),
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _descriptionController,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                        decoration: InputDecoration(
-                          hintText: 'Введіть текст',
-                          hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                        const SizedBox(height: 20),
+
+                        // Photos Section
+                        _buildPhotosSection(),
+                        const SizedBox(height: 20),
+
+                        // Title Input Field
+                        Text(
+                          'Заголовок',
+                          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
                         ),
-                      ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.zinc50,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(color: AppColors.zinc200, width: 1),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(16, 24, 40, 0.05),
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _titleController,
+                            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                            decoration: InputDecoration(
+                              hintText: 'Введіть текст',
+                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Description Input Field
+                        Text(
+                          'Опис',
+                          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          height: 180,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.zinc50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.zinc200, width: 1),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(16, 24, 40, 0.05),
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _descriptionController,
+                            maxLines: null,
+                            expands: true,
+                            textAlignVertical: TextAlignVertical.top,
+                            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                            decoration: InputDecoration(
+                              hintText: 'Введіть текст',
+                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        
+                        // Category Section
+                        _buildCategorySection(),
+                        const SizedBox(height: 20),
+
+                        // Subcategory Section
+                        _buildSubcategorySection(),
+                        const SizedBox(height: 20),
+
+                        // LocationPicker
+                        LocationPicker(
+                          initialLatLng: _selectedLatitude != null && _selectedLongitude != null 
+                              ? latlong.LatLng(_selectedLatitude!, _selectedLongitude!)
+                              : null,
+                          initialAddress: _selectedAddress,
+                          initialRegion: _selectedRegionName,
+                          onLocationSelected: (latLng, address) {
+                            setState(() {
+                              _selectedAddress = address;
+                              _selectedLatitude = latLng?.latitude;
+                              _selectedLongitude = latLng?.longitude;
+                              if (address != null && address.isNotEmpty) {
+                                final region = _regions.firstWhere(
+                                  (r) => address.contains(r.name),
+                                  orElse: () => _regions.first,
+                                );
+                                _selectedRegion = region;
+                                _selectedRegionName = region.name;
+                              }
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Listing Type Toggle
+                        _buildListingTypeToggle(),
+                        const SizedBox(height: 20),
+
+                        // Currency Switch - only show if not free
+                        if (_isForSale) ...[
+                          _buildCurrencySection(),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // Price Input Field - only show if not free
+                        if (_isForSale) ...[
+                          _buildPriceSection(),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // Contact Form Section
+                        _buildContactForm(),
+                        const SizedBox(height: 20),
+
+                        // Extra fields section
+                        _buildExtraFieldsSection(),
+                        const SizedBox(height: 20),
+
+                        // Add bottom padding to account for floating buttons
+                        const SizedBox(height: 100),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-
-                    // Photos Section
-                    _buildPhotosSection(),
-                    const SizedBox(height: 20),
-                    
-                    // Category Section
-                    _buildCategorySection(),
-                    const SizedBox(height: 20),
-
-                    // Subcategory Section
-                    _buildSubcategorySection(),
-                    const SizedBox(height: 20),
-
-                    // LocationPicker
-                    LocationPicker(
-                      initialLatLng: _selectedLatitude != null && _selectedLongitude != null 
-                          ? latlong.LatLng(_selectedLatitude!, _selectedLongitude!)
-                          : null,
-                      initialAddress: _selectedAddress,
-                      initialRegion: _selectedRegionName,
-                      onLocationSelected: (latLng, address) {
-                        setState(() {
-                          _selectedAddress = address;
-                          _selectedLatitude = latLng?.latitude;
-                          _selectedLongitude = latLng?.longitude;
-                          if (address != null && address.isNotEmpty) {
-                            final region = _regions.firstWhere(
-                              (r) => address.contains(r.name),
-                              orElse: () => _regions.first,
-                            );
-                            _selectedRegion = region;
-                            _selectedRegionName = region.name;
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Listing Type Toggle
-                    _buildListingTypeToggle(),
-                    const SizedBox(height: 20),
-
-                    // Currency Switch - only show if not free
-                    if (_isForSale) ...[
-                      _buildCurrencySection(),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Price Input Field - only show if not free
-                    if (_isForSale) ...[
-                      _buildPriceSection(),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Contact Form Section
-                    _buildContactForm(),
-                    const SizedBox(height: 20),
-
-                    // Extra Fields Section
-                    if (_selectedSubcategory != null) ...[
-                      _buildExtraFieldsSection(),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Bottom buttons
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  ),
+                ),
+                // Floating buttons
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 13.0, vertical: 20.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(
                           height: 44,
@@ -503,16 +505,16 @@ class _EditListingPageState extends State<EditListingPage> {
                             child: Text(
                               'Скасувати',
                               style: AppTextStyles.body2Semibold.copyWith(
-                                color: AppColors.color2,
+                                color: AppColors.color8,
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
     );
   }
