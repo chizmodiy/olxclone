@@ -117,16 +117,31 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
     
     // Ініціалізуємо контактні дані
     if (widget.listing.phoneNumber != null) {
-      _phoneController.text = widget.listing.phoneNumber!;
+      String phoneNumber = widget.listing.phoneNumber!;
+      if (phoneNumber.startsWith('+380')) {
+        _phoneController.text = phoneNumber.substring(4); // Видаляємо +380
+      } else {
+        _phoneController.text = phoneNumber;
+      }
       _selectedMessenger = 'phone';
     } else if (widget.listing.whatsapp != null) {
-      _whatsappController.text = widget.listing.whatsapp!;
+      String whatsapp = widget.listing.whatsapp!;
+      if (whatsapp.startsWith('+380')) {
+        _whatsappController.text = whatsapp.substring(4); // Видаляємо +380
+      } else {
+        _whatsappController.text = whatsapp;
+      }
       _selectedMessenger = 'whatsapp';
     } else if (widget.listing.telegram != null) {
       _telegramController.text = widget.listing.telegram!;
       _selectedMessenger = 'telegram';
     } else if (widget.listing.viber != null) {
-      _viberController.text = widget.listing.viber!;
+      String viber = widget.listing.viber!;
+      if (viber.startsWith('+380')) {
+        _viberController.text = viber.substring(4); // Видаляємо +380
+      } else {
+        _viberController.text = viber;
+      }
       _selectedMessenger = 'viber';
     }
     
@@ -169,7 +184,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
 
   // Методи валідації
   bool _isValidPhoneNumber(String phone) {
-    if (phone.isEmpty) return true;
+    if (phone.isEmpty) return true; // Поле не обов'язкове
     phone = phone.replaceAll(RegExp(r'[^\d]'), '');
     if (phone.startsWith('380')) {
       return phone.length == 12;
@@ -182,8 +197,13 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
 
   bool _isValidPhoneWithPrefix(String phone) {
     if (phone.isEmpty) return true;
+    // Якщо в полі вже є +380, то користувач вводить тільки 9 цифр
     if (phone.startsWith('+380')) {
-      return phone.length == 13;
+      return phone.length == 13; // +380 + 9 цифр
+    }
+    // Для полів з статичним +380, перевіряємо тільки введені цифри
+    if (phone.length == 9) {
+      return true; // Користувач ввів 9 цифр після +380
     }
     return _isValidPhoneNumber(phone);
   }
@@ -387,10 +407,10 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
           isFree: !_isForSale,
           currency: _isForSale ? _selectedCurrency : null,
           price: _isForSale ? double.tryParse(_priceController.text) : null,
-          phoneNumber: _selectedMessenger == 'phone' ? _phoneController.text : null,
-          whatsapp: _selectedMessenger == 'whatsapp' ? _whatsappController.text : null,
+          phoneNumber: _selectedMessenger == 'phone' ? '+380${_phoneController.text}' : null,
+          whatsapp: _selectedMessenger == 'whatsapp' ? '+380${_whatsappController.text}' : null,
           telegram: _selectedMessenger == 'telegram' ? _telegramController.text : null,
-          viber: _selectedMessenger == 'viber' ? _viberController.text : null,
+          viber: _selectedMessenger == 'viber' ? '+380${_viberController.text}' : null,
           customAttributes: customAttributes ?? {},
           newImages: newImagesToUpload,
           existingImageUrls: existingImageUrls,
@@ -654,173 +674,197 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
     );
   }
 
-  // Додамо всі необхідні методи з оригінального файлу...
-
   Widget _buildPhotosSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Фотографії',
-          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Додайте фото',
+              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+            ),
+            Text(
+              '${_selectedImages.length}/7',
+              style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
-        Container(
-          height: 120,
-          child: _selectedImages.isEmpty
-              ? _buildAddPhotoButton()
-              : _buildPhotoGallery(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddPhotoButton() {
-    return GestureDetector(
-      onTap: _pickImages,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.zinc50,
+        InkWell(
+          onTap: _pickImages,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.zinc200, width: 1),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromRGBO(16, 24, 40, 0.05),
-              offset: Offset(0, 1),
-              blurRadius: 2,
+          child: CustomPaint(
+            painter: DashedBorderPainter(
+              color: AppColors.zinc200,
+              strokeWidth: 1.0,
+              dashWidth: 13.0,
+              gapWidth: 13.0,
+              borderRadius: 12.0,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_photo_alternate_outlined,
-              size: 32,
-              color: AppColors.color5,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Додати фотографії',
-              style: AppTextStyles.body2Medium.copyWith(color: AppColors.color5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoGallery() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: _selectedImages.length + 1,
-      itemBuilder: (context, index) {
-        if (index == _selectedImages.length) {
-          return _buildAddMorePhotoButton();
-        }
-        return _buildPhotoItem(index);
-      },
-    );
-  }
-
-  Widget _buildAddMorePhotoButton() {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 12),
-      child: GestureDetector(
-        onTap: _pickImages,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.zinc50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.zinc200, width: 1),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_photo_alternate_outlined,
-                size: 24,
-                color: AppColors.color5,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Додати',
-                style: AppTextStyles.captionMedium.copyWith(color: AppColors.color5),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhotoItem(int index) {
-    final image = _selectedImages[index];
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 12),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: image is String
-                ? Image.network(
-                    image,
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
-                  )
-                : Image.file(
-                    File(image.path),
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.zinc50,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(16, 24, 40, 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
                   ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => _removeImage(index),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.close,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Center(
+                    child: SvgPicture.asset(
+                      'assets/icons/Featured icon.svg',
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Перемістіть зображення',
+                    style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'PNG, JPG (max. 200MB)',
+                    style: AppTextStyles.captionRegular.copyWith(color: AppColors.color8),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+        if (_selectedImages.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: List.generate(_selectedImages.length, (index) {
+                final image = _selectedImages[index];
+                return SizedBox(
+                  width: 92,
+                  height: 92,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: _buildImageWidget(image),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedImages.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
     );
   }
 
   Future<void> _pickImages() async {
     try {
+      if (_selectedImages.length >= 7) {
+        return;
+      }
+      
       final List<XFile> images = await _picker.pickMultiImage();
       if (images.isNotEmpty) {
-        setState(() {
-          _selectedImages.addAll(images);
-        });
+        
+        // Validate each image before adding
+        for (var image in images) {
+          try {
+            // Verify the image can be read
+            await image.readAsBytes();
+            
+            if (_selectedImages.length < 7) {
+              setState(() {
+                _selectedImages.add(image);
+              });
+            }
+          } catch (e) {
+            // Skip invalid image
+          }
+        }
       }
     } catch (e) {
-      print('Error picking images: $e');
+      // Error selecting images
     }
   }
 
-  void _removeImage(int index) {
-    setState(() {
-      _selectedImages.removeAt(index);
-    });
+  Widget _buildImageWidget(dynamic image) {
+    if (image is String) {
+      // Це URL зображення (існуюче зображення)
+      return Image.network(
+        image,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.zinc200,
+            child: Icon(Icons.error, color: AppColors.color5),
+          );
+        },
+      );
+    } else if (image is XFile) {
+      // Це нове зображення
+      if (kIsWeb) {
+        return Image.network(
+          image.path,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: AppColors.zinc200,
+              child: Icon(Icons.error, color: AppColors.color5),
+            );
+          },
+        );
+      }
+      return Image.file(
+        File(image.path),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.zinc200,
+            child: Icon(Icons.error, color: AppColors.color5),
+          );
+        },
+      );
+    }
+    return Container(
+      color: AppColors.zinc200,
+      child: Icon(Icons.error, color: AppColors.color5),
+    );
   }
 
   Widget _buildCategorySection() {
@@ -1232,177 +1276,208 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Контактна інформація',
-          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+          'Контактна форма',
+          style: AppTextStyles.body1Medium.copyWith(color: AppColors.color8),
         ),
-        const SizedBox(height: 6),
-        
-        // Messenger type selector
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: AppColors.zinc50,
-            borderRadius: BorderRadius.circular(200),
-            border: Border.all(color: AppColors.zinc200, width: 1),
-          ),
+        const SizedBox(height: 4),
+        Text(
+          'Оберіть спосіб зв\'язку',
+          style: AppTextStyles.body2Regular.copyWith(color: AppColors.color5),
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedMessenger = 'phone';
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: _selectedMessenger == 'phone' ? AppColors.primaryColor : Colors.transparent,
-                      borderRadius: BorderRadius.circular(200),
-                    ),
-                    child: Text(
-                      'Телефон',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body2Medium.copyWith(
-                        color: _selectedMessenger == 'phone' ? Colors.white : AppColors.color2,
-                      ),
-                    ),
-                  ),
-                ),
+              _buildMessengerButton(
+                type: 'whatsapp',
+                iconPath: 'assets/icons/whatsapp.svg',
+                label: '',
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedMessenger = 'whatsapp';
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: _selectedMessenger == 'whatsapp' ? AppColors.primaryColor : Colors.transparent,
-                      borderRadius: BorderRadius.circular(200),
-                    ),
-                    child: Text(
-                      'WhatsApp',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body2Medium.copyWith(
-                        color: _selectedMessenger == 'whatsapp' ? Colors.white : AppColors.color2,
-                      ),
-                    ),
-                  ),
-                ),
+              const SizedBox(width: 8),
+              _buildMessengerButton(
+                type: 'telegram',
+                iconPath: 'assets/icons/telegram.svg',
+                label: '',
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedMessenger = 'telegram';
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: _selectedMessenger == 'telegram' ? AppColors.primaryColor : Colors.transparent,
-                      borderRadius: BorderRadius.circular(200),
-                    ),
-                    child: Text(
-                      'Telegram',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body2Medium.copyWith(
-                        color: _selectedMessenger == 'telegram' ? Colors.white : AppColors.color2,
-                      ),
-                    ),
-                  ),
-                ),
+              const SizedBox(width: 8),
+              _buildMessengerButton(
+                type: 'viber',
+                iconPath: 'assets/icons/viber.svg',
+                label: '',
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedMessenger = 'viber';
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: _selectedMessenger == 'viber' ? AppColors.primaryColor : Colors.transparent,
-                      borderRadius: BorderRadius.circular(200),
-                    ),
-                    child: Text(
-                      'Viber',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body2Medium.copyWith(
-                        color: _selectedMessenger == 'viber' ? Colors.white : AppColors.color2,
-                      ),
-                    ),
-                  ),
-                ),
+              const SizedBox(width: 8),
+              _buildMessengerButton(
+                type: 'phone',
+                iconPath: 'assets/icons/phone.svg',
+                label: '',
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        
-        // Contact input field
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.zinc50,
-            borderRadius: BorderRadius.circular(200),
-            border: Border.all(color: AppColors.zinc200, width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(16, 24, 40, 0.05),
-                offset: Offset(0, 1),
-                blurRadius: 2,
-              ),
-            ],
+        const SizedBox(height: 16),
+        if (_selectedMessenger == 'phone')
+          _buildPhoneInput(
+            controller: _phoneController,
+            hintText: '(XX) XXX-XX-XX',
+          )
+        else if (_selectedMessenger == 'whatsapp')
+          _buildPhoneInput(
+            controller: _whatsappController,
+            hintText: '(XX) XXX-XX-XX',
+          )
+        else if (_selectedMessenger == 'telegram')
+          _buildPhoneInput(
+            controller: _telegramController,
+            hintText: 'Введіть номер телефону або нік',
+            isTelegramInput: true,
+          )
+        else if (_selectedMessenger == 'viber')
+          _buildPhoneInput(
+            controller: _viberController,
+            hintText: '(XX) XXX-XX-XX',
           ),
-          child: TextField(
-            controller: _getContactController(),
-            keyboardType: _getContactKeyboardType(),
-            inputFormatters: _getContactInputFormatters(),
-            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-            decoration: InputDecoration(
-              hintText: _getContactHintText(),
-              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  TextEditingController _getContactController() {
-    switch (_selectedMessenger) {
-      case 'phone':
-        return _phoneController;
-      case 'whatsapp':
-        return _whatsappController;
-      case 'telegram':
-        return _telegramController;
-      case 'viber':
-        return _viberController;
-      default:
-        return _phoneController;
-    }
+  Widget _buildMessengerButton({
+    required String type,
+    required String iconPath,
+    required String label,
+  }) {
+    final bool isSelected = _selectedMessenger == type;
+    final bool isSocialIcon = type == 'whatsapp' || type == 'telegram' || type == 'viber';
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedMessenger = type;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryColor : AppColors.zinc100,
+          borderRadius: BorderRadius.circular(200),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : AppColors.zinc100,
+            width: 1,
+          ),
+          boxShadow: isSelected ? const [
+            BoxShadow(
+              color: Color(0x0C101828),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+              spreadRadius: 0,
+            )
+          ] : null,
+        ),
+        child: SvgPicture.asset(
+          iconPath,
+          width: 20,
+          height: 20,
+          colorFilter: isSocialIcon 
+              ? null 
+              : ColorFilter.mode(
+                  isSelected ? Colors.white : AppColors.color5,
+                  BlendMode.srcIn,
+                ),
+        ),
+      ),
+    );
   }
 
-  TextInputType _getContactKeyboardType() {
-    switch (_selectedMessenger) {
-      case 'phone':
-      case 'whatsapp':
-      case 'viber':
-        return TextInputType.phone;
-      case 'telegram':
-        return TextInputType.text;
-      default:
-        return TextInputType.phone;
-    }
+  Widget _buildPhoneInput({
+    required TextEditingController controller,
+    required String hintText,
+    bool isTelegramInput = false,
+  }) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.zinc50,
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(color: AppColors.zinc200),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(16, 24, 40, 0.05),
+            offset: Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (!isTelegramInput) ...[
+            const SizedBox(width: 16),
+            // Прапор України
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF0057B8),
+              ),
+              child: ClipOval(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0057B8),
+                      ),
+                    ),
+                    Container(
+                      width: 20,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFD700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Префікс +380
+            Text(
+              '+380',
+              style: AppTextStyles.body1Regular.copyWith(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: TextField(
+              controller: controller,
+              keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
+              inputFormatters: _getContactInputFormatters(),
+              decoration: InputDecoration(
+                hintText: isTelegramInput ? hintText : '(XX) XXX-XX-XX',
+                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                contentPadding: EdgeInsets.only(
+                  left: isTelegramInput ? 16 : 0,
+                  right: 16,
+                  top: 12,
+                  bottom: 12,
+                ),
+                border: InputBorder.none,
+              ),
+              style: AppTextStyles.body1Regular.copyWith(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   List<TextInputFormatter> _getContactInputFormatters() {
@@ -1412,28 +1487,17 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
       case 'viber':
         return [
           FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(9), // Обмеження до 9 цифр (без +380)
         ];
       case 'telegram':
-        return [];
+        return [
+          LengthLimitingTextInputFormatter(32), // Обмеження для Telegram username
+        ];
       default:
         return [
           FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(9),
         ];
-    }
-  }
-
-  String _getContactHintText() {
-    switch (_selectedMessenger) {
-      case 'phone':
-        return '+380';
-      case 'whatsapp':
-        return '+380';
-      case 'telegram':
-        return '@username або номер телефону';
-      case 'viber':
-        return '+380';
-      default:
-        return '+380';
     }
   }
 
@@ -1787,4 +1851,90 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
       },
     );
   }
+
+  String _getContactHintText() {
+    switch (_selectedMessenger) {
+      case 'phone':
+        return '(XX) XXX-XX-XX';
+      case 'whatsapp':
+        return '(XX) XXX-XX-XX';
+      case 'telegram':
+        return '@username або номер телефону';
+      case 'viber':
+        return '(XX) XXX-XX-XX';
+      default:
+        return '(XX) XXX-XX-XX';
+    }
+  }
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double gapWidth;
+  final double borderRadius;
+
+  DashedBorderPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.gapWidth,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final Path path = Path();
+    path.addRRect(RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(borderRadius),
+    ));
+
+    final Path dashedPath = Path();
+    final double dashLength = dashWidth;
+    final double gapLength = gapWidth;
+    final double totalLength = dashLength + gapLength;
+
+    final double pathLength = _getPathLength(path);
+    double currentLength = 0;
+
+    while (currentLength < pathLength) {
+      final double start = currentLength;
+      final double end = (currentLength + dashLength).clamp(0.0, pathLength);
+      
+      if (start < end) {
+        final double startT = start / pathLength;
+        final double endT = end / pathLength;
+        
+        final Offset startPoint = _getPointAt(path, startT);
+        final Offset endPoint = _getPointAt(path, endT);
+        
+        dashedPath.moveTo(startPoint.dx, startPoint.dy);
+        dashedPath.lineTo(endPoint.dx, endPoint.dy);
+      }
+      
+      currentLength += totalLength;
+    }
+
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  double _getPathLength(Path path) {
+    // Приблизний розрахунок довжини шляху
+    return 2 * (100 + 50); // Приблизна довжина для прямокутника
+  }
+
+  Offset _getPointAt(Path path, double t) {
+    // Приблизний розрахунок точки на шляху
+    return Offset(t * 100, t * 50);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 } 
