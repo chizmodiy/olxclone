@@ -1729,10 +1729,10 @@ class _AddListingPageState extends State<AddListingPage> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: _isNegotiablePrice ? AppColors.zinc100 : AppColors.zinc50,
+            color: AppColors.zinc50,
             borderRadius: BorderRadius.circular(200),
             border: Border.all(
-              color: _isNegotiablePrice ? AppColors.zinc200 : AppColors.zinc200, 
+              color: AppColors.zinc200, 
               width: 1
             ),
             boxShadow: const [

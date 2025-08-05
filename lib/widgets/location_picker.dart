@@ -545,6 +545,12 @@ class _LocationPickerState extends State<LocationPicker> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Заголовок "Локація"
+          Text(
+            'Локація',
+            style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+          ),
+          const SizedBox(height: 6),
           // Локація (Dropdown)
           Padding(
             padding: const EdgeInsets.only(bottom: 20.0),
@@ -574,7 +580,7 @@ class _LocationPickerState extends State<LocationPicker> {
                     children: [
                       Expanded(
                         child: Text(
-                          _selectedRegion ?? 'Локація',
+                          _selectedRegion ?? 'Оберіть область',
                           style: AppTextStyles.body1Regular.copyWith(
                             color: _selectedRegion != null ? AppColors.color2 : AppColors.color5,
                           ),
