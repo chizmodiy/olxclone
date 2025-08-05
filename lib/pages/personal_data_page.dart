@@ -21,6 +21,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   bool _isLoading = false;
   String? _phone;
   String? _originalName; // Зберігаємо оригінальне ім'я
+  String? _nameError; // Помилка для імені
   final ProfileService _profileService = ProfileService();
   XFile? _pickedAvatar;
   Uint8List? _avatarBytes;
@@ -29,6 +30,15 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   void initState() {
     super.initState();
     _loadProfile();
+    
+    // Додаємо слухач для інпуту
+    _nameController.addListener(() {
+      setState(() {
+        if (_nameError != null) {
+          _nameError = null;
+        }
+      });
+    });
     
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -50,6 +60,52 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       isDismissible: false, // Неможливо закрити
       enableDrag: false, // Неможливо перетягувати
       builder: (context) => const BlockedUserBottomSheet(),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
@@ -125,6 +181,16 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   // Перевіряємо, чи змінилося ім'я
   bool get _hasNameChanged {
     return _nameController.text.trim() != (_originalName ?? '').trim();
+  }
+
+  // Перевіряємо, чи ім'я валідне
+  bool get _isNameValid {
+    return _nameController.text.trim().isNotEmpty;
+  }
+
+  // Перевіряємо, чи можна зберегти
+  bool get _canSave {
+    return _hasNameChanged && _isNameValid;
   }
 
   // Перевіряємо, чи є у користувача власна іконка
@@ -284,7 +350,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  hintText: "Ім'я та прізвище",
+                                  hintText: "Введіть ім'я",
                                   hintStyle: TextStyle(
                                     color: Color(0xFFA1A1AA),
                                     fontSize: 16,
@@ -383,13 +449,13 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                           height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _hasNameChanged 
+                              backgroundColor: _canSave 
                                 ? const Color(0xFF015873)
                                 : const Color(0xFFE4E4E7), // Сірий колір коли неактивна
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(200),
                                 side: BorderSide(
-                                  color: _hasNameChanged 
+                                  color: _canSave 
                                     ? const Color(0xFF015873)
                                     : const Color(0xFFE4E4E7),
                                 ),
@@ -397,11 +463,17 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
                               elevation: 0,
                             ),
-                            onPressed: _hasNameChanged ? _saveProfile : null,
+                            onPressed: _canSave ? () {
+                              if (!_isNameValid) {
+                                _showErrorSnackBar('Ім\'я не може бути порожнім');
+                                return;
+                              }
+                              _saveProfile();
+                            } : null,
                             child: Text(
                               'Підтвердити',
                               style: TextStyle(
-                                color: _hasNameChanged ? Colors.white : const Color(0xFFA1A1AA),
+                                color: _canSave ? Colors.white : const Color(0xFFA1A1AA),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: 0.16,
