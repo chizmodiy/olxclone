@@ -242,59 +242,7 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   void _showAutocompleteOverlay(BuildContext context) {
-    // Не показуємо автодоповнення під час ініціалізації
-    if (_isInitializing) return;
-    
-    _hideAutocompleteOverlay();
-    if (_cityResults.isEmpty || _citySearchController.text.isEmpty) return;
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final size = renderBox?.size ?? Size.zero;
-    _autocompleteOverlay = OverlayEntry(
-      builder: (context) => Positioned(
-        width: size.width,
-        child: CompositedTransformFollower(
-          link: _autocompleteLayerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0, 52), // 44px (висота інпуту) + 8px (відступ)
-          child: Material(
-            elevation: 4,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 250),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _cityResults.length,
-                itemBuilder: (context, index) {
-                  final cityObj = _cityResults[index];
-                  final city = cityObj['name']!;
-                  final placeId = cityObj['placeId']!;
-                  return ListTile(
-                    title: Text(city),
-                    onTap: () async {
-                      final latLng = await getLatLngFromPlaceId(placeId);
-                      setState(() {
-                        _selectedLatLng = latLng;
-                        _mapCenter = latLng;
-                        _selectedCityName = city;
-                        _selectedPlaceId = placeId;
-                        _citySearchController.text = city;
-                        _citySelected = true;
-                      });
-                      FocusScope.of(context).unfocus();
-                      final zoom = city.contains(',') ? 15.0 : 11.0;
-                      _mapController.move(latLng!, zoom);
-                      if (widget.onLocationSelected != null) {
-                        widget.onLocationSelected!(latLng, city);
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    Overlay.of(context).insert(_autocompleteOverlay!);
+    // Overlay видалено - використовуємо тільки вбудований список
   }
 
   void _hideAutocompleteOverlay() {
@@ -691,12 +639,8 @@ class _LocationPickerState extends State<LocationPicker> {
                         _citySelected = false;
                       });
                     },
-                    onTap: () {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _showAutocompleteOverlay(context);
-                      });
-                    },
-                    onEditingComplete: _hideAutocompleteOverlay,
+
+
                   ),
                 ),
               ),
@@ -775,6 +719,7 @@ class _LocationPickerState extends State<LocationPicker> {
                 ),
               ),
             ),
+
           // Карта
           Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
