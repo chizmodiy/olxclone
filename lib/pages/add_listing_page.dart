@@ -2155,9 +2155,6 @@ class _AddListingPageState extends State<AddListingPage> {
     } else if (_whatsappController.text.isNotEmpty && !_isValidPhoneWithPrefix(_whatsappController.text)) {
       errorMessage = 'Будь ласка, введіть правильний номер WhatsApp';
       print('Debug: Validation failed - invalid WhatsApp number');
-    } else if (_telegramController.text.isNotEmpty && !_isValidTelegram(_telegramController.text)) {
-      errorMessage = 'Будь ласка, введіть правильний номер або username Telegram';
-      print('Debug: Validation failed - invalid Telegram');
     } else if (_viberController.text.isNotEmpty && !_isValidPhoneWithPrefix(_viberController.text)) {
       errorMessage = 'Будь ласка, введіть правильний номер Viber';
       print('Debug: Validation failed - invalid Viber number');
@@ -2214,19 +2211,8 @@ class _AddListingPageState extends State<AddListingPage> {
 
   // Функція для валідації Telegram username або номера
   bool _isValidTelegram(String telegram) {
-    // Якщо це номер телефону
-    if (telegram.contains(RegExp(r'\d'))) {
-      return _isValidPhoneNumber(telegram);
-    }
-    
-    // Якщо це username (починається з @ або без нього)
-    final username = telegram.startsWith('@') ? telegram.substring(1) : telegram;
-    if (username.length >= 5 && username.length <= 32) {
-      // Перевіряємо, що username містить тільки літери, цифри та підкреслення
-      return RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username);
-    }
-    
-    return false;
+    if (telegram.isEmpty) return true; // Поле не обов'язкове
+    return true; // Прибираємо валідацію - приймаємо будь-які значення
   }
 
   bool get _isFormValid {

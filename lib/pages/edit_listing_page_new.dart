@@ -232,13 +232,8 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   bool _isValidTelegram(String telegram) {
-    if (telegram.isEmpty) return true;
-    if (telegram.startsWith('@')) {
-      return telegram.length >= 6 && telegram.length <= 33;
-    } else if (RegExp(r'^[a-zA-Z0-9_]{5,32}$').hasMatch(telegram)) {
-      return true;
-    }
-    return _isValidPhoneNumber(telegram);
+    if (telegram.isEmpty) return true; // Поле не обов'язкове
+    return true; // Прибираємо валідацію - приймаємо будь-які значення
   }
 
   bool get _isFormValid {
