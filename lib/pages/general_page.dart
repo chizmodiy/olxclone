@@ -60,16 +60,6 @@ class _GeneralPageState extends State<GeneralPage> {
   }
 
   void _onItemTapped(int index) {
-    // Перевіряємо, чи це кнопка чату (індекс 3) і чи користувач не авторизований
-    if (index == 3) {
-      final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-      if (currentUserId == null) {
-        // Показуємо AuthBottomSheet для неавторизованих користувачів
-        _showAuthBottomSheet();
-        return;
-      }
-    }
-    
     setState(() {
       _selectedIndex = index;
     });

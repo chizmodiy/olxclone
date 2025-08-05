@@ -83,7 +83,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _loadChats() async {
-        setState(() {
+    if (_currentUserId == null) {
+      setState(() {
+        _chats = [];
+        _loading = false;
+      });
+      return;
+    }
+    setState(() {
       _loading = true;
     });
     final client = Supabase.instance.client;
@@ -238,15 +245,17 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
             const SizedBox(height: 20),
-            ChatTypeSwitch(
-              isBuyerSelected: isBuyerSelected,
-              onChanged: (value) {
+            _currentUserId != null
+                ? ChatTypeSwitch(
+                    isBuyerSelected: isBuyerSelected,
+                    onChanged: (value) {
                       setState(() {
-                  isBuyerSelected = value;
-                });
-                _loadChats();
-              },
-            ),
+                        isBuyerSelected = value;
+                      });
+                      _loadChats();
+                    },
+                  )
+                : SizedBox.shrink(),
             const SizedBox(height: 20),
             Expanded(
               child: _loading

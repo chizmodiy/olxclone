@@ -763,32 +763,122 @@ class _LocationPickerState extends State<LocationPicker> {
           // Карта
           Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
-            child: SizedBox(
-              height: 300,
-              child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  center: _mapCenter ?? latlong.LatLng(49.0, 32.0),
-                  zoom: _selectedLatLng != null ? 11 : 6,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  if (_selectedLatLng != null)
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          width: 40,
-                          height: 40,
-                          point: _selectedLatLng!,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+            child: Stack(
+              children: [
+                SizedBox(
+                  height: 300,
+                  child: IgnorePointer(
+                    child: FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        center: _mapCenter ?? latlong.LatLng(49.0, 32.0),
+                        zoom: _selectedLatLng != null ? 11 : 6,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          subdomains: ['a', 'b', 'c'],
                         ),
+                        if (_selectedLatLng != null)
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                width: 40,
+                                height: 40,
+                                point: _selectedLatLng!,
+                                child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
-                ],
-              ),
+                  ),
+                ),
+                // Кнопки керування картою
+                Positioned(
+                  right: 16,
+                  top: 16,
+                  child: Column(
+                    children: [
+                      // Кнопка збільшення
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.zinc200),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.add, size: 20),
+                          onPressed: () {
+                            _mapController.move(_mapController.center, _mapController.zoom + 1);
+                          },
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Кнопка зменшення
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.zinc200),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.remove, size: 20),
+                          onPressed: () {
+                            _mapController.move(_mapController.center, _mapController.zoom - 1);
+                          },
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Кнопка повернення до обраної точки
+                      if (_selectedLatLng != null)
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.zinc200),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.my_location, size: 20),
+                            onPressed: () {
+                              _mapController.move(_selectedLatLng!, _mapController.zoom);
+                            },
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           // Кнопка "Моє місцезнаходження"
