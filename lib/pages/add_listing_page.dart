@@ -1189,6 +1189,7 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onRegionSelected(Region region) {
     setState(() {
       _selectedRegion = region;
+      _selectedRegionName = region.name; // Встановлюємо назву області
       _selectedCity = null; // Clear selected city when region changes
       _cities.clear(); // Clear city search results
       _citySearchController.clear(); // Clear city search input
