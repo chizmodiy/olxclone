@@ -366,6 +366,13 @@ class _EditListingPageState extends State<EditListingPage> {
     _viberController.dispose();
     _extraFieldControllers.forEach((_, controller) => controller.dispose());
     _citySearchController.dispose();
+    
+    // Очищення додаткових контролерів
+    _areaController.dispose();
+    _ageController.dispose();
+    _yearController.dispose();
+    _enginePowerController.dispose();
+    
     _debounceTimer?.cancel();
     super.dispose();
   }
