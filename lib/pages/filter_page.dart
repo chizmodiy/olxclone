@@ -140,7 +140,7 @@ class _FilterPageState extends State<FilterPage> {
       } catch (_) {}
     }
     // --- Кінець блоку ініціалізації області ---
-
+    
     print('Debug: Initialized filters - isPriceModePrice: $_isPriceModePrice, isFree: ${widget.initialFilters['isFree']}');
   }
 
