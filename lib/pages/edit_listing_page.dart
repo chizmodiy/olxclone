@@ -740,7 +740,14 @@ class _EditListingPageState extends State<EditListingPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        ..._selectedSubcategory!.extraFields.map((field) {
+        ..._selectedSubcategory!.extraFields.where((field) => 
+          field.name != 'area' && 
+          field.name != 'size' && 
+          field.name != 'age' && 
+          field.name != 'car_brand' && 
+          field.name != 'year' && 
+          field.name != 'engine_power'
+        ).map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1039,9 +1046,13 @@ class _EditListingPageState extends State<EditListingPage> {
       case 'color':
         return 'Колір';
       case 'area':
-        return 'Площа (м²)';
+        return 'Кількість м²';
       case 'square_meters':
-        return 'Площа (м²)';
+        return 'Кількість м²';
+      case 'square_meters_area':
+        return 'Кількість м²';
+      case 'area_square_meters':
+        return 'Кількість м²';
       case 'rooms':
         return 'Кількість кімнат';
       case 'floor':
@@ -2641,7 +2652,14 @@ class _EditListingPageState extends State<EditListingPage> {
             children: [
               Text(
                 'Кількість м²',
-                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                style: TextStyle(
+                  color: const Color(0xFF09090B),
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  height: 1.40,
+                  letterSpacing: 0.14,
+                ),
               ),
               const SizedBox(height: 6),
               Container(
