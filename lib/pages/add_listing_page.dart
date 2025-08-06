@@ -34,6 +34,7 @@ class _AddListingPageState extends State<AddListingPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _areaController = TextEditingController(); // Controller for square meters
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _selectedImages = [];
   final PageController _imagePageController = PageController();
@@ -452,6 +453,8 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onCategorySelected(Category category) {
     setState(() {
       _selectedCategory = category;
+      _selectedSubcategory = null;
+      _areaController.clear(); // Clear area field when category changes
     });
         _loadSubcategories(category.id);
     Navigator.pop(context);
@@ -629,6 +632,9 @@ class _AddListingPageState extends State<AddListingPage> {
       _extraFieldControllers.forEach((_, controller) => controller.dispose());
       _extraFieldControllers.clear();
       _extraFieldValues.clear();
+      
+      // Clear area field when subcategory changes
+      _areaController.clear();
       
       // Initialize controllers for new extra fields
       for (var field in subcategory.extraFields) {
@@ -2343,6 +2349,14 @@ class _AddListingPageState extends State<AddListingPage> {
           }
         }
       }
+      
+      // Add area value if it's entered
+      if (_areaController.text.isNotEmpty) {
+        final areaValue = double.tryParse(_areaController.text);
+        if (areaValue != null && areaValue > 0) {
+          finalCustomAttributes['area'] = areaValue;
+        }
+      }
 
       String locationString = '';
       if (_selectedRegion != null && _selectedCity != null) {
@@ -2639,6 +2653,8 @@ class _AddListingPageState extends State<AddListingPage> {
                 // Category Dropdown
                 _buildCategorySection(),
                 _buildSubcategorySection(),
+                // Додаємо поле площі після підкатегорії
+                _buildAreaField(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
                 LocationPicker(
@@ -2751,6 +2767,7 @@ class _AddListingPageState extends State<AddListingPage> {
                           _extraFieldControllers.forEach((_, controller) => controller.dispose());
                           _extraFieldControllers.clear();
                           _extraFieldValues.clear();
+                          _areaController.clear(); // Clear area field
                         });
                         
                         // Navigate to main page
@@ -2777,6 +2794,158 @@ class _AddListingPageState extends State<AddListingPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAreaField() {
+    // Показуємо поле тільки для нерухомості та житла подобово
+    if (_selectedSubcategory == null) return const SizedBox.shrink();
+    
+    bool shouldShowAreaField = false;
+    
+    // Перевіряємо чи це нерухомість
+    if (_selectedCategory?.name == 'Нерухомість') {
+      shouldShowAreaField = true;
+    }
+    
+    // Перевіряємо чи це житло подобово
+    if (_selectedCategory?.name == 'Житло подобово') {
+      shouldShowAreaField = true;
+    }
+    
+    if (!shouldShowAreaField) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Кількість м²',
+                style: TextStyle(
+                  color: const Color(0xFF09090B),
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  height: 1.40,
+                  letterSpacing: 0.14,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  clipBehavior: Clip.antiAlias,
+                                  decoration: ShapeDecoration(
+                                    color: const Color(0xFFFAFAFA),
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        width: 1,
+                                        color: const Color(0xFFE4E4E7),
+                                      ),
+                                      borderRadius: BorderRadius.circular(200),
+                                    ),
+                                    shadows: [
+                                      BoxShadow(
+                                        color: Color(0x0C101828),
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
+                                        spreadRadius: 0,
+                                      )
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: TextField(
+                                                controller: _areaController,
+                                                keyboardType: TextInputType.number,
+                                                decoration: InputDecoration(
+                                                  border: InputBorder.none,
+                                                  hintText: '0',
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w400,
+                                                    height: 1.50,
+                                                    letterSpacing: 0.16,
+                                                  ),
+                                                ),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                  height: 1.50,
+                                                  letterSpacing: 0.16,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              'м²',
+                                              style: TextStyle(
+                                                color: const Color(0xFFA1A1AA),
+                                                fontSize: 14,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.40,
+                                                letterSpacing: 0.14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }
