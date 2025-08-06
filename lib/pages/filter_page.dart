@@ -124,6 +124,18 @@ class _FilterPageState extends State<FilterPage> {
     _minAgeController.text = (widget.initialFilters['minAge'] ?? 18).toString();
     _maxAgeController.text = (widget.initialFilters['maxAge'] ?? 65).toString();
     
+    // --- Додаємо ініціалізацію області (регіону) ---
+    if (widget.initialFilters['region'] != null && widget.initialFilters['region'] is String) {
+      // Якщо список регіонів вже завантажений, шукаємо по id
+      try {
+        // Якщо у вас є список _regions, розкоментуйте і використайте:
+        // _selectedRegion = _regions.firstWhere((r) => r.id == widget.initialFilters['region']);
+        // Якщо список _regions не використовується, а CategorySelectionPage повертає Category, можна зберігати id напряму
+        _selectedRegion = Category(id: widget.initialFilters['region'], name: ''); // name оновиться при виборі
+      } catch (_) {}
+    }
+    // --- Кінець блоку ініціалізації області ---
+
     print('Debug: Initialized filters - isPriceModePrice: $_isPriceModePrice, isFree: ${widget.initialFilters['isFree']}');
   }
 
@@ -200,10 +212,16 @@ class _FilterPageState extends State<FilterPage> {
     try {
       final subcategoryService = SubcategoryService(Supabase.instance.client);
       final subcategories = await subcategoryService.getSubcategoriesForCategory(categoryId);
-      
       setState(() {
         _subcategories = subcategories;
         _isLoadingSubcategories = false;
+        // --- Додаємо ініціалізацію підкатегорії ---
+        if (widget.initialFilters['subcategory'] != null && widget.initialFilters['subcategory'] is String) {
+          try {
+            _selectedSubcategory = _subcategories.firstWhere((sub) => sub.id == widget.initialFilters['subcategory']);
+          } catch (_) {}
+        }
+        // --- Кінець блоку ініціалізації підкатегорії ---
       });
     } catch (e) {
       print('Error loading subcategories: $e');

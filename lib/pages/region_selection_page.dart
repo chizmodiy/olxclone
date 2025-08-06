@@ -10,34 +10,7 @@ class RegionSelectionPage extends StatefulWidget {
   State<RegionSelectionPage> createState() => _RegionSelectionPageState();
 }
 
-class _RegionSelectionPageState extends State<RegionSelectionPage> {
-  final List<Category> _regions = [
-    Category(id: 'kyiv', name: 'Київ'),
-    Category(id: 'kyiv_oblast', name: 'Київська область'),
-    Category(id: 'kharkiv', name: 'Харківська область'),
-    Category(id: 'odesa', name: 'Одеська область'),
-    Category(id: 'dnipro', name: 'Дніпропетровська область'),
-    Category(id: 'lviv', name: 'Львівська область'),
-    Category(id: 'donetsk', name: 'Донецька область'),
-    Category(id: 'zaporizhzhia', name: 'Запорізька область'),
-    Category(id: 'mykolaiv', name: 'Миколаївська область'),
-    Category(id: 'vinnytsia', name: 'Вінницька область'),
-    Category(id: 'poltava', name: 'Полтавська область'),
-    Category(id: 'sumy', name: 'Сумська область'),
-    Category(id: 'khmelnytskyi', name: 'Хмельницька область'),
-    Category(id: 'cherkasy', name: 'Черкаська область'),
-    Category(id: 'zhytomyr', name: 'Житомирська область'),
-    Category(id: 'chernihiv', name: 'Чернігівська область'),
-    Category(id: 'kropyvnytskyi', name: 'Кіровоградська область'),
-    Category(id: 'rivne', name: 'Рівненська область'),
-    Category(id: 'ternopil', name: 'Тернопільська область'),
-    Category(id: 'ivano-frankivsk', name: 'Івано-Франківська область'),
-    Category(id: 'lutsk', name: 'Волинська область'),
-    Category(id: 'uzhhorod', name: 'Закарпатська область'),
-    Category(id: 'chernivtsi', name: 'Чернівецька область'),
-    Category(id: 'kherson', name: 'Херсонська область'),
-    Category(id: 'luhansk', name: 'Луганська область'),
-  ];
+flutte
 
   @override
   Widget build(BuildContext context) {

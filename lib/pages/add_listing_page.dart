@@ -3145,19 +3145,19 @@ Widget _buildAreaField() {
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: isSelected ? AppColors.primaryColor : Colors.white,
                         borderRadius: BorderRadius.circular(200),
                         border: Border.all(
                           color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
-                          width: 1,
-                        ),
+                                      width: 1,
+                                    ),
                         boxShadow: const [
-                          BoxShadow(
+                                    BoxShadow(
                             color: Color.fromRGBO(16, 24, 40, 0.05),
                             offset: Offset(0, 1),
-                            blurRadius: 2,
+                                      blurRadius: 2,
                           ),
                         ],
                       ),
