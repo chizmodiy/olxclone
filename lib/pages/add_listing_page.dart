@@ -681,7 +681,10 @@ class _AddListingPageState extends State<AddListingPage> {
           field.name != 'year' &&
           field.name != 'car_brand' &&
           field.name != 'engine_power' &&
-          field.name != 'engine_power_hp'
+          field.name != 'engine_power_hp' &&
+          field.name != 'size' &&
+          field.name != 'condition' &&
+          field.name != 'age_range'
         ).map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
