@@ -2345,6 +2345,15 @@ class _EditListingPageState extends State<EditListingPage> {
                     _buildCategorySection(),
                     _buildSubcategorySection(),
                     const SizedBox(height: 20),
+                    
+                    // Додаткові поля
+                    _buildAreaField(),
+                    _buildSizeSelector(),
+                    _buildAgeField(),
+                    _buildCarBrandSelector(),
+                    _buildCarFields(),
+                    
+                    const SizedBox(height: 20),
                     LocationPicker(
                       onLocationSelected: (latLng, address) {
                         setState(() {
