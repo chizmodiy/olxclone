@@ -3128,108 +3128,44 @@ Widget _buildAreaField() {
                 style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
               ),
               const SizedBox(height: 8),
-              // Перший ряд кнопок (4 кнопки)
-              Row(
-                children: sizes.take(4).map((size) {
+              Wrap(
+                spacing: 4,
+                runSpacing: 8,
+                children: sizes.map((size) {
                   final isSelected = _selectedSize == size;
-                  return Expanded(
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedSize = isSelected ? null : size;
+                      });
+                    },
                     child: Container(
-                      margin: const EdgeInsets.only(right: 4),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedSize = isSelected ? null : size;
-                          });
-                        },
-                        child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryColor : Colors.white,
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(200),
-                            border: Border.all(
-                              color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
-                                      width: 1,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color.fromRGBO(16, 24, 40, 0.05),
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primaryColor : Colors.white,
+                        borderRadius: BorderRadius.circular(200),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
+                          width: 1,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(16, 24, 40, 0.05),
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                size,
-                                style: AppTextStyles.body2Semibold.copyWith(
-                                  color: isSelected ? Colors.white : AppColors.color8,
-                                ),
-                              ),
-                            ],
-                          ),
+                        ],
+                      ),
+                      child: Text(
+                        size,
+                        style: AppTextStyles.body2Semibold.copyWith(
+                          color: isSelected ? Colors.white : AppColors.color8,
                         ),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              // Другий ряд кнопок (якщо є більше 4 розмірів)
-              if (sizes.length > 4) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: sizes.skip(4).map((size) {
-                    final isSelected = _selectedSize == size;
-                    return Container(
-                      width: 88,
-                      margin: const EdgeInsets.only(right: 4),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedSize = isSelected ? null : size;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryColor : Colors.white,
-                            shape: BoxShape.rectangle,
-                                    borderRadius: BorderRadius.circular(200),
-                            border: Border.all(
-                              color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
-                              width: 1,
-                                  ),
-                            boxShadow: const [
-                                    BoxShadow(
-                                color: Color.fromRGBO(16, 24, 40, 0.05),
-                                offset: Offset(0, 1),
-                                      blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                size,
-                                style: AppTextStyles.body2Semibold.copyWith(
-                                  color: isSelected ? Colors.white : AppColors.color8,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
             ],
           ),
         ),
