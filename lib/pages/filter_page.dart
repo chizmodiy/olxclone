@@ -87,9 +87,9 @@ class _FilterPageState extends State<FilterPage> {
   @override
   void initState() {
     super.initState();
+    _initializeFilters();
     _loadPriceRange();
     _loadCategories();
-    _initializeFilters();
   }
     
   void _initializeFilters() {
@@ -99,9 +99,11 @@ class _FilterPageState extends State<FilterPage> {
     // Initialize price filters if they exist
     if (widget.initialFilters['minPrice'] != null) {
       _minPriceController.text = widget.initialFilters['minPrice'].toString();
+      _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? _currentMinPrice;
     }
     if (widget.initialFilters['maxPrice'] != null) {
       _maxPriceController.text = widget.initialFilters['maxPrice'].toString();
+      _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _currentMaxPrice;
     }
     
     // Initialize other filters
@@ -150,10 +152,19 @@ class _FilterPageState extends State<FilterPage> {
       setState(() {
         _minPrice = priceRange['min'] ?? 0.0;
         _maxPrice = priceRange['max'] ?? 100000.0;
-        
-        // Встановлюємо початкові значення на повний діапазон
-        _currentMinPrice = _minPrice; // Початково мінімальна ціна
-        _currentMaxPrice = _maxPrice; // Початково максимальна ціна
+        // --- Виправлення: обмежуємо поточні значення межами ---
+        if (_currentMinPrice < _minPrice) {
+          _currentMinPrice = _minPrice;
+        }
+        if (_currentMaxPrice > _maxPrice) {
+          _currentMaxPrice = _maxPrice;
+        }
+        if (_currentMaxPrice < _minPrice) {
+          _currentMaxPrice = _minPrice;
+        }
+        if (_currentMinPrice > _maxPrice) {
+          _currentMinPrice = _maxPrice;
+        }
         _sliderMinValue = _minPrice;
         _sliderMaxValue = _maxPrice;
         
