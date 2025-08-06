@@ -54,16 +54,12 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
 
   // Нерухомість подобово
   'houses_daily': {
-    'area': {'type': 'number', 'unit': 'м²'},
     'rooms': {'type': 'number'},
   },
   'apartments_daily': {
-    'area': {'type': 'number', 'unit': 'м²'},
     'rooms': {'type': 'number'},
   },
-  'rooms_daily': {
-    'area': {'type': 'number', 'unit': 'м²'},
-  },
+  'rooms_daily': {},
 
   // Транспорт
   'cars': {
@@ -120,25 +116,15 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
 
   // Нерухомість
   'apartments': {
-    'area': {'type': 'number', 'unit': 'м²'},
     'rooms': {'type': 'number'},
   },
-  'rooms': {
-    'area': {'type': 'number', 'unit': 'м²'},
-  },
+  'rooms': {},
   'houses': {
-    'area': {'type': 'number', 'unit': 'м²'},
     'rooms': {'type': 'number'},
   },
-  'commercial': {
-    'area': {'type': 'number', 'unit': 'м²'},
-  },
-  'garages': {
-    'area': {'type': 'number', 'unit': 'м²'},
-  },
-  'foreign': {
-    'area': {'type': 'number', 'unit': 'м²'},
-  },
+  'commercial': {},
+  'garages': {},
+  'foreign': {},
 };
 
 // Функція для отримання extra fields для конкретної підкатегорії
