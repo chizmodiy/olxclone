@@ -58,6 +58,11 @@ class _FilterPageState extends State<FilterPage> {
   String? _selectedBrand; // Selected car brand
   String? _selectedSize; // Selected size for fashion items
   String? _selectedCondition; // Selected condition for fashion items
+  String? _selectedCarBrand; // Selected car brand for vehicle filters
+  final TextEditingController _minCarYearController = TextEditingController();
+  final TextEditingController _maxCarYearController = TextEditingController();
+  final TextEditingController _minAgeController = TextEditingController();
+  final TextEditingController _maxAgeController = TextEditingController();
   
   // Валідація полів ціни
   String? _minPriceError;
@@ -70,8 +75,6 @@ class _FilterPageState extends State<FilterPage> {
 
   late final ListingService _listingService; // New: ListingService instance
   final ProfileService _profileService = ProfileService();
-
-  final GlobalKey _subcategoryButtonKey = GlobalKey();
 
   // Додаємо змінні для слайдера
   double _minPrice = 0.0;
@@ -111,6 +114,15 @@ class _FilterPageState extends State<FilterPage> {
     _selectedBrand = widget.initialFilters['car_brand'];
     _selectedSize = widget.initialFilters['size'];
     _selectedCondition = widget.initialFilters['condition'];
+    
+    // Initialize car-specific filters
+    _minCarYearController.text = (widget.initialFilters['minYear'] ?? 1999).toString();
+    _maxCarYearController.text = (widget.initialFilters['maxYear'] ?? 2022).toString();
+    _selectedCarBrand = widget.initialFilters['car_brand'];
+    
+    // Initialize age filters for dating
+    _minAgeController.text = (widget.initialFilters['minAge'] ?? 18).toString();
+    _maxAgeController.text = (widget.initialFilters['maxAge'] ?? 65).toString();
     
     print('Debug: Initialized filters - isPriceModePrice: $_isPriceModePrice, isFree: ${widget.initialFilters['isFree']}');
   }
@@ -188,27 +200,15 @@ class _FilterPageState extends State<FilterPage> {
     try {
       final subcategoryService = SubcategoryService(Supabase.instance.client);
       final subcategories = await subcategoryService.getSubcategoriesForCategory(categoryId);
+      
       setState(() {
         _subcategories = subcategories;
         _isLoadingSubcategories = false;
-
-        // Try to pre-select subcategory from initial filters if available
-        if (widget.initialFilters['subcategory'] != null) {
-          Subcategory? foundSubcategory;
-          try {
-            foundSubcategory = _subcategories.firstWhere(
-              (sub) => sub.id == widget.initialFilters['subcategory'],
-            );
-          } catch (e) {
-            // Subcategory not found, foundSubcategory remains null
-          }
-          _selectedSubcategory = foundSubcategory;
-        }
       });
-    } catch (error) {
+    } catch (e) {
+      print('Error loading subcategories: $e');
       setState(() {
         _isLoadingSubcategories = false;
-        // Handle error
       });
     }
   }
@@ -412,15 +412,14 @@ class _FilterPageState extends State<FilterPage> {
     if (_selectedSubcategory != null) {
       // Add area filter for real estate
       if (_selectedCategory?.name == 'Нерухомість' || 
-          _selectedSubcategory!.name.contains('квартир') ||
-          _selectedSubcategory!.name.contains('кімнат') ||
-          _selectedSubcategory!.name.contains('будинок') ||
-          _selectedSubcategory!.name.contains('комерційна') ||
-          _selectedSubcategory!.name.contains('гараж') ||
-          _selectedSubcategory!.name.contains('парковк') ||
-          _selectedSubcategory!.name.contains('за кордоном') ||
-          _selectedSubcategory!.name.contains('подобово') ||
-          _selectedSubcategory!.name.contains('погодинно') ||
+          _selectedSubcategory!.name.contains('Квартири') ||
+          _selectedSubcategory!.name.contains('Кімнати') ||
+          _selectedSubcategory!.name.contains('Будинки') ||
+          _selectedSubcategory!.name.contains('Земля') ||
+          _selectedSubcategory!.name.contains('Комерційна нерухомість') ||
+          _selectedSubcategory!.name.contains('Гаражі') ||
+          _selectedSubcategory!.name.contains('парковки') ||
+          _selectedSubcategory!.name.contains('Нерухомість за кордоном') ||
           _selectedSubcategory!.id == 'apartments' ||
           _selectedSubcategory!.id == 'rooms' ||
           _selectedSubcategory!.id == 'houses' ||
@@ -434,47 +433,76 @@ class _FilterPageState extends State<FilterPage> {
         filters['maxArea'] = double.tryParse(_maxAreaController.text);
       }
       
+      // Add area filter for daily accommodation
+      if (_selectedCategory?.name == 'Житло подобово' || 
+          _selectedSubcategory!.name.contains('Будинки подобово') ||
+          _selectedSubcategory!.name.contains('Квартири подобово') ||
+          _selectedSubcategory!.name.contains('Кімнати подобово') ||
+          _selectedSubcategory!.name.contains('Готелі') ||
+          _selectedSubcategory!.name.contains('бази відпочинку') ||
+          _selectedSubcategory!.name.contains('Хостели') ||
+          _selectedSubcategory!.name.contains('койко-місця') ||
+          _selectedSubcategory!.name.contains('Пропозиції Туроператорів') ||
+          _selectedSubcategory!.id == 'houses_daily' ||
+          _selectedSubcategory!.id == 'apartments_daily' ||
+          _selectedSubcategory!.id == 'rooms_daily') {
+        filters['minArea'] = double.tryParse(_minAreaController.text);
+        filters['maxArea'] = double.tryParse(_maxAreaController.text);
+      }
+      
       // Add car filters for vehicles
-      if (_selectedCategory?.name == 'Транспорт' || 
-          _selectedSubcategory!.name.contains('легкові') ||
-          _selectedSubcategory!.name.contains('авто') ||
-          _selectedSubcategory!.name.contains('автомобілі') ||
-          _selectedSubcategory!.name.contains('вантажні') ||
-          _selectedSubcategory!.name.contains('автобус') ||
-          _selectedSubcategory!.name.contains('мото') ||
-          _selectedSubcategory!.name.contains('спецтехніка') ||
-          _selectedSubcategory!.name.contains('сільгосп') ||
-          _selectedSubcategory!.name.contains('водний') ||
-          _selectedSubcategory!.name.contains('причеп') ||
+      if (_selectedCategory?.name == 'Авто' || 
+          _selectedSubcategory!.name.contains('Легкові автомобілі') ||
+          _selectedSubcategory!.name.contains('Вантажні автомобілі') ||
+          _selectedSubcategory!.name.contains('Автобуси') ||
+          _selectedSubcategory!.name.contains('Мото') ||
+          _selectedSubcategory!.name.contains('Спецтехніка') ||
+          _selectedSubcategory!.name.contains('Сільгосптехніка') ||
+          _selectedSubcategory!.name.contains('Водний транспорт') ||
+          _selectedSubcategory!.name.contains('Автомобілі з Польщі') ||
+          _selectedSubcategory!.name.contains('Причепи') ||
           _selectedSubcategory!.name.contains('будинки на колесах') ||
-          _selectedSubcategory!.name.contains('інший транспорт') ||
+          _selectedSubcategory!.name.contains('Вантажівки та спецтехніка з Польщі') ||
+          _selectedSubcategory!.name.contains('Інший транспорт') ||
           _selectedSubcategory!.id == 'cars' ||
-          _selectedSubcategory!.id == 'cars_poland' ||
           _selectedSubcategory!.id == 'trucks' ||
           _selectedSubcategory!.id == 'buses' ||
           _selectedSubcategory!.id == 'moto' ||
           _selectedSubcategory!.id == 'special_equipment' ||
           _selectedSubcategory!.id == 'agricultural' ||
           _selectedSubcategory!.id == 'water_transport' ||
+          _selectedSubcategory!.id == 'cars_poland' ||
           _selectedSubcategory!.id == 'trailers' ||
           _selectedSubcategory!.id == 'trucks_poland' ||
           _selectedSubcategory!.id == 'other_transport') {
-        filters['minYear'] = double.tryParse(_minYearController.text);
-        filters['maxYear'] = double.tryParse(_maxYearController.text);
-        filters['car_brand'] = _selectedBrand;
+        filters['minYear'] = double.tryParse(_minCarYearController.text);
+        filters['maxYear'] = double.tryParse(_maxCarYearController.text);
         filters['minEnginePowerHp'] = double.tryParse(_minEngineHpController.text);
         filters['maxEnginePowerHp'] = double.tryParse(_maxEngineHpController.text);
+        
+        // Марка авто тільки для легкових авто та авто з Польщі
+        bool isCarOrCarPoland = _selectedSubcategory?.id == 'cars' || 
+                                _selectedSubcategory?.id == 'cars_poland' ||
+                                _selectedSubcategory!.name.contains('Легкові автомобілі') ||
+                                _selectedSubcategory!.name.contains('Автомобілі з Польщі');
+        if (isCarOrCarPoland) {
+          filters['car_brand'] = _selectedCarBrand;
+        }
       }
       
       // Add fashion filters
       if (_selectedCategory?.name == 'Мода і стиль' || 
-          _selectedSubcategory!.name.contains('одяг') ||
-          _selectedSubcategory!.name.contains('взуття') ||
-          _selectedSubcategory!.name.contains('білизна') ||
-          _selectedSubcategory!.name.contains('купальник') ||
+          _selectedSubcategory!.name.contains('Жіночий одяг') ||
+          _selectedSubcategory!.name.contains('Чоловічий одяг') ||
+          _selectedSubcategory!.name.contains('Жіноче взуття') ||
+          _selectedSubcategory!.name.contains('Чоловіче взуття') ||
+          _selectedSubcategory!.name.contains('Жіноча білизна') ||
+          _selectedSubcategory!.name.contains('купальники') ||
+          _selectedSubcategory!.name.contains('Чоловіча білизна') ||
           _selectedSubcategory!.name.contains('плавки') ||
-          _selectedSubcategory!.name.contains('вагітн') ||
-          _selectedSubcategory!.name.contains('спец') ||
+          _selectedSubcategory!.name.contains('Одяг для вагітних') ||
+          _selectedSubcategory!.name.contains('Спецодяг') ||
+          _selectedSubcategory!.name.contains('Спецвзуття') ||
           _selectedSubcategory!.id == 'women_clothes' ||
           _selectedSubcategory!.id == 'men_clothes' ||
           _selectedSubcategory!.id == 'women_shoes' ||
@@ -485,7 +513,16 @@ class _FilterPageState extends State<FilterPage> {
           _selectedSubcategory!.id == 'work_clothes' ||
           _selectedSubcategory!.id == 'work_shoes') {
         filters['size'] = _selectedSize;
-        filters['condition'] = _selectedCondition;
+      }
+      
+      // Add dating filters
+      if (_selectedCategory?.name == 'Знайомства' || 
+          _selectedSubcategory!.name.contains('Чоловіки, які шукають знайомства') ||
+          _selectedSubcategory!.name.contains('Жінки, які шукають знайомства') ||
+          _selectedSubcategory!.id == 'women_dating' ||
+          _selectedSubcategory!.id == 'men_dating') {
+        filters['minAge'] = double.tryParse(_minAgeController.text);
+        filters['maxAge'] = double.tryParse(_maxAgeController.text);
       }
     }
 
@@ -537,6 +574,80 @@ class _FilterPageState extends State<FilterPage> {
         _selectedSubcategory = selectedSubcategory;
       });
     }
+  }
+
+  void _showCarBrandSelection() {
+    final List<String> carBrands = [
+      'Volkswagen',
+      'BMW',
+      'Audi',
+      'Mercedes-Benz',
+      'Toyota',
+      'Renault',
+      'Skoda',
+      'Ford',
+      'Nissan',
+      'Opel',
+      'Інше'
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFE4E4E7)),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Оберіть марку авто',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(Icons.close, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: carBrands.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(carBrands[index]),
+                    onTap: () {
+                      setState(() {
+                        _selectedCarBrand = carBrands[index];
+                      });
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // Removed _navigateToCurrencySelection method
@@ -598,15 +709,18 @@ class _FilterPageState extends State<FilterPage> {
                   children: [
               GestureDetector(
                 onTap: _resetFilters,
-                child: Text(
-                  'Скинути фільтри',
-                  style: TextStyle(
-                    color: const Color(0xFF015873) /* Primary */,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                    letterSpacing: 0.16,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    'Скинути фільтри',
+                    style: TextStyle(
+                      color: const Color(0xFF015873) /* Primary */,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
                   ),
                 ),
               ),
@@ -838,6 +952,11 @@ class _FilterPageState extends State<FilterPage> {
                         ),
                       ),
                     ],
+                  // Додаткові фільтри одразу після вибору підкатегорії
+                  if (_selectedSubcategory != null) ...[
+                    const SizedBox(height: 24),
+                    _buildAdditionalFilters(),
+                  ],
                   const SizedBox(height: 16),
         GestureDetector(
           onTap: _navigateToRegionSelection,
@@ -1799,5 +1918,1033 @@ class _FilterPageState extends State<FilterPage> {
       default:
         return '₴';
     }
+  }
+
+  Widget _buildAdditionalFilters() {
+    // Фільтри для нерухомості
+    if (_selectedCategory?.name == 'Нерухомість' || 
+        _selectedSubcategory!.name.contains('Квартири') ||
+        _selectedSubcategory!.name.contains('Кімнати') ||
+        _selectedSubcategory!.name.contains('Будинки') ||
+        _selectedSubcategory!.name.contains('Земля') ||
+        _selectedSubcategory!.name.contains('Комерційна нерухомість') ||
+        _selectedSubcategory!.name.contains('Гаражі') ||
+        _selectedSubcategory!.name.contains('парковки') ||
+        _selectedSubcategory!.name.contains('Нерухомість за кордоном') ||
+        _selectedSubcategory!.id == 'apartments' ||
+        _selectedSubcategory!.id == 'rooms' ||
+        _selectedSubcategory!.id == 'houses' ||
+        _selectedSubcategory!.id == 'commercial' ||
+        _selectedSubcategory!.id == 'garages' ||
+        _selectedSubcategory!.id == 'foreign' ||
+        _selectedSubcategory!.id == 'houses_daily' ||
+        _selectedSubcategory!.id == 'apartments_daily' ||
+        _selectedSubcategory!.id == 'rooms_daily') {
+      return _buildRealEstateFilters();
+    }
+    
+    // Фільтри для житла подобово
+    if (_selectedCategory?.name == 'Житло подобово' || 
+        _selectedSubcategory!.name.contains('Будинки подобово') ||
+        _selectedSubcategory!.name.contains('Квартири подобово') ||
+        _selectedSubcategory!.name.contains('Кімнати подобово') ||
+        _selectedSubcategory!.name.contains('Готелі') ||
+        _selectedSubcategory!.name.contains('бази відпочинку') ||
+        _selectedSubcategory!.name.contains('Хостели') ||
+        _selectedSubcategory!.name.contains('койко-місця') ||
+        _selectedSubcategory!.name.contains('Пропозиції Туроператорів') ||
+        _selectedSubcategory!.id == 'houses_daily' ||
+        _selectedSubcategory!.id == 'apartments_daily' ||
+        _selectedSubcategory!.id == 'rooms_daily') {
+      return _buildDailyAccommodationFilters();
+    }
+    
+    // Фільтри для авто - оновлені назви з вашого списку
+    if (_selectedCategory?.name == 'Авто' || 
+        _selectedSubcategory!.name.contains('Легкові автомобілі') ||
+        _selectedSubcategory!.name.contains('Вантажні автомобілі') ||
+        _selectedSubcategory!.name.contains('Автобуси') ||
+        _selectedSubcategory!.name.contains('Мото') ||
+        _selectedSubcategory!.name.contains('Спецтехніка') ||
+        _selectedSubcategory!.name.contains('Сільгосптехніка') ||
+        _selectedSubcategory!.name.contains('Водний транспорт') ||
+        _selectedSubcategory!.name.contains('Автомобілі з Польщі') ||
+        _selectedSubcategory!.name.contains('Причепи') ||
+        _selectedSubcategory!.name.contains('будинки на колесах') ||
+        _selectedSubcategory!.name.contains('Вантажівки та спецтехніка з Польщі') ||
+        _selectedSubcategory!.name.contains('Інший транспорт') ||
+        _selectedSubcategory!.id == 'cars' ||
+        _selectedSubcategory!.id == 'trucks' ||
+        _selectedSubcategory!.id == 'buses' ||
+        _selectedSubcategory!.id == 'moto' ||
+        _selectedSubcategory!.id == 'special_equipment' ||
+        _selectedSubcategory!.id == 'agricultural' ||
+        _selectedSubcategory!.id == 'water_transport' ||
+        _selectedSubcategory!.id == 'cars_poland' ||
+        _selectedSubcategory!.id == 'trailers' ||
+        _selectedSubcategory!.id == 'trucks_poland' ||
+        _selectedSubcategory!.id == 'other_transport') {
+      return _buildVehicleFilters();
+    }
+    
+    // Фільтри для моди
+    if (_selectedCategory?.name == 'Мода і стиль' || 
+        _selectedSubcategory!.name.contains('Жіночий одяг') ||
+        _selectedSubcategory!.name.contains('Чоловічий одяг') ||
+        _selectedSubcategory!.name.contains('Жіноче взуття') ||
+        _selectedSubcategory!.name.contains('Чоловіче взуття') ||
+        _selectedSubcategory!.name.contains('Жіноча білизна') ||
+        _selectedSubcategory!.name.contains('купальники') ||
+        _selectedSubcategory!.name.contains('Чоловіча білизна') ||
+        _selectedSubcategory!.name.contains('плавки') ||
+        _selectedSubcategory!.name.contains('Одяг для вагітних') ||
+        _selectedSubcategory!.name.contains('Спецодяг') ||
+        _selectedSubcategory!.name.contains('Спецвзуття') ||
+        _selectedSubcategory!.id == 'women_clothes' ||
+        _selectedSubcategory!.id == 'men_clothes' ||
+        _selectedSubcategory!.id == 'women_shoes' ||
+        _selectedSubcategory!.id == 'men_shoes' ||
+        _selectedSubcategory!.id == 'women_underwear' ||
+        _selectedSubcategory!.id == 'men_underwear' ||
+        _selectedSubcategory!.id == 'maternity_clothes' ||
+        _selectedSubcategory!.id == 'work_clothes' ||
+        _selectedSubcategory!.id == 'work_shoes') {
+      return _buildFashionFilters();
+    }
+    
+    // Фільтри для знайомств
+    if (_selectedCategory?.name == 'Знайомства' || 
+        _selectedSubcategory!.name.contains('Чоловіки, які шукають знайомства') ||
+        _selectedSubcategory!.name.contains('Жінки, які шукають знайомства') ||
+        _selectedSubcategory!.id == 'women_dating' ||
+        _selectedSubcategory!.id == 'men_dating') {
+      return _buildDatingFilters();
+    }
+    
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildRealEstateFilters() {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFE4E4E7),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Кількість м²',
+            style: TextStyle(
+              color: const Color(0xFF09090B) /* Zinc-950 */,
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              height: 1.40,
+              letterSpacing: 0.14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Поля вводу площі
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _minAreaController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '0 м²',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 8,
+                height: 44,
+                child: Center(
+                  child: Text(
+                    '-',
+                    style: TextStyle(
+                      color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _maxAreaController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '200 м²',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVehicleFilters() {
+    // Перевіряємо, чи це легкові авто або авто з Польщі
+    bool isCarOrCarPoland = _selectedSubcategory?.id == 'cars' || 
+                            _selectedSubcategory?.id == 'cars_poland' ||
+                            _selectedSubcategory!.name.contains('Легкові автомобілі') ||
+                            _selectedSubcategory!.name.contains('Автомобілі з Польщі');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Дропдаун для вибору марки авто (тільки для легкових авто та авто з Польщі)
+        if (isCarOrCarPoland) ...[
+          GestureDetector(
+            onTap: _showCarBrandSelection,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                ),
+                shadows: [
+                  BoxShadow(
+                    color: Color(0x0C101828),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                    spreadRadius: 0,
+                  )
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 8,
+                      children: [
+                        Text(
+                          _selectedCarBrand ?? 'Оберіть марку Авто',
+                          style: TextStyle(
+                            color: _selectedCarBrand == null 
+                              ? const Color(0xFFA1A1AA) /* Zinc-400 */
+                              : Colors.black,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.50,
+                            letterSpacing: 0.16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(),
+                    child: Stack(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        
+        // Блок "Рік випуску"
+        Text(
+          'Рік випуску',
+          style: TextStyle(
+            color: const Color(0xFF09090B) /* Zinc-950 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.40,
+            letterSpacing: 0.14,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x0C101828),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: TextField(
+                    controller: _minCarYearController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '1999',
+                      hintStyle: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 44,
+              child: Center(
+                child: Text(
+                  '-',
+                  style: TextStyle(
+                    color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    height: 1.50,
+                    letterSpacing: 0.16,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x0C101828),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: TextField(
+                    controller: _maxCarYearController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '2022',
+                      hintStyle: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Блок "Двигун, кількість к.с"
+        Text(
+          'Двигун, кількість к.с',
+          style: TextStyle(
+            color: const Color(0xFF09090B) /* Zinc-950 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.40,
+            letterSpacing: 0.14,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x0C101828),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: TextField(
+                    controller: _minEngineHpController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '0 к.с',
+                      hintStyle: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 44,
+              child: Center(
+                child: Text(
+                  '-',
+                  style: TextStyle(
+                    color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    height: 1.50,
+                    letterSpacing: 0.16,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x0C101828),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: TextField(
+                    controller: _maxEngineHpController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '200 к.с',
+                      hintStyle: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFashionFilters() {
+    // Визначаємо доступні розміри залежно від підкатегорії
+    List<String> availableSizes = [];
+    
+    if (_selectedSubcategory!.name.contains('Жіночий одяг')) {
+      availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    } else if (_selectedSubcategory!.name.contains('Жіноче взуття')) {
+      availableSizes = List.generate(9, (index) => (34 + index).toString()); // 34-42 EU
+    } else if (_selectedSubcategory!.name.contains('Чоловічий одяг')) {
+      availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    } else if (_selectedSubcategory!.name.contains('Чоловіче взуття')) {
+      availableSizes = List.generate(9, (index) => (39 + index).toString()); // 39-47 EU
+    } else if (_selectedSubcategory!.name.contains('Жіноча білизна') || 
+               _selectedSubcategory!.name.contains('купальники')) {
+      availableSizes = ['XS', 'S', 'M', 'L', 'XL'];
+    } else if (_selectedSubcategory!.name.contains('Чоловіча білизна') || 
+               _selectedSubcategory!.name.contains('плавки')) {
+      availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+    } else if (_selectedSubcategory!.name.contains('Одяг для вагітних')) {
+      availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    } else if (_selectedSubcategory!.name.contains('Спецодяг')) {
+      availableSizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    } else if (_selectedSubcategory!.name.contains('Спецвзуття')) {
+      availableSizes = List.generate(11, (index) => (38 + index).toString()); // 38-48
+    } else {
+      availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']; // За замовчуванням
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Розмір',
+          style: TextStyle(
+            color: const Color(0xFF52525B) /* Zinc-600 */,
+            fontSize: 14,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.40,
+            letterSpacing: 0.14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: availableSizes.map((size) {
+            final bool isSelected = _selectedSize == size;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedSize = isSelected ? null : size;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: ShapeDecoration(
+                  color: isSelected ? const Color(0xFF015873) /* Primary */ : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: isSelected ? const Color(0xFF015873) /* Primary */ : const Color(0xFFE4E4E7) /* Zinc-200 */,
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x0C101828),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
+                child: Text(
+                  size,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF52525B) /* Zinc-600 */,
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    height: 1.40,
+                    letterSpacing: 0.14,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDailyAccommodationFilters() {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFE4E4E7),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Кількість м²',
+            style: TextStyle(
+              color: const Color(0xFF09090B) /* Zinc-950 */,
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              height: 1.40,
+              letterSpacing: 0.14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _minAreaController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '0 м²',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 8,
+                height: 44,
+                child: Center(
+                  child: Text(
+                    '-',
+                    style: TextStyle(
+                      color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _maxAreaController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '200 м²',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDatingFilters() {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFE4E4E7),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Вік',
+            style: TextStyle(
+              color: const Color(0xFF09090B) /* Zinc-950 */,
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+              height: 1.40,
+              letterSpacing: 0.14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _minAgeController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '18',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 8,
+                height: 44,
+                child: Center(
+                  child: Text(
+                    '-',
+                    style: TextStyle(
+                      color: const Color(0xFFA1A1AA) /* Zinc-400 */,
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      height: 1.50,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: TextField(
+                      controller: _maxAgeController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '65',
+                        hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.50,
+                        letterSpacing: 0.16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 } 

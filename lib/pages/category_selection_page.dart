@@ -63,6 +63,12 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
     try {
       final categoryService = CategoryService();
       final fetchedCategories = await categoryService.getCategories();
+      
+      print('Debug: Loaded categories from database:');
+      for (var category in fetchedCategories) {
+        print('Debug: - ${category.id}: ${category.name}');
+      }
+      
       setState(() {
         _categories = fetchedCategories;
         _isLoadingCategories = false;
@@ -85,6 +91,12 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
     try {
       final subcategoryService = SubcategoryService(Supabase.instance.client);
       final fetchedSubcategories = await subcategoryService.getSubcategoriesForCategory(categoryId);
+      
+      print('Debug: Loaded subcategories for category $categoryId:');
+      for (var subcategory in fetchedSubcategories) {
+        print('Debug: - ${subcategory.id}: ${subcategory.name}');
+      }
+      
       setState(() {
         _subcategories = fetchedSubcategories;
         _isLoadingSubcategories = false;
@@ -117,6 +129,10 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
           title: GestureDetector(
             onTap: () {
               // Return selected category and subcategory to previous page
+              print('Debug: Returning from CategorySelectionPage:');
+              print('Debug: - category: ${_selectedCategory?.name}');
+              print('Debug: - subcategory: ${_selectedSubcategory?.name}');
+              
               Navigator.pop(context, {
                 'category': _selectedCategory,
                 'subcategory': _selectedSubcategory,
