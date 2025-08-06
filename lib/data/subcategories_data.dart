@@ -53,12 +53,8 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
   },
 
   // Нерухомість подобово
-  'houses_daily': {
-    'rooms': {'type': 'number'},
-  },
-  'apartments_daily': {
-    'rooms': {'type': 'number'},
-  },
+  'houses_daily': {},
+  'apartments_daily': {},
   'rooms_daily': {},
 
   // Транспорт
@@ -115,13 +111,9 @@ final Map<String, Map<String, dynamic>> subcategoriesExtraFields = {
   },
 
   // Нерухомість
-  'apartments': {
-    'rooms': {'type': 'number'},
-  },
+  'apartments': {},
   'rooms': {},
-  'houses': {
-    'rooms': {'type': 'number'},
-  },
+  'houses': {},
   'commercial': {},
   'garages': {},
   'foreign': {},

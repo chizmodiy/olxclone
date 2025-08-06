@@ -675,7 +675,9 @@ class _AddListingPageState extends State<AddListingPage> {
       children: [
         const SizedBox(height: 20),
         ..._selectedSubcategory!.extraFields.where((field) =>
-          field.name != 'area' && field.name != 'square_meters'
+          field.name != 'area' &&
+          field.name != 'square_meters' &&
+          field.name != 'rooms'
         ).map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
