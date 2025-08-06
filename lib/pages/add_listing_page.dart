@@ -2188,8 +2188,8 @@ class _AddListingPageState extends State<AddListingPage> {
       errorMessage = _validateAdditionalFields();
       if (errorMessage != null) {
         print('Debug: Validation failed - additional fields: $errorMessage');
-      } else {
-        print('Debug: Form validation passed successfully');
+    } else {
+      print('Debug: Form validation passed successfully');
       }
     }
     return errorMessage;
@@ -2968,70 +2968,70 @@ class _AddListingPageState extends State<AddListingPage> {
         return ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48'];
       default:
         return [];
-    }
   }
+} 
 
-  Widget _buildAreaField() {
-    // Показуємо поле тільки для нерухомості та житла подобово
-    if (_selectedSubcategory == null) return const SizedBox.shrink();
-    
-    bool shouldShowAreaField = false;
-    
-    // Перевіряємо чи це нерухомість
-    if (_selectedCategory?.name == 'Нерухомість') {
-      shouldShowAreaField = true;
-    }
-    
-    // Перевіряємо чи це житло подобово
-    if (_selectedCategory?.name == 'Житло подобово') {
-      shouldShowAreaField = true;
-    }
-    
-    if (!shouldShowAreaField) return const SizedBox.shrink();
-    
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Кількість м²',
-                style: TextStyle(
-                  color: const Color(0xFF09090B),
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                  height: 1.40,
-                  letterSpacing: 0.14,
-                ),
+Widget _buildAreaField() {
+  // Показуємо поле тільки для нерухомості та житла подобово
+  if (_selectedSubcategory == null) return const SizedBox.shrink();
+  
+  bool shouldShowAreaField = false;
+  
+  // Перевіряємо чи це нерухомість
+  if (_selectedCategory?.name == 'Нерухомість') {
+    shouldShowAreaField = true;
+  }
+  
+  // Перевіряємо чи це житло подобово
+  if (_selectedCategory?.name == 'Житло подобово') {
+    shouldShowAreaField = true;
+  }
+  
+  if (!shouldShowAreaField) return const SizedBox.shrink();
+  
+  return Column(
+    children: [
+      Container(
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Кількість м²',
+              style: TextStyle(
+                color: const Color(0xFF09090B),
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+                height: 1.40,
+                letterSpacing: 0.14,
               ),
-              const SizedBox(height: 6),
-              Container(
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: double.infinity,
+            ),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: double.infinity,
                                   height: 44, // Фіксована висота 44 пікселі
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   decoration: BoxDecoration(
@@ -3134,14 +3134,14 @@ class _AddListingPageState extends State<AddListingPage> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
                             color: isSelected ? AppColors.primaryColor : Colors.white,
                             shape: BoxShape.rectangle,
                             borderRadius: BorderRadius.circular(200),
                             border: Border.all(
                               color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
-                              width: 1,
+                                      width: 1,
                             ),
                             boxShadow: const [
                               BoxShadow(
@@ -3190,16 +3190,16 @@ class _AddListingPageState extends State<AddListingPage> {
                           decoration: BoxDecoration(
                             color: isSelected ? AppColors.primaryColor : Colors.white,
                             shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(200),
+                                    borderRadius: BorderRadius.circular(200),
                             border: Border.all(
                               color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
                               width: 1,
-                            ),
+                                  ),
                             boxShadow: const [
-                              BoxShadow(
+                                    BoxShadow(
                                 color: Color.fromRGBO(16, 24, 40, 0.05),
                                 offset: Offset(0, 1),
-                                blurRadius: 2,
+                                      blurRadius: 2,
                               ),
                             ],
                           ),
@@ -3279,31 +3279,31 @@ class _AddListingPageState extends State<AddListingPage> {
                                     boxShadow: const [
                                       BoxShadow(
                                         color: Color.fromRGBO(16, 24, 40, 0.05),
-                                        offset: Offset(0, 1),
+                                      offset: Offset(0, 1),
                                         blurRadius: 2,
                                       ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Expanded(
-                                              child: TextField(
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
                                                 controller: _ageController,
-                                                keyboardType: TextInputType.number,
+                                              keyboardType: TextInputType.number,
                                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                                decoration: InputDecoration(
+                                              decoration: InputDecoration(
                                                   hintText: '18',
                                                   hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                                                  border: InputBorder.none,
+                                                border: InputBorder.none,
                                                   isDense: true,
                                                   contentPadding: EdgeInsets.zero,
                                                 ),
@@ -3350,7 +3350,7 @@ class _AddListingPageState extends State<AddListingPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+                                          Text(
                 'Марка авто',
                 style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
               ),
@@ -3371,9 +3371,9 @@ class _AddListingPageState extends State<AddListingPage> {
                         color: Color.fromRGBO(16, 24, 40, 0.05),
                         offset: Offset(0, 1),
                         blurRadius: 2,
-                      ),
-                    ],
-                  ),
+                                          ),
+                                        ],
+                                      ),
                   child: Row(
                     children: [
                       Expanded(
@@ -3392,11 +3392,11 @@ class _AddListingPageState extends State<AddListingPage> {
                       ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
         const SizedBox(height: 20),
       ],
     );
@@ -3569,11 +3569,11 @@ class _AddListingPageState extends State<AddListingPage> {
                 ),
               ),
             ],
-          ),
         ),
-        const SizedBox(height: 20),
-      ],
-    );
+      ),
+      const SizedBox(height: 20),
+    ],
+  );
   }
 }
 
