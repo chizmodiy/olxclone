@@ -2084,6 +2084,43 @@ class _EditListingPageState extends State<EditListingPage> {
           }
         }
       }
+      
+      // Додавання додаткових полів
+      if (_areaController.text.isNotEmpty) {
+        final area = double.tryParse(_areaController.text);
+        if (area != null) {
+          finalCustomAttributes['area'] = area;
+        }
+      }
+      
+      if (_selectedSize != null) {
+        finalCustomAttributes['size'] = _selectedSize;
+      }
+      
+      if (_ageController.text.isNotEmpty) {
+        final age = int.tryParse(_ageController.text);
+        if (age != null) {
+          finalCustomAttributes['age'] = age;
+        }
+      }
+      
+      if (_selectedCarBrand != null) {
+        finalCustomAttributes['car_brand'] = _selectedCarBrand;
+      }
+      
+      if (_yearController.text.isNotEmpty) {
+        final year = int.tryParse(_yearController.text);
+        if (year != null) {
+          finalCustomAttributes['year'] = year;
+        }
+      }
+      
+      if (_enginePowerController.text.isNotEmpty) {
+        final power = int.tryParse(_enginePowerController.text);
+        if (power != null) {
+          finalCustomAttributes['engine_power'] = power;
+        }
+      }
 
       String locationString = '';
       if (_selectedRegion != null && _selectedCity != null) {
