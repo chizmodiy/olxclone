@@ -677,7 +677,11 @@ class _AddListingPageState extends State<AddListingPage> {
         ..._selectedSubcategory!.extraFields.where((field) =>
           field.name != 'area' &&
           field.name != 'square_meters' &&
-          field.name != 'rooms'
+          field.name != 'rooms' &&
+          field.name != 'year' &&
+          field.name != 'car_brand' &&
+          field.name != 'engine_power' &&
+          field.name != 'engine_power_hp'
         ).map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
