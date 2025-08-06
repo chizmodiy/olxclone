@@ -528,6 +528,13 @@ class _EditListingPageState extends State<EditListingPage> {
   void _onCategorySelected(Category category) {
     setState(() {
       _selectedCategory = category;
+      // Очищення додаткових полів при зміні категорії
+      _areaController.clear();
+      _selectedSize = null;
+      _ageController.clear();
+      _selectedCarBrand = null;
+      _yearController.clear();
+      _enginePowerController.clear();
     });
     _loadSubcategories(category.id);
     Navigator.pop(context);
@@ -706,6 +713,13 @@ class _EditListingPageState extends State<EditListingPage> {
           _extraFieldControllers['${field.name}_max'] = TextEditingController();
         }
       }
+      // Очищення додаткових полів при зміні підкатегорії
+      _areaController.clear();
+      _selectedSize = null;
+      _ageController.clear();
+      _selectedCarBrand = null;
+      _yearController.clear();
+      _enginePowerController.clear();
     });
     Navigator.pop(context);
   }
@@ -2041,8 +2055,72 @@ class _EditListingPageState extends State<EditListingPage> {
       errorMessage = 'Будь ласка, введіть номер Viber';
     } else if (_selectedImages.isEmpty) {
       errorMessage = 'Додайте хоча б одне зображення';
+    } else {
+      // Валідація додаткових полів
+      errorMessage = _validateAdditionalFields();
     }
     return errorMessage;
+  }
+
+  String? _validateAdditionalFields() {
+    // Валідація поля площі для нерухомості та житла
+    if (_selectedCategory?.name == 'Нерухомість' || _selectedCategory?.name == 'Житло подобово') {
+      if (_areaController.text.trim().isEmpty) {
+        return 'Будь ласка, введіть кількість квадратних метрів';
+      }
+      final area = double.tryParse(_areaController.text);
+      if (area == null || area <= 0) {
+        return 'Будь ласка, введіть коректну кількість квадратних метрів';
+      }
+    }
+    
+    // Валідація розміру для моди та стилю
+    if (_selectedCategory?.name == 'Мода і стиль') {
+      if (_selectedSize == null) {
+        return 'Будь ласка, оберіть розмір';
+      }
+    }
+    
+    // Валідація віку для знайомств
+    if (_selectedCategory?.name == 'Знайомства') {
+      if (_ageController.text.trim().isEmpty) {
+        return 'Будь ласка, введіть вік';
+      }
+      final age = int.tryParse(_ageController.text);
+      if (age == null || age <= 0 || age > 120) {
+        return 'Будь ласка, введіть коректний вік';
+      }
+    }
+    
+    // Валідація полів для авто
+    if (_selectedCategory?.name == 'Авто') {
+      // Валідація марки авто для легкових автомобілів та автомобілів з Польщі
+      if (_selectedSubcategory?.name == 'Легкові автомобілі' || _selectedSubcategory?.name == 'Автомобілі з Польщі') {
+        if (_selectedCarBrand == null) {
+          return 'Будь ласка, оберіть марку авто';
+        }
+      }
+      
+      // Валідація року випуску
+      if (_yearController.text.trim().isEmpty) {
+        return 'Будь ласка, введіть рік випуску';
+      }
+      final year = int.tryParse(_yearController.text);
+      if (year == null || year < 1900 || year > DateTime.now().year + 1) {
+        return 'Будь ласка, введіть коректний рік випуску';
+      }
+      
+      // Валідація потужності двигуна
+      if (_enginePowerController.text.trim().isEmpty) {
+        return 'Будь ласка, введіть потужність двигуна';
+      }
+      final power = int.tryParse(_enginePowerController.text);
+      if (power == null || power <= 0 || power > 2000) {
+        return 'Будь ласка, введіть коректну потужність двигуна';
+      }
+    }
+    
+    return null; // Валідація пройшла успішно
   }
 
   Future<void> _updateListing() async {
