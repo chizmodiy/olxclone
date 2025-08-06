@@ -674,7 +674,9 @@ class _AddListingPageState extends State<AddListingPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        ..._selectedSubcategory!.extraFields.map((field) {
+        ..._selectedSubcategory!.extraFields.where((field) =>
+          field.name != 'area' && field.name != 'square_meters'
+        ).map((field) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2196,7 +2198,7 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   String? _validateAdditionalFields() {
-    // Валідація поля площі для нерухомості та житла
+    // Валідація поля площі для нерухомості та житла подобово
     if (_selectedCategory?.name == 'Нерухомість' || _selectedCategory?.name == 'Житло подобово') {
       if (_areaController.text.trim().isEmpty) {
         return 'Будь ласка, введіть кількість квадратних метрів';
