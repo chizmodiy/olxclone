@@ -35,6 +35,12 @@ class _AddListingPageState extends State<AddListingPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _areaController = TextEditingController(); // Controller for square meters
+  String? _selectedSize; // Selected size for clothing and shoes
+  final TextEditingController _ageController = TextEditingController(); // Controller for age
+  String? _selectedCarBrand; // Selected car brand
+  final TextEditingController _yearController = TextEditingController(); // Year
+  final TextEditingController _enginePowerController = TextEditingController(); // Engine power
+  final GlobalKey _carBrandKey = GlobalKey(); // Key for car brand selector positioning
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _selectedImages = [];
   final PageController _imagePageController = PageController();
@@ -455,6 +461,11 @@ class _AddListingPageState extends State<AddListingPage> {
       _selectedCategory = category;
       _selectedSubcategory = null;
       _areaController.clear(); // Clear area field when category changes
+      _selectedSize = null; // Clear selected size when category changes
+      _ageController.clear(); // Clear age field when category changes
+      _selectedCarBrand = null; // Clear selected car brand when category changes
+      _yearController.clear(); // Clear year field when category changes
+      _enginePowerController.clear(); // Clear engine power field when category changes
     });
         _loadSubcategories(category.id);
     Navigator.pop(context);
@@ -635,6 +646,11 @@ class _AddListingPageState extends State<AddListingPage> {
       
       // Clear area field when subcategory changes
       _areaController.clear();
+      _selectedSize = null; // Clear selected size when subcategory changes
+      _ageController.clear(); // Clear age field when subcategory changes
+      _selectedCarBrand = null; // Clear selected car brand when subcategory changes
+      _yearController.clear(); // Clear year field when subcategory changes
+      _enginePowerController.clear(); // Clear engine power field when subcategory changes
       
       // Initialize controllers for new extra fields
       for (var field in subcategory.extraFields) {
@@ -2357,6 +2373,40 @@ class _AddListingPageState extends State<AddListingPage> {
           finalCustomAttributes['area'] = areaValue;
         }
       }
+      
+      // Add size value if selected
+      if (_selectedSize != null) {
+        finalCustomAttributes['size'] = _selectedSize;
+      }
+      
+      // Add age value if entered
+      if (_ageController.text.isNotEmpty) {
+        final ageValue = int.tryParse(_ageController.text);
+        if (ageValue != null && ageValue > 0) {
+          finalCustomAttributes['age'] = ageValue;
+        }
+      }
+      
+      // Add car brand if selected
+      if (_selectedCarBrand != null) {
+        finalCustomAttributes['car_brand'] = _selectedCarBrand;
+      }
+      
+      // Add year if entered
+      if (_yearController.text.isNotEmpty) {
+        final year = int.tryParse(_yearController.text);
+        if (year != null && year > 0) {
+          finalCustomAttributes['year'] = year;
+        }
+      }
+      
+      // Add engine power if entered
+      if (_enginePowerController.text.isNotEmpty) {
+        final power = int.tryParse(_enginePowerController.text);
+        if (power != null && power > 0) {
+          finalCustomAttributes['engine_power'] = power;
+        }
+      }
 
       String locationString = '';
       if (_selectedRegion != null && _selectedCity != null) {
@@ -2656,6 +2706,14 @@ class _AddListingPageState extends State<AddListingPage> {
                 // Додаємо поле площі після підкатегорії
                 const SizedBox(height: 20),
                 _buildAreaField(),
+                // Додаємо селектор розміру після поля площі
+                _buildSizeSelector(),
+                // Додаємо поле віку після селектора розмірів
+                _buildAgeField(),
+                // Додаємо селектор марки авто після поля віку
+                _buildCarBrandSelector(),
+                // Додаємо поля авто після селектора марки
+                _buildCarFields(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
                 LocationPicker(
@@ -2769,6 +2827,11 @@ class _AddListingPageState extends State<AddListingPage> {
                           _extraFieldControllers.clear();
                           _extraFieldValues.clear();
                           _areaController.clear(); // Clear area field
+                          _selectedSize = null; // Clear selected size
+                          _ageController.clear(); // Clear age field
+                          _selectedCarBrand = null; // Clear selected car brand
+                          _yearController.clear(); // Clear year field
+                          _enginePowerController.clear(); // Clear engine power field
                         });
                         
                         // Navigate to main page
@@ -2796,6 +2859,49 @@ class _AddListingPageState extends State<AddListingPage> {
         ],
       ),
     );
+  }
+
+  List<String> _getCarBrands() {
+    return [
+      'Volkswagen',
+      'BMW',
+      'Audi',
+      'Mercedes-Benz',
+      'Toyota',
+      'Renault',
+      'Skoda',
+      'Ford',
+      'Nissan',
+      'Opel',
+      'Інше',
+    ];
+  }
+
+  List<String> _getSizesForSubcategory() {
+    if (_selectedSubcategory == null) return [];
+    
+    switch (_selectedSubcategory!.name) {
+      case 'Жіночий одяг':
+        return ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+      case 'Жіноче взуття':
+        return ['34', '35', '36', '37', '38', '39', '40', '41', '42'];
+      case 'Чоловічий одяг':
+        return ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+      case 'Чоловіче взуття':
+        return ['39', '40', '41', '42', '43', '44', '45', '46', '47'];
+      case 'Жіноча білизна та купальники':
+        return ['XS', 'S', 'M', 'L', 'XL'];
+      case 'Чоловіча білизна та плавки':
+        return ['S', 'M', 'L', 'XL', 'XXL'];
+      case 'Одяг для вагітних':
+        return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+      case 'Спецодяг':
+        return ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+      case 'Спецвзуття та аксесуари':
+        return ['38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48'];
+      default:
+        return [];
+    }
   }
 
   Widget _buildAreaField() {
@@ -2916,6 +3022,483 @@ class _AddListingPageState extends State<AddListingPage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildSizeSelector() {
+    // Показуємо селектор розмірів тільки для категорії "Мода і стиль"
+    if (_selectedCategory?.name != 'Мода і стиль') return const SizedBox.shrink();
+    
+    final sizes = _getSizesForSubcategory();
+    if (sizes.isEmpty) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Розмір',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 8),
+              // Перший ряд кнопок (4 кнопки)
+              Row(
+                children: sizes.take(4).map((size) {
+                  final isSelected = _selectedSize == size;
+                  return Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 4),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedSize = isSelected ? null : size;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primaryColor : Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(16, 24, 40, 0.05),
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                size,
+                                style: AppTextStyles.body2Semibold.copyWith(
+                                  color: isSelected ? Colors.white : AppColors.color8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              // Другий ряд кнопок (якщо є більше 4 розмірів)
+              if (sizes.length > 4) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: sizes.skip(4).map((size) {
+                    final isSelected = _selectedSize == size;
+                    return Container(
+                      width: 88,
+                      margin: const EdgeInsets.only(right: 4),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedSize = isSelected ? null : size;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primaryColor : Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(200),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primaryColor : AppColors.zinc200,
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(16, 24, 40, 0.05),
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                size,
+                                style: AppTextStyles.body2Semibold.copyWith(
+                                  color: isSelected ? Colors.white : AppColors.color8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildAgeField() {
+    // Показуємо поле віку тільки для категорії "Знайомства"
+    if (_selectedCategory?.name != 'Знайомства') return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Вік',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  height: 44, // Фіксована висота 44 пікселі
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.zinc50,
+                                    borderRadius: BorderRadius.circular(200),
+                                    border: Border.all(color: AppColors.zinc200, width: 1),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                                        offset: Offset(0, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: TextField(
+                                                controller: _ageController,
+                                                keyboardType: TextInputType.number,
+                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                decoration: InputDecoration(
+                                                  hintText: '18',
+                                                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.zero,
+                                                ),
+                                                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildCarBrandSelector() {
+    // Показуємо селектор марки авто тільки для категорії "Авто" та підкатегорій "Легкові автомобілі" та "Автомобілі з Польщі"
+    if (_selectedCategory?.name != 'Авто') return const SizedBox.shrink();
+    if (_selectedSubcategory?.name != 'Легкові автомобілі' && 
+        _selectedSubcategory?.name != 'Автомобілі з Польщі') return const SizedBox.shrink();
+    
+    final brands = _getCarBrands();
+    
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Марка авто',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => _showCarBrandPicker(),
+                child: Container(
+                  key: _carBrandKey,
+                  width: double.infinity,
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.zinc50,
+                    borderRadius: BorderRadius.circular(200),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selectedCarBrand ?? 'Оберіть марку Авто',
+                          style: AppTextStyles.body1Regular.copyWith(
+                            color: _selectedCarBrand != null ? AppColors.color2 : AppColors.color5,
+                          ),
+                        ),
+                      ),
+                      SvgPicture.asset(
+                        'assets/icons/chevron_down.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  void _showCarBrandPicker() {
+    final brands = _getCarBrands();
+    
+    // Знаходимо позицію інпуту за допомогою GlobalKey
+    final RenderBox? renderBox = _carBrandKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    
+    final position = renderBox.localToGlobal(Offset.zero);
+    
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Stack(
+          children: [
+            Positioned(
+              top: position.dy + 52, // Позиція інпуту + висота інпуту (44) + відступ (8)
+              left: 13,
+              right: 13,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: 270,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.1),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: brands.length,
+                    itemBuilder: (context, index) {
+                      final brand = brands[index];
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCarBrand = brand;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Text(
+                            brand,
+                            style: AppTextStyles.body1Regular.copyWith(
+                              color: AppColors.color2,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCarFields() {
+    // Показуємо поля авто тільки для категорії "Авто"
+    if (_selectedCategory?.name != 'Авто') return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        // Рік випуску
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Рік випуску',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.zinc50,
+                  borderRadius: BorderRadius.circular(200),
+                  border: Border.all(color: AppColors.zinc200, width: 1),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                                  child: TextField(
+                    controller: _yearController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    hintText: '1999',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        
+        // Двигун, кількість к.с
+        Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Двигун, кількість к.с',
+                style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.zinc50,
+                  borderRadius: BorderRadius.circular(200),
+                  border: Border.all(color: AppColors.zinc200, width: 1),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(16, 24, 40, 0.05),
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                                  child: TextField(
+                    controller: _enginePowerController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    hintText: '0 к.с',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
                 ),
               ),
             ],
