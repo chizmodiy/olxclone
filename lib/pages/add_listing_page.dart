@@ -2654,6 +2654,7 @@ class _AddListingPageState extends State<AddListingPage> {
                 _buildCategorySection(),
                 _buildSubcategorySection(),
                 // Додаємо поле площі після підкатегорії
+                const SizedBox(height: 20),
                 _buildAreaField(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
@@ -2858,24 +2859,18 @@ class _AddListingPageState extends State<AddListingPage> {
                               children: [
                                 Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  clipBehavior: Clip.antiAlias,
-                                  decoration: ShapeDecoration(
-                                    color: const Color(0xFFFAFAFA),
-                                    shape: RoundedRectangleBorder(
-                                      side: BorderSide(
-                                        width: 1,
-                                        color: const Color(0xFFE4E4E7),
-                                      ),
-                                      borderRadius: BorderRadius.circular(200),
-                                    ),
-                                    shadows: [
+                                  height: 44, // Фіксована висота 44 пікселі
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.zinc50,
+                                    borderRadius: BorderRadius.circular(200),
+                                    border: Border.all(color: AppColors.zinc200, width: 1),
+                                    boxShadow: const [
                                       BoxShadow(
-                                        color: Color(0x0C101828),
-                                        blurRadius: 2,
+                                        color: Color.fromRGBO(16, 24, 40, 0.05),
                                         offset: Offset(0, 1),
-                                        spreadRadius: 0,
-                                      )
+                                        blurRadius: 2,
+                                      ),
                                     ],
                                   ),
                                   child: Row(
@@ -2893,38 +2888,20 @@ class _AddListingPageState extends State<AddListingPage> {
                                               child: TextField(
                                                 controller: _areaController,
                                                 keyboardType: TextInputType.number,
+                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                                 decoration: InputDecoration(
-                                                  border: InputBorder.none,
                                                   hintText: '0',
-                                                  hintStyle: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16,
-                                                    fontFamily: 'Inter',
-                                                    fontWeight: FontWeight.w400,
-                                                    height: 1.50,
-                                                    letterSpacing: 0.16,
-                                                  ),
+                                                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.zero,
                                                 ),
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 16,
-                                                  fontFamily: 'Inter',
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 1.50,
-                                                  letterSpacing: 0.16,
-                                                ),
+                                                style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
                                               ),
                                             ),
                                             Text(
                                               'м²',
-                                              style: TextStyle(
-                                                color: const Color(0xFFA1A1AA),
-                                                fontSize: 14,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w500,
-                                                height: 1.40,
-                                                letterSpacing: 0.14,
-                                              ),
+                                              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color8),
                                             ),
                                           ],
                                         ),
