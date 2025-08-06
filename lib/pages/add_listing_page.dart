@@ -2781,16 +2781,18 @@ class _AddListingPageState extends State<AddListingPage> {
                 // Category Dropdown
                 _buildCategorySection(),
                 _buildSubcategorySection(),
-                // Додаємо поле площі після підкатегорії
-                const SizedBox(height: 20),
+                // Динамічний відступ: тільки якщо є хоча б один видимий додатковий блок
+                if (_buildAreaField().runtimeType != SizedBox ||
+                    _buildSizeSelector().runtimeType != SizedBox ||
+                    _buildAgeField().runtimeType != SizedBox ||
+                    _buildCarBrandSelector().runtimeType != SizedBox ||
+                    _buildCarFields().runtimeType != SizedBox)
+                  const SizedBox(height: 20),
+                // Додаткові поля
                 _buildAreaField(),
-                // Додаємо селектор розміру після поля площі
                 _buildSizeSelector(),
-                // Додаємо поле віку після селектора розмірів
                 _buildAgeField(),
-                // Додаємо селектор марки авто після поля віку
                 _buildCarBrandSelector(),
-                // Додаємо поля авто після селектора марки
                 _buildCarFields(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),

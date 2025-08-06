@@ -13,6 +13,7 @@ class RegionSelectionPage extends StatefulWidget {
 class _RegionSelectionPageState extends State<RegionSelectionPage> {
   final List<Category> _regions = [
     Category(id: 'kyiv', name: 'Київ'),
+    Category(id: 'kyiv_oblast', name: 'Київська область'),
     Category(id: 'kharkiv', name: 'Харківська область'),
     Category(id: 'odesa', name: 'Одеська область'),
     Category(id: 'dnipro', name: 'Дніпропетровська область'),
