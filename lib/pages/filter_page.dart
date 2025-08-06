@@ -126,12 +126,15 @@ class _FilterPageState extends State<FilterPage> {
     
     // --- Додаємо ініціалізацію області (регіону) ---
     if (widget.initialFilters['region'] != null && widget.initialFilters['region'] is String) {
-      // Якщо список регіонів вже завантажений, шукаємо по id
       try {
         // Якщо у вас є список _regions, розкоментуйте і використайте:
         // _selectedRegion = _regions.firstWhere((r) => r.id == widget.initialFilters['region']);
-        // Якщо список _regions не використовується, а CategorySelectionPage повертає Category, можна зберігати id напряму
-        _selectedRegion = Category(id: widget.initialFilters['region'], name: ''); // name оновиться при виборі
+        // Якщо список _regions не використовується, а CategorySelectionPage повертає Category, можна зберігати id та name напряму
+        if (widget.initialFilters['region_name'] != null) {
+          _selectedRegion = Category(id: widget.initialFilters['region'], name: widget.initialFilters['region_name']);
+        } else {
+          _selectedRegion = Category(id: widget.initialFilters['region'], name: ''); // name оновиться при виборі
+        }
       } catch (_) {}
     }
     // --- Кінець блоку ініціалізації області ---
@@ -413,6 +416,8 @@ class _FilterPageState extends State<FilterPage> {
       'category': _selectedCategory?.id, // Передаємо id, а не name
       'subcategory': _selectedSubcategory?.id, // Передаємо id, а не name
       'currency': _selectedCurrency,
+      'region': _selectedRegion?.id,
+      'region_name': _selectedRegion?.name,
     };
 
     if (_isPriceModePrice) {
@@ -972,7 +977,7 @@ class _FilterPageState extends State<FilterPage> {
                     ],
                   // Додаткові фільтри одразу після вибору підкатегорії
                   if (_selectedSubcategory != null) ...[
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
                     _buildAdditionalFilters(),
                   ],
                   const SizedBox(height: 16),
