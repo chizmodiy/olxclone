@@ -64,7 +64,7 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
-              'Ви будете вийшли з облікового запису та повернетеся на головну сторінку',
+              'Ви вийдете з облікового запису та повернетеся на головну сторінку',
               style: AppTextStyles.body1Regular.copyWith(
                 color: AppColors.color5,
               ),

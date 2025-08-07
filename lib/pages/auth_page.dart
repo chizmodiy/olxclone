@@ -19,6 +19,7 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   bool _showSignUp = true; // true for Sign Up, false for Log In
   bool _isLoading = false;
+  bool _isAuthorized = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   final _supabase = Supabase.instance.client;
   final ProfileService _profileService = ProfileService();
@@ -27,7 +28,8 @@ class _AuthPageState extends State<AuthPage> {
   void initState() {
     super.initState();
     final user = Supabase.instance.client.auth.currentUser;
-    if (user != null) {
+    _isAuthorized = user != null;
+    if (_isAuthorized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/');
       });
@@ -35,7 +37,7 @@ class _AuthPageState extends State<AuthPage> {
     
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (user != null) {
+      if (_isAuthorized) {
         final userStatus = await _profileService.getUserStatus();
         if (userStatus == 'blocked') {
           _showBlockedUserBottomSheet();
@@ -176,6 +178,14 @@ class _AuthPageState extends State<AuthPage> {
           statusBarColor: Colors.white,
           statusBarIconBrightness: Brightness.dark,
         ),
+        leading: !_isAuthorized
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('/');
+                },
+              )
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0), // 80px from top
