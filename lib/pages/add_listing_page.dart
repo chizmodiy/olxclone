@@ -2658,50 +2658,51 @@ class _AddListingPageState extends State<AddListingPage> {
                 if (_selectedImages.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 6.0),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: List.generate(_selectedImages.length, (index) {
-                        final imagePath = _selectedImages[index].path;
-                        return SizedBox(
-                          width: 92,
-                          height: 92,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: _buildImageWidget(imagePath),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: List.generate(_selectedImages.length, (index) {
+                          final imagePath = _selectedImages[index].path;
+                          return SizedBox(
+                            width: 92,
+                            height: 92,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: _buildImageWidget(imagePath),
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedImages.removeAt(index);
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(200),
-                                      color: const Color.fromARGB(0, 255, 255, 255),
-                                    ),
-                                    child: SvgPicture.asset(
-                                      'assets/icons/x-close.svg',
-                                      width: 20,
-                                      height: 20,
-                                      colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedImages.removeAt(index);
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(200),
+                                        color: const Color.fromARGB(0, 255, 255, 255),
+                                      ),
+                                      child: SvgPicture.asset(
+                                        'assets/icons/x-close.svg',
+                                        width: 20,
+                                        height: 20,
+                                        colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
+                              ],
+                            ),
+                          );
+                        }).expand((widget) => [widget, const SizedBox(width: 6)]).toList(), // Додаємо SizedBox між фото
+                      ),
                     ),
                   ),
                 const SizedBox(height: 20),
