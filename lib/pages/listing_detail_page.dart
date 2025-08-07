@@ -79,6 +79,11 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     );
   }
 
+  bool _isNotMyListing(Listing listing) {
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    return currentUser == null || currentUser.id != listing.userId;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,112 +151,152 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
           }
 
           final listing = snapshot.data!;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (listing.photos.isNotEmpty)
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(listing.photos.first),
-                        fit: BoxFit.cover,
+          return SafeArea(
+            bottom: true,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (listing.photos.isNotEmpty)
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: NetworkImage(listing.photos.first),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                const SizedBox(height: 16),
-                Text(
-                  listing.title,
-                  style: AppTextStyles.heading1Semibold,
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Text(
-                  listing.formattedPrice,
-                    style: AppTextStyles.heading2Semibold.copyWith(
-                      color: AppColors.primaryColor,
-                    ),
+                    listing.title,
+                    style: AppTextStyles.heading1Semibold,
                   ),
-                const SizedBox(height: 16),
-                Text(
-                  listing.description,
-                  style: AppTextStyles.body1Regular,
-                ),
-                const SizedBox(height: 16),
-                // Локація
-                if (listing.location.isNotEmpty)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on,
+                  const SizedBox(height: 8),
+                    Text(
+                    listing.formattedPrice,
+                      style: AppTextStyles.heading2Semibold.copyWith(
                         color: AppColors.primaryColor,
-                        size: 20,
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          listing.location,
-                          style: AppTextStyles.body1Regular.copyWith(
-                            color: AppColors.color2,
+                    ),
+                  const SizedBox(height: 16),
+                  Text(
+                    listing.description,
+                    style: AppTextStyles.body1Regular,
+                  ),
+                  const SizedBox(height: 16),
+                  // Локація
+                  if (listing.location.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: AppColors.primaryColor,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            listing.location,
+                            style: AppTextStyles.body1Regular.copyWith(
+                              color: AppColors.color2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  if (listing.phoneNumber != null)
+                    ListTile(
+                      leading: const Icon(Icons.phone),
+                      title: Text(listing.phoneNumber!),
+                      onTap: () {/* TODO: Add phone call functionality */},
+                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    ),
+                  if (listing.whatsapp != null)
+                    ListTile(
+                      leading: const FaIcon(FontAwesomeIcons.whatsapp),
+                      title: Text(listing.whatsapp!),
+                      onTap: () {/* TODO: Add WhatsApp functionality */},
+                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    ),
+                  if (listing.telegram != null)
+                    ListTile(
+                      leading: const FaIcon(FontAwesomeIcons.telegram),
+                      title: Text(listing.telegram!),
+                      onTap: () {/* TODO: Add Telegram functionality */},
+                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    ),
+                  if (listing.viber != null)
+                    ListTile(
+                      leading: const FaIcon(FontAwesomeIcons.viber),
+                      title: Text(listing.viber!),
+                      onTap: () {/* TODO: Add Viber functionality */},
+                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    ),
+                  // Кнопка 'Написати' одразу після контактів
+                  if (_isNotMyListing(listing))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: ElevatedButton(
+                          onPressed: () {/* TODO: Додати логіку написання */},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF015873),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(22),
+                              side: const BorderSide(color: Color(0xFF015873), width: 1),
+                            ),
+                            elevation: 4,
+                            shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                          ),
+                          child: const Text(
+                            'Написати',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Inter',
+                              height: 1.4,
+                              letterSpacing: 0.14,
+                            ),
                           ),
                         ),
                       ),
+                    ),
+                  if (!_isNotMyListing(listing))
+                    const SizedBox(height: 20),
+                  // Користувач
+                  Text(
+                    'Користувач',
+                    style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.zinc100,
+                        child: Icon(
+                          Icons.person,
+                          color: AppColors.color5,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Користувач', // TODO: Замінити на реальне ім'я користувача
+                        style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
+                      ),
                     ],
                   ),
-
-                if (listing.phoneNumber != null)
-                  ListTile(
-                    leading: const Icon(Icons.phone),
-                    title: Text(listing.phoneNumber!),
-                    onTap: () {/* TODO: Add phone call functionality */},
-                  ),
-                if (listing.whatsapp != null)
-                  ListTile(
-                    leading: const FaIcon(FontAwesomeIcons.whatsapp),
-                    title: Text(listing.whatsapp!),
-                    onTap: () {/* TODO: Add WhatsApp functionality */},
-                  ),
-                if (listing.telegram != null)
-                  ListTile(
-                    leading: const FaIcon(FontAwesomeIcons.telegram),
-                    title: Text(listing.telegram!),
-                    onTap: () {/* TODO: Add Telegram functionality */},
-                  ),
-                if (listing.viber != null)
-                  ListTile(
-                    leading: const FaIcon(FontAwesomeIcons.viber),
-                    title: Text(listing.viber!),
-                    onTap: () {/* TODO: Add Viber functionality */},
-                  ),
-                const SizedBox(height: 16),
-                // Користувач
-                Text(
-                  'Користувач',
-                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColors.zinc100,
-                      child: Icon(
-                        Icons.person,
-                        color: AppColors.color5,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Користувач', // TODO: Замінити на реальне ім'я користувача
-                      style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

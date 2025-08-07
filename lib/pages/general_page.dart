@@ -298,9 +298,6 @@ class _GeneralPageState extends State<GeneralPage> {
     final bool isSelected = _selectedIndex == index;
     final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5;
     final Color textColor = isSelected ? AppColors.color2 : AppColors.color8;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final showText = screenWidth >= 450;
-
     return InkWell(
       onTap: () => _onItemTapped(index),
       splashColor: Colors.transparent,
@@ -316,16 +313,14 @@ class _GeneralPageState extends State<GeneralPage> {
               height: 20,
               colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
-            if (showText) ...[
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           ],
         ),
       ),
@@ -341,9 +336,6 @@ class _GeneralPageState extends State<GeneralPage> {
     final bool isSelected = _selectedIndex == index;
     final Color iconColor = isSelected ? AppColors.primaryColor : AppColors.color5;
     final Color textColor = isSelected ? AppColors.color2 : AppColors.color8;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final showText = screenWidth >= 450;
-
     return InkWell(
       onTap: () => _onItemTapped(index),
       splashColor: Colors.transparent,
@@ -374,16 +366,14 @@ class _GeneralPageState extends State<GeneralPage> {
                   ),
               ],
             ),
-            if (showText) ...[
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.captionRegular.copyWith(color: textColor, letterSpacing: 0.2),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           ],
         ),
       ),

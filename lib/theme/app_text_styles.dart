@@ -161,10 +161,10 @@ class AppTextStyles {
       );
 
   static TextStyle get captionRegular => GoogleFonts.inter(
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: FontWeight.w400,
         height: 1.3,
-        letterSpacing: 0.02 * 12,
+        letterSpacing: 0.02 * 10,
       );
 
   // Input Styles
