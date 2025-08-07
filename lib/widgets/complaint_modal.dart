@@ -91,12 +91,12 @@ class _ComplaintModalState extends State<ComplaintModal> {
             children: [
               Text(
                 'Поскаржитись на оголошення',
-                style: AppTextStyles.headlineMedium(),
+                style: AppTextStyles.heading3Medium,
               ),
               const SizedBox(height: 16),
               Text(
                 widget.productTitle,
-                style: AppTextStyles.body1,
+                style: AppTextStyles.body1Regular,
               ),
               const SizedBox(height: 24),
               TextFormField(
