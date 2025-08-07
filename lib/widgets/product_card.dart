@@ -7,6 +7,7 @@ class ProductCard extends StatelessWidget {
   final String id;
   final String title;
   final String price;
+  final bool isFree;
   final String date;
   final String location;
   final List<String> images;
@@ -31,6 +32,7 @@ class ProductCard extends StatelessWidget {
     this.isNegotiable = false,
     this.onFavoriteToggle,
     this.onTap,
+    this.isFree = false,
   });
 
   @override
@@ -139,6 +141,31 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                if (isFree)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Text(
+                        'Безкоштовно',
+                        style: TextStyle(
+                          color: Color(0xFF15803D),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
                 if (isNegotiable)
                   Positioned(
                     top: 6,
@@ -168,48 +195,78 @@ class ProductCard extends StatelessWidget {
             ),
             // Content section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5), // Changed from 8 to 5
+              padding: const EdgeInsets.fromLTRB(16, 5, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      height: 1.4,
-                      letterSpacing: 0.14,
-                    ),
-                    maxLines: 2, // Limit title to 2 lines
-                    overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        price,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          height: 1.5,
-                          letterSpacing: 0.16,
+                  if (isFree)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                              letterSpacing: 0.14,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        GestureDetector(
+                          onTap: onFavoriteToggle,
+                          child: SizedBox(width: 20, height: 20, child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: 16,
+                            color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                          )),
+                        ),
+                      ],
+                    )
+                  else ...[
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                        letterSpacing: 0.14,
                       ),
-                      GestureDetector(
-                        onTap: onFavoriteToggle,
-                        child: SizedBox(width: 20, height: 20, child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          size: 16,
-                          color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
-                        )),
-                      ),
-                    ],
-                  ),
+                      maxLines: 2, // Limit title to 2 lines
+                      overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          price,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            height: 1.5,
+                            letterSpacing: 0.16,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: onFavoriteToggle,
+                          child: SizedBox(width: 20, height: 20, child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: 16,
+                            color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                          )),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12), // Changed from 8 to 12
                   Text(
                     date,
