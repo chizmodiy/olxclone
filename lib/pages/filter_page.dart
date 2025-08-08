@@ -426,19 +426,27 @@ class _FilterPageState extends State<FilterPage> {
     final Map<String, dynamic> filters = {
       'category': _selectedCategory?.id, // Передаємо id, а не name
       'subcategory': _selectedSubcategory?.id, // Передаємо id, а не name
-      'currency': _selectedCurrency,
       'region': _selectedRegion?.id,
       'region_name': _selectedRegion?.name,
     };
 
-    if (_isPriceModePrice) {
+    if (_selectedCategory?.name == 'Віддам безкоштовно') {
+      filters['isFree'] = true;
+      filters['minPrice'] = null;
+      filters['maxPrice'] = null;
+      filters['currency'] = null;
+      print('Debug: Category is "Віддам безкоштовно" - setting isFree=true, clearing price filters');
+    } else if (_isPriceModePrice) {
       filters['minPrice'] = double.tryParse(_minPriceController.text);
       filters['maxPrice'] = double.tryParse(_maxPriceController.text);
-      // Явно очищаємо isFree фільтр у режимі ціни
-      filters['isFree'] = null;
-      print('Debug: Added price filters - min: ${filters['minPrice']}, max: ${filters['maxPrice']}, cleared isFree');
+      filters['currency'] = _selectedCurrency;
+      filters['isFree'] = null; // Явно очищаємо isFree фільтр у режимі ціни
+      print('Debug: Added price filters - min: ${filters['minPrice']}, max: ${filters['maxPrice']}, currency: ${filters['currency']}');
     } else {
       filters['isFree'] = true;
+      filters['minPrice'] = null;
+      filters['maxPrice'] = null;
+      filters['currency'] = null;
       print('Debug: Added isFree filter: ${filters['isFree']}');
     }
 
@@ -586,6 +594,12 @@ class _FilterPageState extends State<FilterPage> {
         _selectedSubcategory = subcategory;
         if (_selectedCategory != null && _selectedCategory?.name == 'Віддам безкоштовно') {
           _isPriceModePrice = false; // Set to free mode if 'Віддам безкоштовно' is selected
+          // Explicitly clear price related controllers/states
+          _minPriceController.clear();
+          _maxPriceController.clear();
+          _selectedCurrency = 'UAH';
+          _currentMinPrice = _minAvailablePrice; // Reset slider values
+          _currentMaxPrice = _maxAvailablePrice; // Reset slider values
         } else if (_selectedCategory != null && _selectedSubcategory == null) {
           _loadSubcategories(_selectedCategory!.id);
         } else if (_selectedCategory == null) {
