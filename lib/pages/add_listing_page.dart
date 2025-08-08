@@ -484,6 +484,14 @@ class _AddListingPageState extends State<AddListingPage> {
             _selectedSubcategory = freeSubcategory;
           }
         });
+      } else if (category.name == 'Знайомства') { // Handle Dating category
+        setState(() {
+          _isForSale = false; // Dating listings are considered free
+          _priceController.clear();
+          _selectedCurrency = 'UAH';
+          _isNegotiablePrice = false;
+          _ageController.clear(); // Clear age controller, will be replaced by range controllers
+        });
       } else {
         setState(() {
           _isForSale = true; // Default to for sale
@@ -683,6 +691,11 @@ class _AddListingPageState extends State<AddListingPage> {
         } else if (field.type == 'range') {
           _extraFieldControllers['${field.name}_min'] = TextEditingController();
           _extraFieldControllers['${field.name}_max'] = TextEditingController();
+        }
+        // Special handling for age_range as it's a range field, ensure it's captured here.
+        if (field.name == 'age_range') {
+          _extraFieldControllers['age_range_min'] = TextEditingController();
+          _extraFieldControllers['age_range_max'] = TextEditingController();
         }
       }
     });
@@ -2844,7 +2857,7 @@ class _AddListingPageState extends State<AddListingPage> {
                 const SizedBox(height: 20),
 
                 // Listing Type Toggle
-                if (_selectedCategory?.name != 'Віддам безкоштовно') ...[
+                if (_selectedCategory?.name != 'Віддам безкоштовно' && _selectedCategory?.name != 'Знайомства') ...[
                   _buildListingTypeToggle(),
                   const SizedBox(height: 20),
                 ],
