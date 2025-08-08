@@ -11,6 +11,7 @@ import '../services/category_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/subcategory.dart';
 import '../services/subcategory_service.dart';
+import 'package:collection/collection.dart'; // Import for firstWhereOrNull
 import '../models/region.dart';
 import '../services/region_service.dart';
 import '../models/city.dart';
@@ -104,11 +105,16 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
     _titleController.text = widget.listing.title;
     _descriptionController.text = widget.listing.description;
     
-    if (widget.listing.price != null) {
+    if (widget.listing.isFree) {
+      _isForSale = false;
+      _priceController.clear();
+      _selectedCurrency = 'UAH';
+      _isNegotiablePrice = false;
+    } else if (widget.listing.price != null) {
       _priceController.text = widget.listing.price.toString();
       _isForSale = true;
     } else {
-      _isForSale = false;
+      _isForSale = false; // Fallback if price is null and not explicitly free
     }
     
     if (widget.listing.currency != null) {
@@ -286,13 +292,23 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         _isLoadingCategories = false;
       });
       
-      // Знаходимо категорію оголошення
-      if (widget.listing.categoryId != null) {
-        _selectedCategory = categories.firstWhere(
+      // Find and select the category
+      if (widget.listing.isFree) {
+        _selectedCategory = categories.firstWhereOrNull((cat) => cat.name == 'Віддам безкоштовно');
+      } else if (widget.listing.categoryId != null) {
+        _selectedCategory = categories.firstWhereOrNull(
           (cat) => cat.id == widget.listing.categoryId,
-          orElse: () => categories.first,
         );
+      }
+      
+      if (_selectedCategory != null) {
         await _loadSubcategories();
+      } else {
+        // Fallback to first category if original not found
+        _selectedCategory = categories.firstOrNull;
+        if (_selectedCategory != null) {
+          await _loadSubcategories();
+        }
       }
     } catch (e) {
       print('Error loading categories: $e');
@@ -317,14 +333,16 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         _isLoadingSubcategories = false;
       });
       
-      // Знаходимо підкатегорію оголошення
-      if (widget.listing.subcategoryId != null) {
-        _selectedSubcategory = subcategories.firstWhere(
+      // Find and select the subcategory
+      if (_selectedCategory!.name == 'Віддам безкоштовно') {
+        _selectedSubcategory = subcategories.firstWhereOrNull((subcat) => subcat.name == 'Безкоштовно');
+      } else if (widget.listing.subcategoryId != null) {
+        _selectedSubcategory = subcategories.firstWhereOrNull(
           (subcat) => subcat.id == widget.listing.subcategoryId,
-          orElse: () => subcategories.first,
         );
-        _initializeExtraFields();
       }
+
+      _initializeExtraFields();
     } catch (e) {
       print('Error loading subcategories: $e');
       setState(() {
@@ -625,8 +643,10 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                         const SizedBox(height: 20),
 
                         // Listing Type Toggle
-                        _buildListingTypeToggle(),
-                        const SizedBox(height: 20),
+                        if (_selectedCategory?.name != 'Віддам безкоштовно') ...[
+                          _buildListingTypeToggle(),
+                          const SizedBox(height: 20),
+                        ],
 
                         // Currency Switch - only show if not free
                         if (_isForSale) ...[
@@ -970,6 +990,9 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   Widget _buildSubcategorySection() {
+    if (_selectedCategory == null || _selectedCategory!.name == 'Віддам безкоштовно') {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1102,6 +1125,9 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   Widget _buildCurrencySection() {
+    if (!_isForSale) {
+      return const SizedBox.shrink(); // Hide currency section if not for sale
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1270,6 +1296,9 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   }
 
   Widget _buildPriceSection() {
+    if (!_isForSale) {
+      return const SizedBox.shrink(); // Hide price section if not for sale
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1799,7 +1828,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                                   color: AppColors.color2,
                                 ),
                               ),
-                              onTap: () {
+                              onTap: () async {
                                 setState(() {
                                   _selectedCategory = category;
                                   _selectedSubcategory = null;
@@ -1807,7 +1836,27 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                                   _extraFieldControllers.clear();
                                   _extraFieldValues.clear();
                                 });
-                                _loadSubcategories();
+
+                                await _loadSubcategories(); // Load subcategories first
+
+                                if (category.name == 'Віддам безкоштовно') {
+                                  setState(() {
+                                    _isForSale = false; // Set to free
+                                    _priceController.clear(); // Clear price
+                                    _selectedCurrency = 'UAH'; // Reset currency
+                                    _isNegotiablePrice = false; // Reset negotiable
+                                    final freeSubcategory = _subcategories.firstWhereOrNull(
+                                      (sub) => sub.name == 'Безкоштовно',
+                                    );
+                                    if (freeSubcategory != null) {
+                                      _selectedSubcategory = freeSubcategory;
+                                    }
+                                  });
+                                } else {
+                                  setState(() {
+                                    _isForSale = true; // Default to for sale
+                                  });
+                                }
                                 Navigator.of(context).pop();
                               },
                             );
