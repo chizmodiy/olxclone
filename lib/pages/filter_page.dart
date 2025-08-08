@@ -152,19 +152,18 @@ class _FilterPageState extends State<FilterPage> {
       setState(() {
         _minPrice = priceRange['min'] ?? 0.0;
         _maxPrice = priceRange['max'] ?? 100000.0;
-        // --- Виправлення: обмежуємо поточні значення межами ---
-        if (_currentMinPrice < _minPrice) {
-          _currentMinPrice = _minPrice;
+
+        // Ensure _currentMinPrice is within the new range
+        _currentMinPrice = _currentMinPrice.clamp(_minPrice, _maxPrice);
+        // Ensure _currentMaxPrice is within the new range
+        _currentMaxPrice = _currentMaxPrice.clamp(_minPrice, _maxPrice);
+
+        // Additionally, ensure _currentMinPrice is not greater than _currentMaxPrice
+        if (_currentMinPrice > _currentMaxPrice) {
+          // If min crosses max, set min to max. This will effectively make the range a single point.
+          _currentMinPrice = _currentMaxPrice;
         }
-        if (_currentMaxPrice > _maxPrice) {
-          _currentMaxPrice = _maxPrice;
-        }
-        if (_currentMaxPrice < _minPrice) {
-          _currentMaxPrice = _minPrice;
-        }
-        if (_currentMinPrice > _maxPrice) {
-          _currentMinPrice = _maxPrice;
-        }
+        
         _sliderMinValue = _minPrice;
         _sliderMaxValue = _maxPrice;
         
@@ -1897,6 +1896,14 @@ class _FilterPageState extends State<FilterPage> {
       return 'Ціна не може бути від\'ємною';
     }
     
+    // Перевірка, що мінімальна ціна не дорівнює максимальній
+    final minPriceVal = double.tryParse(_minPriceController.text);
+    final maxPriceVal = double.tryParse(_maxPriceController.text);
+
+    if (minPriceVal != null && maxPriceVal != null && minPriceVal == maxPriceVal) {
+      return 'Мінімальна та максимальна ціни не можуть бути однаковими';
+    }
+
     if (price < 1) {
       return 'Мінімальна ціна: 1';
     }
