@@ -12,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/subcategory.dart';
 import '../services/subcategory_service.dart';
 import '../models/region.dart';
+import 'package:collection/collection.dart'; // Import this for firstWhereOrNull
 import '../services/region_service.dart';
 import '../models/city.dart'; // Add this import
 import '../services/city_service.dart'; // Add this import
@@ -467,12 +468,35 @@ class _AddListingPageState extends State<AddListingPage> {
       _yearController.clear(); // Clear year field when category changes
       _enginePowerController.clear(); // Clear engine power field when category changes
     });
-        _loadSubcategories(category.id);
+    _loadSubcategories(category.id).then((_) {
+      // Check if the selected category is 'Віддам безкоштовно'
+      if (category.name == 'Віддам безкоштовно') {
+        setState(() {
+          _isForSale = false; // Set to free
+          _priceController.clear(); // Clear price
+          _selectedCurrency = 'UAH'; // Reset currency
+          _isNegotiablePrice = false; // Reset negotiable
+          // Find and set 'Безкоштовно' subcategory if it exists
+          final freeSubcategory = _subcategories.firstWhereOrNull(
+            (sub) => sub.name == 'Безкоштовно',
+          );
+          if (freeSubcategory != null) {
+            _selectedSubcategory = freeSubcategory;
+          }
+        });
+      } else {
+        setState(() {
+          _isForSale = true; // Default to for sale
+        });
+      }
+    });
     Navigator.pop(context);
   }
 
   Widget _buildSubcategorySection() {
-    if (_selectedCategory == null || _subcategories.isEmpty) {
+    if (_selectedCategory == null ||
+        _selectedCategory!.name == 'Віддам безкоштовно' || // Hide if category is 'Віддам безкоштовно'
+        _subcategories.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -1749,6 +1773,9 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   Widget _buildPriceSection() {
+    if (!_isForSale) {
+      return const SizedBox.shrink(); // Hide price section if not for sale
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2817,11 +2844,13 @@ class _AddListingPageState extends State<AddListingPage> {
                 const SizedBox(height: 20),
 
                 // Listing Type Toggle
-                _buildListingTypeToggle(),
-                const SizedBox(height: 20),
+                if (_selectedCategory?.name != 'Віддам безкоштовно') ...[
+                  _buildListingTypeToggle(),
+                  const SizedBox(height: 20),
+                ],
 
-                // Currency Switch - only show if not free
-                if (_isForSale) ...[
+                // Currency Section (only show if not free and not negotiable)
+                if (_isForSale && !_isNegotiablePrice) ...[
                   _buildCurrencySection(),
                   const SizedBox(height: 20),
                 ],

@@ -7,6 +7,7 @@ import 'package:withoutname/services/category_service.dart'; // New import
 import 'package:withoutname/models/subcategory.dart'; // New import
 import 'package:withoutname/services/subcategory_service.dart'; // New import
 import 'package:supabase_flutter/supabase_flutter.dart'; // New import for Supabase client
+import 'package:collection/collection.dart'; // Import for firstWhereOrNull
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
@@ -192,17 +193,28 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                         category: category,
                         iconPath: _getIconPathForCategory(category.name), // Dynamic icon based on category name
                         isExpanded: isExpanded,
-                        onTap: () {
-                          setState(() {
-                            if (_selectedCategory == category) {
-                              _selectedCategory = null; // Collapse if already selected
-                              _selectedSubcategory = null;
-                              _subcategories = [];
-                            } else {
-                              _selectedCategory = category;
-                              _loadSubcategories(category.id);
-                            }
-                          });
+                        onTap: () async {
+                          if (category.name == 'Віддам безкоштовно') {
+                            await _loadSubcategories(category.id);
+                            final freeSubcategory = _subcategories.firstWhereOrNull(
+                              (sub) => sub.name == 'Безкоштовно',
+                            );
+                            Navigator.pop(context, {
+                              'category': category,
+                              'subcategory': freeSubcategory,
+                            });
+                          } else {
+                            setState(() {
+                              if (_selectedCategory == category) {
+                                _selectedCategory = null; // Collapse if already selected
+                                _selectedSubcategory = null;
+                                _subcategories = [];
+                              } else {
+                                _selectedCategory = category;
+                                _loadSubcategories(category.id);
+                              }
+                            });
+                          }
                         },
                       ),
                     );
@@ -221,6 +233,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
   }) {
     final bool isSelected = _selectedCategory == category;
     // final bool showCheckmark = isSelected && _selectedSubcategory == null; // This logic will be handled directly in the checkmark condition
+    final bool isFreeCategory = category.name == 'Віддам безкоштовно';
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -266,18 +279,14 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                     width: 20,
                     height: 20,
                   ),
-                Icon(
-                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  color: AppColors.black,
-                ),
+                if (!isFreeCategory) // Only show arrow for non-free categories
+                  Icon(
+                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: AppColors.black,
+                  ),
               ],
             ),
-            if (isExpanded && _isLoadingSubcategories)
-              const Padding(
-                padding: EdgeInsets.only(top: 12.0),
-                child: CircularProgressIndicator(),
-              ),
-            if (isExpanded && !_isLoadingSubcategories && category.id != 'all') // Added condition to hide subcategories for "All Categories"
+            if (isExpanded && !_isLoadingSubcategories && category.id != 'all' && !isFreeCategory) // Added condition to hide subcategories for "All Categories" and "Віддам безкоштовно"
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: Column(

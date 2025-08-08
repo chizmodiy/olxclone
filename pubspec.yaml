@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  collection: ^1.18.0 # For firstWhereOrNull
   image_picker: ^1.0.7
   supabase_flutter: ^1.10.25
   flutter_svg: ^2.0.9

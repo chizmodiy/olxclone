@@ -584,7 +584,9 @@ class _FilterPageState extends State<FilterPage> {
       setState(() {
         _selectedCategory = category;
         _selectedSubcategory = subcategory;
-        if (_selectedCategory != null && _selectedSubcategory == null) {
+        if (_selectedCategory != null && _selectedCategory?.name == 'Віддам безкоштовно') {
+          _isPriceModePrice = false; // Set to free mode if 'Віддам безкоштовно' is selected
+        } else if (_selectedCategory != null && _selectedSubcategory == null) {
           _loadSubcategories(_selectedCategory!.id);
         } else if (_selectedCategory == null) {
           _subcategories = [];
@@ -780,12 +782,14 @@ class _FilterPageState extends State<FilterPage> {
                   const SizedBox(height: 24),
                   
                   // БЛОК 2: Валюта
-                  _buildCurrencyBlock(),
+                  if (_selectedCategory?.name != 'Віддам безкоштовно')
+                    _buildCurrencyBlock(),
                   
                   const SizedBox(height: 24),
                   
                   // БЛОК 3: Ціна
-                  _buildBlock2(),
+                  if (_selectedCategory?.name != 'Віддам безкоштовно')
+                    _buildBlock2(),
                   
                   const SizedBox(height: 24),
                   
@@ -910,7 +914,8 @@ class _FilterPageState extends State<FilterPage> {
                     ],
                   ),
                 ),
-                Container(
+                if (_selectedCategory?.name != 'Віддам безкоштовно')
+                  Container(
                         width: 20,
                         height: 20,
                   clipBehavior: Clip.antiAlias,
@@ -921,7 +926,7 @@ class _FilterPageState extends State<FilterPage> {
                   ),
                 ),
               ),
-        if (_selectedCategory != null) ...[
+        if (_selectedCategory != null && _selectedCategory?.name != 'Віддам безкоштовно') ...[
             const SizedBox(height: 16),
           GestureDetector(
             onTap: _navigateToSubcategorySelection,
