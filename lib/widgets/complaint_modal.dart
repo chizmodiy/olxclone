@@ -6,12 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ComplaintModal extends StatefulWidget {
   final String productId;
-  final String productTitle;
 
   const ComplaintModal({
     super.key,
     required this.productId,
-    required this.productTitle,
   });
 
   @override
@@ -20,7 +18,6 @@ class ComplaintModal extends StatefulWidget {
 
 class _ComplaintModalState extends State<ComplaintModal> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final Set<String> _selectedTypes = {};
   bool _isLoading = false;
@@ -36,7 +33,6 @@ class _ComplaintModalState extends State<ComplaintModal> {
 
   @override
   void dispose() {
-    _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -56,7 +52,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
       final complaintService = ComplaintService(Supabase.instance.client);
       await complaintService.createComplaint(
         listingId: widget.productId,
-        title: _titleController.text,
+        title: 'Не вказано',
         description: _descriptionController.text,
         types: _selectedTypes.toList(),
       );
@@ -92,25 +88,6 @@ class _ComplaintModalState extends State<ComplaintModal> {
               Text(
                 'Поскаржитись на оголошення',
                 style: AppTextStyles.heading3Medium,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                widget.productTitle,
-                style: AppTextStyles.body1Regular,
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Заголовок скарги',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Введіть заголовок скарги';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
               Text(
