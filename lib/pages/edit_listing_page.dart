@@ -1797,10 +1797,10 @@ class _EditListingPageState extends State<EditListingPage> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _isNegotiablePrice ? AppColors.primaryColor : AppColors.zinc200,
-                        width: 1,
-                      ),
+                      // border: Border.all(
+                      //   color: _isNegotiablePrice ? AppColors.primaryColor : AppColors.zinc200,
+                      //   width: 1,
+                      // ),
                       borderRadius: BorderRadius.circular(4),
                       color: _isNegotiablePrice ? AppColors.primaryColor : Colors.white,
                     ),
@@ -2081,7 +2081,7 @@ class _EditListingPageState extends State<EditListingPage> {
   }
 
   String? _validateAdditionalFields() {
-    // Валідація поля площі для нерухомості та житла
+    // Валідація поля площі для нерухомості та житла подобово
     if (_selectedCategory?.name == 'Нерухомість' || _selectedCategory?.name == 'Житло подобово') {
       if (_areaController.text.trim().isEmpty) {
         return 'Будь ласка, введіть кількість квадратних метрів';

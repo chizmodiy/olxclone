@@ -25,6 +25,8 @@ class Product {
   final String? region;
   final double? latitude;
   final double? longitude;
+  final String? categoryName;
+  final String? subcategoryName;
 
   Product({
     required this.id,
@@ -51,6 +53,8 @@ class Product {
     this.region,
     this.latitude,
     this.longitude,
+    this.categoryName,
+    this.subcategoryName,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -84,6 +88,8 @@ class Product {
       region: json['region'] as String?,
       latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
       longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
+      categoryName: json['categories'] != null ? (json['categories'] as Map<String, dynamic>)['name'] as String? : null, // Corrected to use 'categories' relation
+      subcategoryName: json['subcategories'] != null ? (json['subcategories'] as Map<String, dynamic>)['name'] as String? : null, // Corrected to use 'subcategories' relation
     );
   }
 
@@ -164,6 +170,8 @@ class Product {
       region: region,
       latitude: latitude,
       longitude: longitude,
+      categoryName: categoryName,
+      subcategoryName: subcategoryName,
     );
   }
 } 

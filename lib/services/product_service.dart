@@ -19,11 +19,18 @@ class ProductService {
     try {
       final response = await _supabase
           .from('listings')
-          .select()
+          .select('*, categories!id(name), subcategories!id(name)') // Fetch category and subcategory names
           .eq('id', id)
           .single();
       
-      return Product.fromJson(response);
+      final categoryName = (response['categories'] as Map<String, dynamic>)['name'] as String?;
+      final subcategoryName = (response['subcategories'] as Map<String, dynamic>)['name'] as String?;
+
+      return Product.fromJson({
+        ...response,
+        'category_name': categoryName,
+        'subcategory_name': subcategoryName,
+      });
     } catch (e) {
       throw Exception('Помилка завантаження товару: $e');
     }

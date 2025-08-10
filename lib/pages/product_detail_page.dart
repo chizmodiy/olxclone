@@ -888,50 +888,75 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Categories
-                        Row(
+                        // Categories and Negotiable Tag
+                        Wrap(
+                          spacing: 6.0, // Gap between tags
+                          runSpacing: 6.0, // Gap between rows of tags
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF83DAF5),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                _categoryName ?? 'Інше',
-                                style: const TextStyle(
-                                  color: Color(0xFF015873),
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.43,
+                            // Category Tag
+                            if (_categoryName != null && _categoryName!.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF83DAF5),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  _categoryName!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF015873),
+                                    fontSize: 14,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.43,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFAFAFA),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                _subcategoryName ?? 'Інше',
-                                style: const TextStyle(
-                                  color: Color(0xFF52525B),
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.43,
+                            // Subcategory Tag
+                            if (_subcategoryName != null && _subcategoryName!.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFAFAFA),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  _subcategoryName!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF52525B),
+                                    fontSize: 14,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.43,
+                                  ),
                                 ),
                               ),
-                            ),
+                            // Negotiable Tag
+                            if (_product!.isNegotiable == true)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFAFAFA),
+                                  borderRadius: BorderRadius.circular(16),
+                                  // border: Border.all(color: const Color(0xFFE4E4E7)),
+                                ),
+                                child: const Text(
+                                  'Договірна',
+                                  style: TextStyle(
+                                    color: Color(0xFF52525B),
+                                    fontSize: 14,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.43,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ],

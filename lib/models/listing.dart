@@ -23,6 +23,8 @@ class Listing {
   final String? region;
   final double? latitude;
   final double? longitude;
+  final String? categoryName;
+  final String? subcategoryName;
 
   Listing({
     required this.id,
@@ -49,6 +51,8 @@ class Listing {
     this.region,
     this.latitude,
     this.longitude,
+    this.categoryName,
+    this.subcategoryName,
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
@@ -79,6 +83,8 @@ class Listing {
       region: json['region'] as String?,
       latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
       longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
+      categoryName: json['category_name'] as String?,
+      subcategoryName: json['subcategory_name'] as String?,
     );
   }
 
@@ -108,6 +114,8 @@ class Listing {
       'region': region,
       'latitude': latitude,
       'longitude': longitude,
+      'category_name': categoryName,
+      'subcategory_name': subcategoryName,
     };
   }
 

@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'storage_service.dart';
+import 'package:withoutname/services/category_service.dart'; // Add this import
 import '../models/listing.dart'; // Added this import
 
 enum CurrencyEnum {
@@ -122,10 +123,18 @@ class ListingService {
     try {
       final response = await _client
           .from('listings')
-          .select()
+          .select('*, categories!id(name), subcategories!id(name)') // Fetch category and subcategory names
           .eq('id', listingId)
           .single();
-      return Listing.fromJson(response);
+      
+      final categoryName = (response['categories'] as Map<String, dynamic>)['name'] as String?;
+      final subcategoryName = (response['subcategories'] as Map<String, dynamic>)['name'] as String?;
+
+      return Listing.fromJson({
+        ...response,
+        'category_name': categoryName,
+        'subcategory_name': subcategoryName,
+      });
     } catch (error) {
       throw Exception('Failed to fetch listing: $error');
     }

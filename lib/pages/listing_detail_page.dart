@@ -73,7 +73,6 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         ),
         child: ComplaintModal(
           productId: listing.id,
-          productTitle: listing.title,
         ),
       ),
     );
@@ -208,7 +207,55 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                         ),
                       ],
                     ),
-
+                  // Категорія, підкатегорія та договірна ціна
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0), // Додайте відступ зверху, якщо потрібно
+                    child: Wrap(
+                      spacing: 8.0, // Відстань між елементами
+                      runSpacing: 8.0, // Відстань між рядами, якщо елементи переносяться
+                      children: [
+                        // Категорія
+                        if (listing.categoryName != null && listing.categoryName!.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1), // Напівпрозорий колір
+                              borderRadius: BorderRadius.circular(200), // Закруглені кути
+                            ),
+                            child: Text(
+                              listing.categoryName!,
+                              style: AppTextStyles.captionMedium.copyWith(color: AppColors.primaryColor),
+                            ),
+                          ),
+                        // Підкатегорія
+                        if (listing.subcategoryName != null && listing.subcategoryName!.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(200),
+                            ),
+                            child: Text(
+                              listing.subcategoryName!,
+                              style: AppTextStyles.captionMedium.copyWith(color: AppColors.primaryColor),
+                            ),
+                          ),
+                        // Текст "Договірна" (умовно)
+                        if (listing.isNegotiable == true)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(200),
+                            ),
+                            child: Text(
+                              'Договірна',
+                              style: AppTextStyles.captionMedium.copyWith(color: AppColors.primaryColor),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                   if (listing.phoneNumber != null)
                     ListTile(
                       leading: const Icon(Icons.phone),
