@@ -67,6 +67,8 @@ class _FilterPageState extends State<FilterPage> {
   // Валідація полів ціни
   String? _minPriceError;
   String? _maxPriceError;
+  String? _minAgeError; // New: Error for min age
+  String? _maxAgeError; // New: Error for max age
 
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -408,6 +410,8 @@ class _FilterPageState extends State<FilterPage> {
       _selectedCondition = null; // Reset condition selection
       _minPriceError = null; // Clear price validation errors
       _maxPriceError = null; // Clear price validation errors
+      _minAgeError = null; // Clear age validation errors
+      _maxAgeError = null; // Clear age validation errors
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
       _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
       
@@ -829,7 +833,7 @@ class _FilterPageState extends State<FilterPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _applyFilters,
+                    onPressed: (_minAgeError == null && _maxAgeError == null) ? _applyFilters : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1967,6 +1971,44 @@ class _FilterPageState extends State<FilterPage> {
     });
   }
 
+  // Метод для валідації віку
+  String? _validateAge(String? value, bool isMinAge) {
+    if (value == null || value.isEmpty) {
+      return null; // Allow empty values
+    }
+
+    final age = int.tryParse(value);
+    if (age == null) {
+      return 'Введіть дійсне число';
+    }
+
+    if (age < 0) {
+      return 'Вік не може бути від\'ємним';
+    }
+
+    // Get current values from controllers to validate against each other
+    final minAgeVal = int.tryParse(_minAgeController.text);
+    final maxAgeVal = int.tryParse(_maxAgeController.text);
+
+    if (isMinAge) {
+      if (maxAgeVal != null && age > maxAgeVal) {
+        return 'Мінімальний вік не може бути більшим за максимальний';
+      }
+      if (age == maxAgeVal && maxAgeVal != null) {
+        return 'Мінімальний та максимальний вік не можуть бути однаковими';
+      }
+    } else { // isMaxAge
+      if (minAgeVal != null && age < minAgeVal) {
+        return 'Максимальний вік не може бути меншим за мінімальний';
+      }
+      if (age == minAgeVal && minAgeVal != null) {
+        return 'Мінімальний та максимальний вік не можуть бути однаковими';
+      }
+    }
+
+    return null;
+  }
+
   // Метод для отримання символу валюти
   String _getCurrencySymbol() {
     switch (_selectedCurrency.toUpperCase()) {
@@ -2908,6 +2950,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _minAgeController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateAge(value, true);
+                        setState(() {
+                          _minAgeError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide error if resolved
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '18',
@@ -2977,6 +3030,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _maxAgeController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateAge(value, false);
+                        setState(() {
+                          _maxAgeError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide error if resolved
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '65',

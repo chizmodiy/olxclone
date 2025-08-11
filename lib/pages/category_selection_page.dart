@@ -272,13 +272,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                   ),
                 ),
                 // Show checkmark only if this category is selected and no specific subcategory is chosen
-                if (isSelected && _selectedSubcategory == null)
-                  SvgPicture.asset(
-                    'assets/icons/check.svg',
-                    colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
-                    width: 20,
-                    height: 20,
-                  ),
+                // Removed checkmark for main category as per user request
                 if (!isFreeCategory) // Only show arrow for non-free categories
                   Icon(
                     isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
@@ -292,16 +286,17 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                 child: Column(
                   children: [
                     // "All [Category Name]" subcategory button - show only if not "All Categories" main category
-                    if (category.id != 'all')
-                      _buildSubcategoryButton(
-                        title: 'Усі ${category.name}',
-                        isSelected: _selectedSubcategory == null,
-                        onTap: () {
-                          setState(() {
-                            _selectedSubcategory = null; // Represents "All [Category Name]"
-                          });
-                        },
-                      ),
+                    // Removed as per user request.
+                    // if (category.id != 'all')
+                    //   _buildSubcategoryButton(
+                    //     title: 'Усі ${category.name}',
+                    //     isSelected: _selectedSubcategory == null,
+                    //     onTap: () {
+                    //       setState(() {
+                    //         _selectedSubcategory = null; // Represents "All [Category Name]"
+                    //       });
+                    //     },
+                    //   ),
                     // Dynamically build subcategory buttons
                     ..._subcategories.map((subcategory) {
                       return _buildSubcategoryButton(
