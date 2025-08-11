@@ -199,7 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 34), // Місце для аватара
+                const SizedBox(height: 6), // Місце для аватара
                 // Головне
                 _sectionTitle('Головне'),
                 _profileButton(
@@ -224,7 +224,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 20),
                 // (Аватар між блоками видалено)
-                const SizedBox(height: 20),
                 // Мої оголошення
                 _sectionTitle('Мої оголошення'),
                 _profileButton(
