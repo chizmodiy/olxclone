@@ -2473,7 +2473,7 @@ class _FilterPageState extends State<FilterPage> {
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
                       width: 1,
-                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      color: _minYearError != null ? Colors.red : const Color(0xFFE4E4E7),
                     ),
                     borderRadius: BorderRadius.circular(200),
                   ),
@@ -2554,7 +2554,7 @@ class _FilterPageState extends State<FilterPage> {
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
                       width: 1,
-                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      color: _maxYearError != null ? Colors.red : const Color(0xFFE4E4E7),
                     ),
                     borderRadius: BorderRadius.circular(200),
                   ),
@@ -2638,7 +2638,7 @@ class _FilterPageState extends State<FilterPage> {
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
                       width: 1,
-                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      color: _minEngineHpError != null ? Colors.red : const Color(0xFFE4E4E7),
                     ),
                     borderRadius: BorderRadius.circular(200),
                   ),
@@ -2719,7 +2719,7 @@ class _FilterPageState extends State<FilterPage> {
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
                       width: 1,
-                      color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                      color: _maxEngineHpError != null ? Colors.red : const Color(0xFFE4E4E7),
                     ),
                     borderRadius: BorderRadius.circular(200),
                   ),
