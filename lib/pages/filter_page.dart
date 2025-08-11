@@ -1203,7 +1203,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _minPriceError = error;
                         });
-                        _updateSliderFromTextFields();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          _updateSliderFromTextFields();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -1279,7 +1283,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _maxPriceError = error;
                         });
-                        _updateSliderFromTextFields();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          _updateSliderFromTextFields();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2242,7 +2250,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _minAreaError = error;
                         });
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2320,7 +2332,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _maxAreaError = error;
                         });
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2920,7 +2936,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _minAreaError = error;
                         });
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2998,7 +3018,11 @@ class _FilterPageState extends State<FilterPage> {
                         setState(() {
                           _maxAreaError = error;
                         });
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
