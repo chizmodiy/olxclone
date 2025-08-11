@@ -3,14 +3,56 @@ import 'dart:ui';
 import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_bottom_sheet.dart';
+import '../services/profile_service.dart'; // Import ProfileService
+import '../services/profile_notifier.dart'; // Import ProfileNotifier
 
-class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
+class CommonHeader extends StatefulWidget implements PreferredSizeWidget {
   const CommonHeader({super.key});
+
+  @override
+  State<CommonHeader> createState() => _CommonHeaderState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(120);
+}
+
+class _CommonHeaderState extends State<CommonHeader> {
+  String? _avatarUrl;
+  final ProfileService _profileService = ProfileService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvatarUrl();
+    ProfileNotifier().addListener(_onProfileUpdate); // Add listener
+  }
+
+  @override
+  void dispose() {
+    ProfileNotifier().removeListener(_onProfileUpdate); // Remove listener
+    super.dispose();
+  }
+
+  void _onProfileUpdate() {
+    _loadAvatarUrl(); // Reload avatar when profile is updated
+  }
+
+  Future<void> _loadAvatarUrl() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final profile = await _profileService.getUser(user.id);
+      if (mounted) {
+        setState(() {
+          _avatarUrl = profile?.avatarUrl;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
-    final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
+    final avatarUrl = _avatarUrl ?? user?.userMetadata?['avatar_url'] as String?;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(13, 42, 13, 16),
@@ -32,7 +74,6 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
           GestureDetector(
             onTap: () {
               if (user == null) {
-                // Показуємо bottom sheet для розлогінених користувачів
                 showDialog(
                   context: context,
                   barrierDismissible: true,
@@ -41,17 +82,11 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
                     insetPadding: EdgeInsets.zero,
                     child: Stack(
                       children: [
-                        // Затемнення фону з блюром
                         Positioned.fill(
                           child: GestureDetector(
                             onTap: () => Navigator.of(context).pop(),
-                            child: ClipRect(
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                                child: Container(
-                                  color: Colors.black.withOpacity(0.3),
-                                ),
-                              ),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.5),
                             ),
                           ),
                         ),
@@ -102,7 +137,4 @@ class CommonHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(120);
 } 

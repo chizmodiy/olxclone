@@ -204,10 +204,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 _sectionTitle('Головне'),
                 _profileButton(
                   text: 'Особисті данні',
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async { // Make onTap async
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => const PersonalDataPage()),
                     );
+                    if (result == true) {
+                      _loadProfileImage(); // Reload the image if personal data was updated
+                    }
                   },
                 ),
                 _profileButton(

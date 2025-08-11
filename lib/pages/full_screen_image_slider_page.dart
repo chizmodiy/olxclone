@@ -124,13 +124,18 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8.0), // Symmetric padding for both icons
+        padding: const EdgeInsets.all(8.0), // Revert to symmetric padding for the container
         decoration: BoxDecoration(
           color: AppColors.white.withOpacity(0.2), // Same style as close button
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.white.withOpacity(0.3)),
         ),
-        child: Icon(icon, color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5), size: 24),
+        child: Transform.translate(
+          offset: icon == Icons.arrow_back_ios
+              ? const Offset(0.0, 0.0) // Adjust for visual centering (back arrow - shifted right slightly)
+              : const Offset(2.0, 0.0), // Adjust right for visual centering (forward arrow)
+          child: Icon(icon, color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5), size: 24),
+        ),
       ),
     );
   }

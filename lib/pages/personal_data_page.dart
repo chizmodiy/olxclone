@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../services/profile_notifier.dart'; // Import ProfileNotifier
 
 class PersonalDataPage extends StatefulWidget {
   const PersonalDataPage({super.key});
@@ -184,6 +185,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       });
 
       _showSuccessSnackBar('Фото успішно видалено');
+      ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
+      Navigator.of(context).pop(true); // Return true to indicate success
     } catch (e) {
       print('Error deleting avatar: $e');
       _showErrorSnackBar('Помилка при видаленні фото');
@@ -285,6 +288,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
           });
 
           _showSuccessSnackBar('Фото успішно оновлено');
+          ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
+          Navigator.of(context).pop(true); // Return true to indicate success
         }
       } catch (e) {
         print('Error uploading avatar: $e');
@@ -389,7 +394,6 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                  onTap: _pickAvatar,
                                   child: Container(
                                     width: 64,
                                     height: 64,
@@ -436,22 +440,25 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                       ),
                                     if (_hasCustomAvatar)
                                       const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      decoration: ShapeDecoration(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(200),
+                                    GestureDetector( // Added GestureDetector here
+                                      onTap: _pickAvatar, // Call _pickAvatar when 'Оновити' is tapped
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        decoration: ShapeDecoration(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
                                         ),
-                                      ),
-                                      child: const Text(
-                                        'Оновити',
-                                        style: TextStyle(
-                                          color: Color(0xFF27272A),
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w600,
-                                          height: 1.40,
-                                          letterSpacing: 0.14,
+                                        child: const Text(
+                                          'Оновити',
+                                          style: TextStyle(
+                                            color: Color(0xFF27272A),
+                                            fontSize: 14,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.40,
+                                            letterSpacing: 0.14,
+                                          ),
                                         ),
                                       ),
                                     ),
