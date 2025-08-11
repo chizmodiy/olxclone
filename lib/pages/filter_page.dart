@@ -71,6 +71,10 @@ class _FilterPageState extends State<FilterPage> {
   String? _maxAgeError; // New: Error for max age
   String? _minAreaError; // New: Error for min area
   String? _maxAreaError; // New: Error for max area
+  String? _minYearError; // New: Error for min year
+  String? _maxYearError; // New: Error for max year
+  String? _minEngineHpError; // New: Error for min engine HP
+  String? _maxEngineHpError; // New: Error for max engine HP
 
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -416,6 +420,10 @@ class _FilterPageState extends State<FilterPage> {
       _maxAgeError = null; // Clear age validation errors
       _minAreaError = null; // Clear area validation errors
       _maxAreaError = null; // Clear area validation errors
+      _minYearError = null; // Clear year validation errors
+      _maxYearError = null; // Clear year validation errors
+      _minEngineHpError = null; // Clear engine HP validation errors
+      _maxEngineHpError = null; // Clear engine HP validation errors
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
       _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
       
@@ -432,7 +440,9 @@ class _FilterPageState extends State<FilterPage> {
     // Перевіряємо наявність помилок валідації перед застосуванням фільтрів
     if (_minPriceError != null || _maxPriceError != null ||
         _minAgeError != null || _maxAgeError != null ||
-        _minAreaError != null || _maxAreaError != null) {
+        _minAreaError != null || _maxAreaError != null ||
+        _minYearError != null || _maxYearError != null ||
+        _minEngineHpError != null || _maxEngineHpError != null) {
       _showErrorSnackBar('Будь ласка, виправте помилки у полях фільтрів.');
       return; // Не застосовуємо фільтри, якщо є помилки
     }
@@ -845,7 +855,7 @@ class _FilterPageState extends State<FilterPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (_minAgeError == null && _maxAgeError == null) ? _applyFilters : null,
+                    onPressed: _isFormValid() ? _applyFilters : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1189,15 +1199,11 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validatePrice(value, true);
+                        final error = _validatePrice(value, true, isRequired: _isPriceModePrice && _selectedCategory != null && _selectedCategory?.name != 'Віддам безкоштовно');
                         setState(() {
                           _minPriceError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          _updateSliderFromTextFields();
-                        }
+                        _updateSliderFromTextFields();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -1269,15 +1275,11 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validatePrice(value, false);
+                        final error = _validatePrice(value, false, isRequired: _isPriceModePrice && _selectedCategory != null && _selectedCategory?.name != 'Віддам безкоштовно');
                         setState(() {
                           _maxPriceError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          _updateSliderFromTextFields();
-                        }
+                        _updateSliderFromTextFields();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -1898,9 +1900,9 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   // Метод для валідації ціни
-  String? _validatePrice(String? value, bool isMinPrice) {
+  String? _validatePrice(String? value, bool isMinPrice, {bool isRequired = false}) {
     if (value == null || value.isEmpty) {
-      return null; // Дозволяємо порожні значення
+      return isRequired ? 'Це поле є обов\'язковим' : null; // Якщо поле обов'язкове, повертаємо помилку
     }
     
     final price = double.tryParse(value);
@@ -1984,9 +1986,9 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   // Метод для валідації віку
-  String? _validateAge(String? value, bool isMinAge) {
+  String? _validateAge(String? value, bool isMinAge, {bool isRequired = false}) {
     if (value == null || value.isEmpty) {
-      return null; // Allow empty values
+      return isRequired ? 'Це поле є обов\'язковим' : null; // If field is required, return error
     }
 
     final age = int.tryParse(value);
@@ -2035,9 +2037,9 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   // Метод для валідації площі
-  String? _validateArea(String? value, bool isMinArea) {
+  String? _validateArea(String? value, bool isMinArea, {bool isRequired = false}) {
     if (value == null || value.isEmpty) {
-      return null; // Allow empty values
+      return isRequired ? 'Це поле є обов\'язковим' : null; // If field is required, return error
     }
 
     final area = double.tryParse(value);
@@ -2234,15 +2236,13 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateArea(value, true);
+                        final error = _validateArea(value, true, isRequired: (_selectedCategory?.name == 'Нерухомість' || 
+                            _selectedCategory?.name == 'Житло подобово' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['area'] != null))));
                         setState(() {
                           _minAreaError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        }
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2314,15 +2314,13 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateArea(value, false);
+                        final error = _validateArea(value, false, isRequired: (_selectedCategory?.name == 'Нерухомість' || 
+                            _selectedCategory?.name == 'Житло подобово' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['area'] != null))));
                         setState(() {
                           _maxAreaError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        }
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2477,6 +2475,18 @@ class _FilterPageState extends State<FilterPage> {
                     controller: _minCarYearController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    onChanged: (value) {
+                      final error = _validateYear(value, true, isRequired: (_selectedCategory?.name == 'Авто' || 
+                          (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['year'] != null))));
+                      setState(() {
+                        _minYearError = error;
+                      });
+                      if (error != null) {
+                        _showErrorSnackBar(error);
+                      } else {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      }
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: '1999',
@@ -2546,6 +2556,18 @@ class _FilterPageState extends State<FilterPage> {
                     controller: _maxCarYearController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    onChanged: (value) {
+                      final error = _validateYear(value, false, isRequired: (_selectedCategory?.name == 'Авто' || 
+                          (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['year'] != null))));
+                      setState(() {
+                        _maxYearError = error;
+                      });
+                      if (error != null) {
+                        _showErrorSnackBar(error);
+                      } else {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      }
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: '2022',
@@ -2618,6 +2640,18 @@ class _FilterPageState extends State<FilterPage> {
                     controller: _minEngineHpController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    onChanged: (value) {
+                      final error = _validateEngineHp(value, true, isRequired: (_selectedCategory?.name == 'Авто' || 
+                          (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['engine_power_hp'] != null))));
+                      setState(() {
+                        _minEngineHpError = error;
+                      });
+                      if (error != null) {
+                        _showErrorSnackBar(error);
+                      } else {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      }
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: '0 к.с',
@@ -2687,6 +2721,18 @@ class _FilterPageState extends State<FilterPage> {
                     controller: _maxEngineHpController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    onChanged: (value) {
+                      final error = _validateEngineHp(value, false, isRequired: (_selectedCategory?.name == 'Авто' || 
+                          (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['engine_power_hp'] != null))));
+                      setState(() {
+                        _maxEngineHpError = error;
+                      });
+                      if (error != null) {
+                        _showErrorSnackBar(error);
+                      } else {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      }
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: '200 к.с',
@@ -2868,15 +2914,13 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateArea(value, true);
+                        final error = _validateArea(value, true, isRequired: (_selectedCategory?.name == 'Нерухомість' || 
+                            _selectedCategory?.name == 'Житло подобово' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['area'] != null))));
                         setState(() {
                           _minAreaError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        }
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2948,15 +2992,13 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateArea(value, false);
+                        final error = _validateArea(value, false, isRequired: (_selectedCategory?.name == 'Нерухомість' || 
+                            _selectedCategory?.name == 'Житло подобово' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['area'] != null))));
                         setState(() {
                           _maxAreaError = error;
                         });
-                        if (error != null) {
-                          _showErrorSnackBar(error);
-                        } else {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        }
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       },
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -3046,7 +3088,8 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateAge(value, true);
+                        final error = _validateAge(value, true, isRequired: (_selectedCategory?.name == 'Знайомства' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['age'] != null))));
                         setState(() {
                           _minAgeError = error;
                         });
@@ -3126,7 +3169,8 @@ class _FilterPageState extends State<FilterPage> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        final error = _validateAge(value, false);
+                        final error = _validateAge(value, false, isRequired: (_selectedCategory?.name == 'Знайомства' || 
+                            (_selectedSubcategory != null && (getExtraFieldsForSubcategory(_selectedSubcategory!.id)?['age'] != null))));
                         setState(() {
                           _maxAgeError = error;
                         });
@@ -3165,5 +3209,123 @@ class _FilterPageState extends State<FilterPage> {
         ],
       ),
     );
+  }
+
+  // Метод для валідації року випуску
+  String? _validateYear(String? value, bool isMinYear, {bool isRequired = false}) {
+    if (value == null || value.isEmpty) {
+      return isRequired ? 'Це поле є обов\'язковим' : null; // If field is required, return error
+    }
+
+    final year = int.tryParse(value);
+    if (year == null) {
+      return 'Введіть дійсне число';
+    }
+
+    // Assume valid year range, e.g., 1900 to current year + 1
+    final currentYear = DateTime.now().year;
+    if (year < 1900 || year > currentYear + 1) {
+      return 'Введіть рік між 1900 та ${currentYear + 1}';
+    }
+
+    final minYearVal = int.tryParse(_minCarYearController.text);
+    final maxYearVal = int.tryParse(_maxCarYearController.text);
+
+    if (isMinYear) {
+      if (maxYearVal != null && year > maxYearVal) {
+        return 'Мінімальний рік не може бути більшим за максимальний';
+      }
+      if (year == maxYearVal && maxYearVal != null) {
+        return 'Мінімальний та максимальний рік не можуть бути однаковими';
+      }
+    } else { // isMaxYear
+      if (minYearVal != null && year < minYearVal) {
+        return 'Максимальний рік не може бути меншим за мінімальний';
+      }
+      if (year == minYearVal && minYearVal != null) {
+        return 'Мінімальний та максимальний рік не можуть бути однаковими';
+      }
+    }
+
+    return null;
+  }
+
+  // Метод для валідації кінських сил двигуна
+  String? _validateEngineHp(String? value, bool isMinEngineHp, {bool isRequired = false}) {
+    if (value == null || value.isEmpty) {
+      return isRequired ? 'Це поле є обов\'язковим' : null; // If field is required, return error
+    }
+
+    final hp = int.tryParse(value);
+    if (hp == null) {
+      return 'Введіть дійсне число';
+    }
+
+    if (hp < 0) {
+      return 'К.с. не можуть бути від\'ємними';
+    }
+
+    final minHpVal = int.tryParse(_minEngineHpController.text);
+    final maxHpVal = int.tryParse(_maxEngineHpController.text);
+
+    if (isMinEngineHp) {
+      if (maxHpVal != null && hp > maxHpVal) {
+        return 'Мінімальна к.с. не може бути більшою за максимальну';
+      }
+      if (hp == maxHpVal && maxHpVal != null) {
+        return 'Мінімальна та максимальна к.с. не можуть бути однаковими';
+      }
+    } else { // isMaxEngineHp
+      if (minHpVal != null && hp < minHpVal) {
+        return 'Максимальна к.с. не може бути меншою за мінімальну';
+      }
+      if (hp == minHpVal && minHpVal != null) {
+        return 'Мінімальна та максимальна к.с. не можуть бути однаковими';
+      }
+    }
+
+    return null;
+  }
+
+  bool _isFormValid() {
+    // Check general price validation if price mode is active
+    if (_isPriceModePrice && (_minPriceError != null || _maxPriceError != null)) {
+      return false;
+    }
+
+    // Check additional filters validation based on selected subcategory
+    if (_selectedSubcategory != null) {
+      final extraFields = getExtraFieldsForSubcategory(_selectedSubcategory!.id);
+
+      if (extraFields != null) {
+        // Check for area fields if present
+        if (extraFields['area'] != null) {
+          if (_minAreaError != null || _maxAreaError != null) return false;
+          if (_validateArea(_minAreaController.text, true, isRequired: true) != null) return false;
+          if (_validateArea(_maxAreaController.text, false, isRequired: true) != null) return false;
+        }
+        // Check for year fields if present
+        if (extraFields['year'] != null) {
+          if (_minYearError != null || _maxYearError != null) return false;
+          if (_validateYear(_minYearController.text, true, isRequired: true) != null) return false;
+          if (_validateYear(_maxYearController.text, false, isRequired: true) != null) return false;
+        }
+        // Check for engine power fields if present
+        if (extraFields['engine_power_hp'] != null) {
+          if (_minEngineHpError != null || _maxEngineHpError != null) return false;
+          if (_validateEngineHp(_minEngineHpController.text, true, isRequired: true) != null) return false;
+          if (_validateEngineHp(_maxEngineHpController.text, false, isRequired: true) != null) return false;
+        }
+        // Check for age fields if present
+        if (extraFields['age'] != null) {
+          if (_minAgeError != null || _maxAgeError != null) return false;
+          if (_validateAge(_minAgeController.text, true, isRequired: true) != null) return false;
+          if (_validateAge(_maxAgeController.text, false, isRequired: true) != null) return false;
+        }
+      }
+    }
+
+    // If no errors, form is valid
+    return true;
   }
 } 
