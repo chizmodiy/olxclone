@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const Color primaryColor = Color(0xFF015873); // Defined as Primary in the design
   static const Color notificationDotColor = Color(0xFFD45C5C); // Defined for the notification dot
+  static const Color successColor = Color(0xFF4CAF50); // New: Color for success messages
 
   static const Color white = Colors.white; // Explicitly defined white
   static const Color black = Colors.black; // Explicitly defined black

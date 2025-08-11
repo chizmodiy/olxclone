@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../pages/edit_listing_page_new.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../widgets/complaint_success_bottom_sheet.dart'; // Додаємо імпорт
 
 class ListingDetailPage extends StatefulWidget {
   final String listingId;
@@ -60,6 +61,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   }
 
   void _showComplaintModal(Listing listing) async { // Додаємо async
+    print('Debug: _showComplaintModal called.');
     final bool? complaintSent = await showModalBottomSheet( // Чекаємо результат
       context: context,
       isScrollControlled: true,
@@ -77,21 +79,32 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
       ),
     );
 
+    print('Debug: ComplaintModal closed. Result: $complaintSent');
+
     if (complaintSent == true) {
+      print('Debug: Inside if (complaintSent == true) block.');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Скарга успішно створена!'),
-            backgroundColor: AppColors.primaryColor,
-          ),
+        print('Debug: Showing success BottomSheet.');
+        print('Debug: Before showModalBottomSheet for success.');
+        // Замість SnackBar показуємо кастомний BottomSheet
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.white, // Змінюємо на непрозорий колір для тестування видимості
+          builder: (context) {
+            print('Debug: Building ComplaintSuccessBottomSheet.');
+            return const ComplaintSuccessBottomSheet();
+          },
         );
       }
     } else if (complaintSent == false) {
       if (mounted) {
+        print('Debug: Showing error SnackBar.');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Не вдалося створити скаргу.'),
             backgroundColor: AppColors.notificationDotColor, // Використовуємо наявний червоний колір
+            duration: const Duration(seconds: 4), // Явно встановлюємо тривалість
           ),
         );
       }
@@ -136,7 +149,10 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.flag_outlined),
-                      onPressed: () => _showComplaintModal(snapshot.data!),
+                      onPressed: () {
+                        print('Debug: Complaint button pressed.');
+                        _showComplaintModal(snapshot.data!);
+                      },
                       tooltip: 'Поскаржитись',
                     ),
                   ],

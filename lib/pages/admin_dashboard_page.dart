@@ -11,6 +11,7 @@ import '../services/user_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../services/profile_service.dart';
 import '../widgets/logout_confirmation_bottom_sheet.dart';
+import '../widgets/success_bottom_sheet.dart'; // Import the new success bottom sheet
 
 // Додаю ActionIconButton і SVG одразу після імпортів
 class _ActionIconButton extends StatelessWidget {
@@ -872,7 +873,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                       ComplaintTableRow(
                                                         complaint: complaint,
                                                         onViewDetails: () {
-                                                          showComplaintDialog(context: context, complaint: complaint);
+                                                          showComplaintDialog(
+                                                            context: context,
+                                                            complaint: complaint,
+                                                            onComplaintProcessed: () {
+                                                              _fetchComplaints(); // Refresh complaints after processing
+                                                            },
+                                                          );
                                                         },
                                                       ),
                                                   const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
@@ -1678,6 +1685,7 @@ class UserTableRow extends StatelessWidget {
 Future<void> showComplaintDialog({
   required BuildContext context,
   required Map<String, dynamic> complaint,
+  VoidCallback? onComplaintProcessed, // New callback for when a complaint is processed
 }) async {
   final listing = complaint['listings'] ?? {};
   final user = complaint['profiles'] ?? {};
@@ -1940,9 +1948,24 @@ Future<void> showComplaintDialog({
                         const SizedBox(width: 16),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async { // Make it async
                               // TODO: Додати логіку блокування оголошення
-                              Navigator.of(context).pop();
+                              // Приклад: final complaintService = ComplaintService(Supabase.instance.client);
+                              // await complaintService.blockListing(complaint['listing_id']);
+
+                              Navigator.of(context).pop(); // Close the current dialog
+                              onComplaintProcessed?.call(); // Call the callback
+
+                              showDialog( // Show success dialog
+                                context: context,
+                                builder: (context) => SuccessBottomSheet(
+                                  title: 'Скаргу оброблено',
+                                  message: 'Оголошення було успішно заблоковано.',
+                                  onClose: () {
+                                    Navigator.of(context).pop(); // Close success dialog
+                                  },
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),

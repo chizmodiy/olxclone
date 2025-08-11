@@ -14,6 +14,7 @@ import 'chat_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../pages/edit_listing_page_new.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import '../widgets/success_bottom_sheet.dart'; // Import the new success bottom sheet
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -231,13 +232,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         types: [_selectedComplaintType],
       );
       
-      _hideComplaint();
+      if (mounted) {
+        Navigator.of(context).pop(); // Close the complaint bottom sheet
+        _showSuccessBottomSheet(); // Show the success bottom sheet
+      }
     } catch (e) {
-      // Error submitting complaint
+      if (mounted) {
+        // Error submitting complaint (optional: show error snackbar)
+        print('Error submitting complaint: $e');
+      }
     }
   }
 
-
+  void _showSuccessBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      builder: (context) => SuccessBottomSheet(
+        title: 'Скаргу надіслано',
+        message: 'Дякуємо за вашу скаргу! Ми розглянемо її якнайшвидше.',
+        onClose: () {
+          Navigator.of(context).pop(); // Close the success bottom sheet
+        },
+      ),
+    );
+  }
 
   Widget _buildContactButton(
     String type,
@@ -1407,27 +1426,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  void _submitComplaintWithData(String description, String type) {
-    if (_currentUserId == null) {
-      return;
-    }
-
-    if (description.isEmpty) {
-      return;
-    }
-
-    try {
-      _complaintService.createComplaint(
-        listingId: widget.productId,
-        title: _product!.title,
-        description: description,
-        types: [type],
-      );
-      
-      _hideComplaint();
-    } catch (e) {
-      // Error submitting complaint
-    }
+  void _navigateToChatDialog(String? chatId) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatDialogPage(
+          chatId: chatId!,
+          userName: _userProfile!.fullName,
+          userAvatarUrl: _userProfile!.avatarUrl ?? '',
+          listingTitle: _product!.title,
+          listingImageUrl: _product!.photos.isNotEmpty ? _product!.photos.first : '',
+          listingPrice: _product!.formattedPrice,
+          listingDate: _product!.formattedDate,
+          listingLocation: _product!.location,
+        ),
+      ),
+    );
   }
 } 
 
