@@ -1797,10 +1797,6 @@ class _EditListingPageState extends State<EditListingPage> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      // border: Border.all(
-                      //   color: _isNegotiablePrice ? AppColors.primaryColor : AppColors.zinc200,
-                      //   width: 1,
-                      // ),
                       borderRadius: BorderRadius.circular(4),
                       color: _isNegotiablePrice ? AppColors.primaryColor : Colors.white,
                     ),
@@ -1997,18 +1993,18 @@ class _EditListingPageState extends State<EditListingPage> {
         else if (_selectedMessenger == 'whatsapp')
           _buildPhoneInput(
             controller: _whatsappController,
-            hintText: '(XX) XXX-XX-XX',
+            hintText: 'https://chat.whatsapp.com/username',
           )
         else if (_selectedMessenger == 'telegram')
           _buildPhoneInput(
             controller: _telegramController,
-            hintText: 'Введіть номер телефону або нік',
+            hintText: 'https://t.me/username',
             isTelegramInput: true,
           )
         else if (_selectedMessenger == 'viber')
           _buildPhoneInput(
             controller: _viberController,
-            hintText: '(XX) XXX-XX-XX',
+            hintText: 'https://invite.viber.com/?g2=xxxxxx',
           ),
       ],
     );
@@ -2053,10 +2049,10 @@ class _EditListingPageState extends State<EditListingPage> {
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
       errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
     } else if (_isForSale && _isNegotiablePrice &&
-        _priceController.text.isNotEmpty &&
-        (double.tryParse(_priceController.text) == null ||
+        (_priceController.text.isEmpty ||
+            double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
-      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0 або залиште поле порожнім';
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
     } else if (_selectedMessenger.isEmpty) {
       errorMessage = 'Будь ласка, оберіть спосіб зв\'язку';
     } else if (_selectedMessenger == 'phone' &&

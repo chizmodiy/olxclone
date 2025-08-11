@@ -2115,18 +2115,18 @@ class _AddListingPageState extends State<AddListingPage> {
         else if (_selectedMessenger == 'whatsapp')
           _buildPhoneInput(
             controller: _whatsappController,
-            hintText: '(XX) XXX-XX-XX',
+            hintText: 'https://chat.whatsapp.com/username',
           )
         else if (_selectedMessenger == 'telegram')
           _buildPhoneInput(
             controller: _telegramController,
-            hintText: 'Введіть номер телефону або нік',
+            hintText: 'https://t.me/username',
             isTelegramInput: true,
           )
         else if (_selectedMessenger == 'viber')
           _buildPhoneInput(
             controller: _viberController,
-            hintText: '(XX) XXX-XX-XX',
+            hintText: 'https://invite.viber.com/?g2=xxxxxx',
           ),
       ],
     );
@@ -2211,11 +2211,11 @@ class _AddListingPageState extends State<AddListingPage> {
       errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
       print('Debug: Validation failed - invalid price for non-negotiable listing');
     } else if (_isForSale && _isNegotiablePrice &&
-        _priceController.text.isNotEmpty &&
-        (double.tryParse(_priceController.text) == null ||
+        (_priceController.text.isEmpty ||
+            double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
-      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0 або залиште поле порожнім';
-      print('Debug: Validation failed - invalid price for negotiable listing');
+      errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
+      print('Debug: Validation failed - invalid price for negotiable listing (empty or <=0)');
     } else if (_phoneController.text.isEmpty && 
                _whatsappController.text.isEmpty && 
                _telegramController.text.isEmpty && 
@@ -2365,16 +2365,11 @@ class _AddListingPageState extends State<AddListingPage> {
     bool priceValid;
     if (_isForSale) {
       if (_isNegotiablePrice) {
-        // Договірна ціна - валідна якщо поле порожнє або містить дійсну ціну
+        // Договірна ціна - валідна якщо поле містить дійсну ціну
         final priceText = _priceController.text;
-        if (priceText.isEmpty) {
-          priceValid = true;
-          print('Debug: Договірна ціна активна - поле порожнє, валідна');
-        } else {
-          final priceValue = double.tryParse(priceText);
-          priceValid = priceValue != null && priceValue > 0;
-          print('Debug: Договірна ціна активна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
-        }
+        final priceValue = double.tryParse(priceText);
+        priceValid = priceText.isNotEmpty && priceValue != null && priceValue > 0;
+        print('Debug: Договірна ціна активна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
       } else {
         final priceText = _priceController.text;
         final priceValue = double.tryParse(priceText);
