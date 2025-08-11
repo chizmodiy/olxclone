@@ -857,7 +857,7 @@ class _FilterPageState extends State<FilterPage> {
                   child: ElevatedButton(
                     onPressed: _isFormValid() ? _applyFilters : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
+                      backgroundColor: _isFormValid() ? AppColors.primaryColor : AppColors.zinc200,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1975,12 +1975,27 @@ class _FilterPageState extends State<FilterPage> {
 
   // Метод для оновлення слайдера на основі текстових полів
   void _updateSliderFromTextFields() {
-    final minPrice = double.tryParse(_minPriceController.text) ?? _minPrice;
-    final maxPrice = double.tryParse(_maxPriceController.text) ?? _maxPrice;
-    
+    final minPriceText = _minPriceController.text;
+    final maxPriceText = _maxPriceController.text;
+
+    // Спершу конвертуємо значення з полів у UAH
+    double minPriceUAH = minPriceText.isEmpty 
+        ? _minPrice 
+        : _convertToUAH(double.tryParse(minPriceText) ?? _minPrice, _selectedCurrency);
+        
+    double maxPriceUAH = maxPriceText.isEmpty 
+        ? _maxPrice 
+        : _convertToUAH(double.tryParse(maxPriceText) ?? _maxPrice, _selectedCurrency);
+
     setState(() {
-      _currentMinPrice = _convertToUAH(minPrice, _selectedCurrency);
-      _currentMaxPrice = _convertToUAH(maxPrice, _selectedCurrency);
+      // Застосовуємо обмеження clamp до значень в UAH
+      _currentMinPrice = minPriceUAH.clamp(_minPrice, _maxPrice);
+      _currentMaxPrice = maxPriceUAH.clamp(_minPrice, _maxPrice);
+
+      // Додатково переконуємось, що min не перевищує max
+      if (_currentMinPrice > _currentMaxPrice) {
+        _currentMinPrice = _currentMaxPrice;
+      }
     });
   }
 
@@ -3329,13 +3344,13 @@ class _FilterPageState extends State<FilterPage> {
           if (_validateArea(_maxAreaController.text, false, isRequired: true) != null) return false;
         }
         // Check for year fields if present
-        if (extraFields['year'] != null) {
+        if (extraFields['year'] != null || _selectedCategory?.name == 'Авто') {
           if (_minYearError != null || _maxYearError != null) return false;
           if (_validateYear(_minYearController.text, true, isRequired: true) != null) return false;
           if (_validateYear(_maxYearController.text, false, isRequired: true) != null) return false;
         }
         // Check for engine power fields if present
-        if (extraFields['engine_power_hp'] != null) {
+        if (extraFields['engine_power_hp'] != null || _selectedCategory?.name == 'Авто') {
           if (_minEngineHpError != null || _maxEngineHpError != null) return false;
           if (_validateEngineHp(_minEngineHpController.text, true, isRequired: true) != null) return false;
           if (_validateEngineHp(_maxEngineHpController.text, false, isRequired: true) != null) return false;

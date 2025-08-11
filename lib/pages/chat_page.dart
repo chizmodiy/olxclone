@@ -1561,8 +1561,12 @@ class ChatListingCard extends StatelessWidget {
                   : Container(
                       width: 40,
                       height: 40,
-                      color: Color(0xFFED3131),
-                      child: Icon(Icons.image, color: Colors.white),
+                      color: Colors.grey[200],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey,
+                        size: 24,
+                      ),
                     ),
               const SizedBox(width: 16),
               Expanded(
