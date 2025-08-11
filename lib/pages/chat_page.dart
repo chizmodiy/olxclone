@@ -1145,66 +1145,67 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           ),
           // Прибрати Divider або border в самому низу сторінки відкритого чату
           // const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 36, top: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Поле введення з іконкою фото
-                Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                      color: Color(0xFFFAFAFA),
-                        borderRadius: BorderRadius.circular(200),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                        child: Row(
-                          children: [
-                        IconButton(
-                          icon: const Icon(Icons.photo, color: Color(0xFF52525B)),
-                          onPressed: _pickAndUploadImage,
-                          splashRadius: 20,
+          if (widget.listingTitle != 'Оголошення видалено')
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 36, top: 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Поле введення з іконкою фото
+                  Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                        color: Color(0xFFFAFAFA),
+                          borderRadius: BorderRadius.circular(200),
                         ),
-                            Expanded(
-                          child: TextField(
-                            controller: _textController,
-                            decoration: const InputDecoration(
-                              hintText: 'Написати повідомлення',
-                              hintStyle: TextStyle(
-                                color: Color(0xFFA1A1AA),
-                                  fontSize: 16,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
-                                height: 1.5,
-                                  letterSpacing: 0.16,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          child: Row(
+                            children: [
+                          IconButton(
+                            icon: const Icon(Icons.photo, color: Color(0xFF52525B)),
+                            onPressed: _pickAndUploadImage,
+                            splashRadius: 20,
+                          ),
+                              Expanded(
+                            child: TextField(
+                              controller: _textController,
+                              decoration: const InputDecoration(
+                                hintText: 'Написати повідомлення',
+                                hintStyle: TextStyle(
+                                  color: Color(0xFFA1A1AA),
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                    letterSpacing: 0.16,
+                                  ),
+                                border: InputBorder.none,
                                 ),
-                              border: InputBorder.none,
+                              minLines: 1,
+                              maxLines: 4,
                               ),
-                            minLines: 1,
-                            maxLines: 4,
-                            ),
-                        ),
-                          ],
+                          ),
+                            ],
+                          ),
                         ),
                       ),
+                  const SizedBox(width: 12),
+                  // Кнопка відправки: прибрати border
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF015873),
+                      borderRadius: BorderRadius.circular(200),
                     ),
-                const SizedBox(width: 12),
-                // Кнопка відправки: прибрати border
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF015873),
-                    borderRadius: BorderRadius.circular(200),
+                    child: IconButton(
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      onPressed: () => _sendMessage(),
+                      splashRadius: 24,
+                      padding: const EdgeInsets.all(12),
+                    ),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: () => _sendMessage(),
-                    splashRadius: 24,
-                    padding: const EdgeInsets.all(12),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
