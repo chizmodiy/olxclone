@@ -170,10 +170,10 @@ class _ChatPageState extends State<ChatPage> {
       }
       chatCards.add({
         'chatId': chat['id'],
-        'listingTitle': listing?['title'] ?? 'Оголошення',
+        'listingTitle': listing?['title'] ?? 'Оголошення видалено',
         'imageUrl': (listing?['photos'] != null && (listing?['photos'] as List).isNotEmpty)
             ? (listing?['photos'] as List).first
-            : 'https://placehold.co/92x92',
+            : '', // Changed to empty string for empty state
         'userName': (otherProfile != null)
             ? ((otherProfile['first_name'] ?? '') + ' ' + (otherProfile['last_name'] ?? ''))
             : 'Користувач',
@@ -662,11 +662,28 @@ class ChatCard extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
+                    color: imageUrl.isEmpty ? Colors.grey[200] : null,
                   ),
+                  child: imageUrl.isEmpty
+                      ? const Icon(
+                          Icons.image_not_supported,
+                          size: 48,
+                          color: Colors.grey,
+                        )
+                      : Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          width: 92,
+                          height: 92,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
                 ),
                 Expanded(
                   child: Container(
