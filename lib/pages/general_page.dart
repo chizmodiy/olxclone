@@ -23,11 +23,10 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
   final ProfileService _profileService = ProfileService();
-  final GlobalKey<HomeContentState> _homeContentKey = GlobalKey<HomeContentState>();
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(key: _homeContentKey),
+    HomePage(),
     const FavoritesPage(),
     const ViewedPage(),
     const ChatPage(),
@@ -229,14 +228,6 @@ class _GeneralPageState extends State<GeneralPage> {
                     // Додаємо більшу затримку для забезпечення оновлення
                     await Future.delayed(const Duration(milliseconds: 1000));
                     print('Debug: Calling refreshProducts() on HomeContent');
-                    final homeState = _homeContentKey.currentState;
-                    if (homeState != null) {
-                      print('Debug: HomeContent state found, calling refreshProducts');
-                      homeState.refreshProducts();
-                    } else {
-                      print('Debug: HomeContent state is null');
-                    }
-                    
                     // Альтернативний спосіб - примусове оновлення через setState
                     setState(() {
                       // Це примусить перебудувати HomePage
@@ -245,13 +236,6 @@ class _GeneralPageState extends State<GeneralPage> {
                     // Додаткове оновлення після побудови кадру
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       print('Debug: Post frame callback - calling refreshProducts again');
-                      final homeState = _homeContentKey.currentState;
-                      if (homeState != null) {
-                        print('Debug: HomeContent state found in post frame callback');
-                        homeState.refreshProducts();
-                      } else {
-                        print('Debug: HomeContent state is null in post frame callback');
-                      }
                     });
                   }
                 },

@@ -38,11 +38,15 @@ class _ComplaintModalState extends State<ComplaintModal> {
   }
 
   Future<void> _submitComplaint() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      // No need to show snackbar here, parent will handle it
+      if (mounted) Navigator.of(context).pop(false);
+      return;
+    }
     if (_selectedTypes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Оберіть хоча б один тип скарги')),
-      );
+      if (mounted) {
+        Navigator.of(context).pop(false);
+      }
       return;
     }
 
@@ -58,11 +62,13 @@ class _ComplaintModalState extends State<ComplaintModal> {
       );
 
       if (mounted) {
-        Navigator.of(context).pop();
+        // Повідомляємо батьківський віджет про успіх
+        Navigator.of(context).pop(true);
       }
     } catch (error) {
       if (mounted) {
-        // Error submitting complaint
+        // Повідомляємо батьківський віджет про помилку
+        Navigator.of(context).pop(false);
       }
     } finally {
       if (mounted) {

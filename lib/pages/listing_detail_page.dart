@@ -59,8 +59,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     );
   }
 
-  void _showComplaintModal(Listing listing) {
-    showModalBottomSheet(
+  void _showComplaintModal(Listing listing) async { // Додаємо async
+    final bool? complaintSent = await showModalBottomSheet( // Чекаємо результат
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -76,6 +76,26 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         ),
       ),
     );
+
+    if (complaintSent == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Скарга успішно створена!'),
+            backgroundColor: AppColors.primaryColor,
+          ),
+        );
+      }
+    } else if (complaintSent == false) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Не вдалося створити скаргу.'),
+            backgroundColor: AppColors.notificationDotColor, // Використовуємо наявний червоний колір
+          ),
+        );
+      }
+    }
   }
 
   bool _isNotMyListing(Listing listing) {
