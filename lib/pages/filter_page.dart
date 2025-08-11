@@ -69,6 +69,8 @@ class _FilterPageState extends State<FilterPage> {
   String? _maxPriceError;
   String? _minAgeError; // New: Error for min age
   String? _maxAgeError; // New: Error for max age
+  String? _minAreaError; // New: Error for min area
+  String? _maxAreaError; // New: Error for max area
 
   List<Category> _categories = [];
   bool _isLoadingCategories = true;
@@ -412,6 +414,8 @@ class _FilterPageState extends State<FilterPage> {
       _maxPriceError = null; // Clear price validation errors
       _minAgeError = null; // Clear age validation errors
       _maxAgeError = null; // Clear age validation errors
+      _minAreaError = null; // Clear area validation errors
+      _maxAreaError = null; // Clear area validation errors
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
       _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
       
@@ -424,6 +428,14 @@ class _FilterPageState extends State<FilterPage> {
     print('Debug: Selected category: ${_selectedCategory?.id}');
     print('Debug: Selected subcategory: ${_selectedSubcategory?.id}');
     print('Debug: Price mode: ${_isPriceModePrice ? "Price" : "Free"}');
+    
+    // Перевіряємо наявність помилок валідації перед застосуванням фільтрів
+    if (_minPriceError != null || _maxPriceError != null ||
+        _minAgeError != null || _maxAgeError != null ||
+        _minAreaError != null || _maxAreaError != null) {
+      _showErrorSnackBar('Будь ласка, виправте помилки у полях фільтрів.');
+      return; // Не застосовуємо фільтри, якщо є помилки
+    }
     
     final FilterManager filterManager = FilterManager();
     final Map<String, dynamic> filters = {
@@ -1158,7 +1170,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _minPriceError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -1238,7 +1250,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _maxPriceError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -2022,6 +2034,44 @@ class _FilterPageState extends State<FilterPage> {
     }
   }
 
+  // Метод для валідації площі
+  String? _validateArea(String? value, bool isMinArea) {
+    if (value == null || value.isEmpty) {
+      return null; // Allow empty values
+    }
+
+    final area = double.tryParse(value);
+    if (area == null) {
+      return 'Введіть дійсне число';
+    }
+
+    if (area < 0) {
+      return 'Площа не може бути від\'ємною';
+    }
+
+    // Get current values from controllers to validate against each other
+    final minAreaVal = double.tryParse(_minAreaController.text);
+    final maxAreaVal = double.tryParse(_maxAreaController.text);
+
+    if (isMinArea) {
+      if (maxAreaVal != null && area > maxAreaVal) {
+        return 'Мінімальна площа не може бути більшою за максимальну';
+      }
+      if (area == maxAreaVal && maxAreaVal != null) {
+        return 'Мінімальна та максимальна площа не можуть бути однаковими';
+      }
+    } else { // isMaxArea
+      if (minAreaVal != null && area < minAreaVal) {
+        return 'Максимальна площа не може бути меншою за мінімальну';
+      }
+      if (area == minAreaVal && minAreaVal != null) {
+        return 'Мінімальна та максимальна площа не можуть бути однаковими';
+      }
+    }
+
+    return null;
+  }
+
   Widget _buildAdditionalFilters() {
     // Фільтри для нерухомості
     if (_selectedCategory?.name == 'Нерухомість' || 
@@ -2165,7 +2215,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _minAreaError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -2183,6 +2233,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _minAreaController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateArea(value, true);
+                        setState(() {
+                          _minAreaError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '0 м²',
@@ -2234,7 +2295,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _maxAreaError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -2252,6 +2313,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _maxAreaController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateArea(value, false);
+                        setState(() {
+                          _maxAreaError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '200 м²',
@@ -2764,6 +2836,7 @@ class _FilterPageState extends State<FilterPage> {
             ),
           ),
           const SizedBox(height: 16),
+          // Поля вводу площі
           Row(
             children: [
               Expanded(
@@ -2776,7 +2849,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _minAreaError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -2794,6 +2867,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _minAreaController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateArea(value, true);
+                        setState(() {
+                          _minAreaError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '0 м²',
@@ -2845,7 +2929,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _maxAreaError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -2863,6 +2947,17 @@ class _FilterPageState extends State<FilterPage> {
                       controller: _maxAreaController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        final error = _validateArea(value, false);
+                        setState(() {
+                          _maxAreaError = error;
+                        });
+                        if (error != null) {
+                          _showErrorSnackBar(error);
+                        } else {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        }
+                      },
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '200 м²',
@@ -2932,7 +3027,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _minAgeError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
@@ -3012,7 +3107,7 @@ class _FilterPageState extends State<FilterPage> {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFFE4E4E7) /* Zinc-200 */,
+                        color: _maxAgeError != null ? Colors.red : const Color(0xFFE4E4E7) /* Zinc-200 */,
                       ),
                       borderRadius: BorderRadius.circular(200),
                     ),
