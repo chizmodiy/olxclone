@@ -15,6 +15,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../pages/edit_listing_page_new.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/success_bottom_sheet.dart'; // Import the new success bottom sheet
+import 'full_screen_image_slider_page.dart'; // Import the new full screen image slider page
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -642,33 +643,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Stack(
               children: [
                 // Image gallery
-                PageView.builder(
-                  controller: _pageController,
-                  itemCount: _product!.photos.length,
-                  onPageChanged: (int page) {
-                    setState(() {
-                      _currentPage = page;
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    final imageWidget = CachedNetworkImage(
-                      imageUrl: _product!.photos[index],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.error),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FullScreenImageSliderPage(
+                          imageUrls: _product!.photos,
+                          initialIndex: _currentPage,
+                        ),
                       ),
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     );
-                    if (index == 0) {
-                      return Hero(
-                        tag: 'product-photo-${_product!.id}',
-                        child: imageWidget,
-                      );
-                    }
-                    return imageWidget;
                   },
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _product!.photos.length,
+                    onPageChanged: (int page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final imageWidget = CachedNetworkImage(
+                        imageUrl: _product!.photos[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.error),
+                        ),
+                        placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      );
+                      if (index == 0) {
+                        return Hero(
+                          tag: 'product-photo-${_product!.id}',
+                          child: imageWidget,
+                        );
+                      }
+                      return imageWidget;
+                    },
+                  ),
                 ),
                 // Navigation buttons
                 Positioned(
