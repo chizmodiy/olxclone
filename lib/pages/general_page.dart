@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +11,7 @@ import 'package:withoutname/pages/viewed_page.dart';
 import 'package:withoutname/pages/favorites_page.dart';
 import 'chat_page.dart';
 import '../services/profile_service.dart';
+import '../services/chat_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/auth_bottom_sheet.dart';
 
@@ -23,6 +25,9 @@ class GeneralPage extends StatefulWidget {
 class _GeneralPageState extends State<GeneralPage> {
   int _selectedIndex = 0;
   final ProfileService _profileService = ProfileService();
+  final ChatService _chatService = ChatService();
+  bool _hasUnreadMessages = false;
+  Timer? _timer;
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
@@ -32,20 +37,14 @@ class _GeneralPageState extends State<GeneralPage> {
     const ChatPage(),
   ];
 
-  // У GeneralPage: визначити, чи є непрочитані повідомлення
-  // Додати змінну hasUnreadMessages, яка визначається на основі ChatPage або глобального стану
-  // Для прикладу, якщо є доступ до ChatPage._chats:
-  bool get hasUnreadMessages {
-    // Тут має бути логіка перевірки наявності непрочитаних повідомлень
-    // Наприклад, якщо є глобальний провайдер або можна отримати список чатів
-    // Псевдокод:
-    // return chats.any((chat) => chat['unreadCount'] > 0);
-    return false; // TODO: замінити на реальну перевірку
-  }
-
   @override
   void initState() {
     super.initState();
+    _checkUnreadMessages();
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _checkUnreadMessages();
+    });
+
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final currentUser = Supabase.instance.client.auth.currentUser;
@@ -58,7 +57,29 @@ class _GeneralPageState extends State<GeneralPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkUnreadMessages() async {
+    if (mounted) {
+      final hasUnread = await _chatService.hasUnreadMessages();
+      if (mounted) {
+        setState(() {
+          _hasUnreadMessages = hasUnread;
+        });
+      }
+    }
+  }
+
   void _onItemTapped(int index) {
+    if (index == 3) {
+      setState(() {
+        _hasUnreadMessages = false;
+      });
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -265,7 +286,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 iconPath: 'assets/icons/message-circle-01.svg',
                 label: 'Чат',
                 index: 3,
-                hasNotification: hasUnreadMessages,
+                hasNotification: _hasUnreadMessages,
               ),
             ),
           ],
@@ -330,6 +351,7 @@ class _GeneralPageState extends State<GeneralPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
+              clipBehavior: Clip.none,
               children: [
                 SvgPicture.asset(
                   iconPath,
@@ -339,13 +361,15 @@ class _GeneralPageState extends State<GeneralPage> {
                 ),
                 if (hasNotification)
                   Positioned(
-                    right: 0,
-                    top: 0,
-                    child: SvgPicture.asset(
-                      'assets/icons/notification_dot.svg',
+                    right: -2,
+                    top: -2,
+                    child: Container(
                       width: 6,
                       height: 6,
-                      colorFilter: ColorFilter.mode(AppColors.notificationDotColor, BlendMode.srcIn),
+                      decoration: const ShapeDecoration(
+                        color: Color(0xFFD35B5B),
+                        shape: OvalBorder(),
+                      ),
                     ),
                   ),
               ],
