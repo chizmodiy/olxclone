@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/product.dart';
 import '../models/user.dart';
 import '../services/product_service.dart';
@@ -1121,109 +1122,116 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 24),
                   _buildCustomAttributesSection(),
                   // Location block (address, map)
-                  if (_product!.address != null && _product!.address!.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/addresssdv.svg',
-                          width: 22,
-                          height: 22,
+                  if (_product!.address != null && _product!.address!.isNotEmpty)
+                    GestureDetector(
+                      onTap: () => _launchMapsUrl(_product!.latitude, _product!.longitude),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 4.0),
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/addresssdv.svg',
+                              width: 22,
+                              height: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(_product!.address!)),
+                          ],
                         ),
-                        SizedBox(width: 8),
-                        Expanded(child: Text(_product!.address!)),
-                      ],
+                      ),
                     ),
-                    SizedBox(height: 4),
-                  ],
                   if (_product!.latitude != null && _product!.longitude != null) ...[
                     SizedBox(
                       height: 180,
-                      child: Stack(
-                        children: [
-                          IgnorePointer(
-                            child: FlutterMap(
-                              mapController: _mapController,
-                              options: MapOptions(
-                                center: LatLng(_product!.latitude!, _product!.longitude!),
-                                zoom: 14,
+                      child: GestureDetector(
+                        onTap: () => _launchMapsUrl(_product!.latitude, _product!.longitude),
+                        child: Stack(
+                          children: [
+                            IgnorePointer(
+                              child: FlutterMap(
+                                mapController: _mapController,
+                                options: MapOptions(
+                                  center: LatLng(_product!.latitude!, _product!.longitude!),
+                                  zoom: 14,
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    subdomains: ['a', 'b', 'c'],
+                                  ),
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        width: 40,
+                                        height: 40,
+                                        point: LatLng(_product!.latitude!, _product!.longitude!),
+                                        child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  subdomains: ['a', 'b', 'c'],
-                                ),
-                                MarkerLayer(
-                                  markers: [
-                                    Marker(
-                                      width: 40,
-                                      height: 40,
-                                      point: LatLng(_product!.latitude!, _product!.longitude!),
-                                      child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                            ),
+                            // Кнопки керування картою
+                            Positioned(
+                              right: 16,
+                              top: 16,
+                              child: Column(
+                                children: [
+                                  // Кнопка збільшення
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE4E4E7)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
+                                    child: IconButton(
+                                      icon: const Icon(Icons.add, size: 20),
+                                      onPressed: () {
+                                        _mapController.move(_mapController.center, _mapController.zoom + 1);
+                                      },
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Кнопка зменшення
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE4E4E7)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.remove, size: 20),
+                                      onPressed: () {
+                                        _mapController.move(_mapController.center, _mapController.zoom - 1);
+                                      },
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          // Кнопки керування картою
-                          Positioned(
-                            right: 16,
-                            top: 16,
-                            child: Column(
-                              children: [
-                                // Кнопка збільшення
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: const Color(0xFFE4E4E7)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.add, size: 20),
-                                    onPressed: () {
-                                      _mapController.move(_mapController.center, _mapController.zoom + 1);
-                                    },
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Кнопка зменшення
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: const Color(0xFFE4E4E7)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.remove, size: 20),
-                                    onPressed: () {
-                                      _mapController.move(_mapController.center, _mapController.zoom - 1);
-                                    },
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1486,6 +1494,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: attributeWidgets,
     );
+  }
+
+  void _launchMapsUrl(double? lat, double? lon) async {
+    if (lat == null || lon == null) return;
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      print('Could not launch $url');
+    }
   }
 
   Widget _buildComplaintOverlay() {
