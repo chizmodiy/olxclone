@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/product.dart';
 import '../models/user.dart';
 import '../services/product_service.dart';
@@ -782,8 +783,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           children: [
                             _buildNavigationButton(
                               iconPath: 'assets/icons/share-07.svg',
-                              onTap: () {
-                                // Share functionality coming soon
+                              onTap: () async {
+                                if (_product != null) {
+                                  try {
+                                    final productUrl = 'https://your-app-url.com/product/${_product!.id}'; // TODO: Replace with your actual app URL
+                                    print('Поширення оголошення: ${_product!.title}');
+                                    await Share.share(
+                                      'Подивіться на це оголошення: ${_product!.title} - ${_product!.formattedPrice}\n$productUrl'
+                                    );
+                                    print('Діалогове вікно "Поділитися" мало з\'явитися.');
+                                  } catch (e) {
+                                    print('Помилка під час поширення: $e');
+                                  }
+                                } else {
+                                  print('Кнопка "Поділитися" натиснута, але _product має значення null.');
+                                }
                               },
                             ),
                             // Показуємо кнопку редагування тільки якщо це наше оголошення
