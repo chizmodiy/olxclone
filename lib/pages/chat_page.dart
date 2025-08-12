@@ -991,16 +991,18 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildBottomSheetOption(
-              icon: Icons.report_problem_outlined,
-              title: 'Надіслати скаргу',
-              color: Colors.orange,
-              onTap: () {
-                Navigator.pop(context);
-                _showComplaintBottomSheet();
-              },
-            ),
-            const Divider(),
+            if (widget.listingTitle != 'Оголошення видалено') ...[
+              _buildBottomSheetOption(
+                icon: Icons.report_problem_outlined,
+                title: 'Надіслати скаргу',
+                color: Colors.orange,
+                onTap: () {
+                  Navigator.pop(context);
+                  _showComplaintBottomSheet();
+                },
+              ),
+              const Divider(),
+            ],
             _buildBottomSheetOption(
               icon: Icons.delete_outline,
               title: 'Видалити чат',
