@@ -92,6 +92,85 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return _subcategories[subcategoryId] ?? 'Інше';
   }
 
+  String _getCustomAttributeDisplayName(String attributeName) {
+    switch (attributeName) {
+      // Загальні
+      case 'condition':
+        return 'Стан';
+      case 'warranty':
+        return 'Гарантія';
+      case 'delivery':
+        return 'Доставка';
+      case 'payment':
+        return 'Оплата';
+      // Авто
+      case 'year':
+        return 'Рік випуску';
+      case 'car_brand':
+        return 'Марка авто';
+      case 'engine_power':
+        return 'Двигун (к.с.)';
+      case 'mileage':
+        return 'Пробіг (км)';
+      case 'fuel_type':
+        return 'Тип палива';
+      case 'transmission':
+        return 'Коробка передач';
+      case 'body_type':
+        return 'Тип кузова';
+      case 'color':
+        return 'Колір';
+      // Нерухомість
+      case 'area':
+        return 'Площа (м²)';
+      case 'rooms':
+        return 'Кількість кімнат';
+      case 'floor':
+        return 'Поверх';
+      case 'total_floors':
+        return 'Всього поверхів';
+      case 'property_type':
+        return 'Тип нерухомості';
+      case 'renovation':
+        return 'Ремонт';
+      case 'furniture':
+        return 'Меблі';
+      case 'balcony':
+        return 'Балкон';
+      case 'parking':
+        return 'Парковка';
+      // Електроніка
+      case 'model':
+        return 'Модель';
+      case 'memory':
+        return 'Пам\'ять';
+      case 'storage':
+        return 'Накопичувач';
+      case 'processor':
+        return 'Процесор';
+      case 'screen_size':
+        return 'Розмір екрану';
+      case 'battery':
+        return 'Батарея';
+      // Одяг
+      case 'size':
+        return 'Розмір';
+      case 'material':
+        return 'Матеріал';
+      case 'season':
+        return 'Сезон';
+      case 'style':
+        return 'Стиль';
+      case 'gender':
+        return 'Стать';
+      // Знайомства
+      case 'age':
+        return 'Вік';
+      default:
+        return attributeName.split('_').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1026,6 +1105,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  _buildCustomAttributesSection(),
                   // Location block (address, map)
                   if (_product!.address != null && _product!.address!.isNotEmpty) ...[
                     Row(
@@ -1320,6 +1400,77 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCustomAttributesSection() {
+    if (_product?.customAttributes == null || _product!.customAttributes!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final attributes = _product!.customAttributes!;
+    final attributeWidgets = <Widget>[];
+
+    attributes.forEach((key, value) {
+      if (value != null && value.toString().trim().isNotEmpty) {
+        String displayValue;
+        if (value is Map && value.containsKey('min') && value.containsKey('max')) {
+          final min = value['min'];
+          final max = value['max'];
+          if (min != null && max != null) {
+            displayValue = 'від $min до $max';
+          } else if (min != null) {
+            displayValue = 'від $min';
+          } else if (max != null) {
+            displayValue = 'до $max';
+          } else {
+            return;
+          }
+        } else {
+          displayValue = value.toString();
+        }
+
+        attributeWidgets.add(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getCustomAttributeDisplayName(key),
+                style: const TextStyle(
+                  color: Color(0xFF52525B),
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                  letterSpacing: 0.14,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                displayValue,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  letterSpacing: 0.16,
+                ),
+              ),
+            ],
+          ),
+        );
+        attributeWidgets.add(const SizedBox(height: 24));
+      }
+    });
+
+    if (attributeWidgets.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: attributeWidgets,
     );
   }
 

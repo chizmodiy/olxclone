@@ -23,6 +23,7 @@ import 'dart:async'; // Add this import for Timer
 import '../widgets/location_picker.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import 'package:dotted_border/dotted_border.dart';
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -71,6 +72,7 @@ class _AddListingPageState extends State<AddListingPage> {
   final Map<String, TextEditingController> _extraFieldControllers = {};
   final Map<String, dynamic> _extraFieldValues = {};
   bool _isLoading = false;
+  bool _submitted = false;
   
   // Nominatim City Search
   final TextEditingController _citySearchController = TextEditingController();
@@ -328,7 +330,10 @@ class _AddListingPageState extends State<AddListingPage> {
                   decoration: BoxDecoration(
                     color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
-              border: Border.all(color: AppColors.zinc200, width: 1),
+              border: Border.all(
+                color: _submitted && _selectedCategory == null ? Colors.red : AppColors.zinc200,
+                width: 1
+              ),
                     boxShadow: const [
                       BoxShadow(
                         color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -536,7 +541,10 @@ class _AddListingPageState extends State<AddListingPage> {
               decoration: BoxDecoration(
                 color: AppColors.zinc50,
                 borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: AppColors.zinc200, width: 1),
+                border: Border.all(
+                  color: _submitted && _selectedSubcategory == null ? Colors.red : AppColors.zinc200,
+                  width: 1
+                ),
                 boxShadow: const [
                   BoxShadow(
                     color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -1124,7 +1132,10 @@ class _AddListingPageState extends State<AddListingPage> {
               decoration: BoxDecoration(
                 color: AppColors.zinc50,
                 borderRadius: BorderRadius.circular(200),
-                border: Border.all(color: AppColors.zinc200, width: 1),
+                border: Border.all(
+                  color: _submitted && _selectedRegion == null ? Colors.red : AppColors.zinc200,
+                  width: 1
+                ),
                 boxShadow: const [
                   BoxShadow(
                     color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -1340,7 +1351,10 @@ class _AddListingPageState extends State<AddListingPage> {
             decoration: BoxDecoration(
               color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
-              border: Border.all(color: AppColors.zinc200, width: 1),
+              border: Border.all(
+                color: _submitted && _selectedCity == null ? Colors.red : AppColors.zinc200,
+                width: 1
+              ),
               boxShadow: const [
                 BoxShadow(
                   color: Color.fromRGBO(16, 24, 40, 0.05),
@@ -2427,6 +2441,10 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   Future<void> _createListing() async {
+    setState(() {
+      _submitted = true;
+    });
+
     final formValidationMessage = _validateForm();
     if (formValidationMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
