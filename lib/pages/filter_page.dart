@@ -821,13 +821,13 @@ class _FilterPageState extends State<FilterPage> {
                   const SizedBox(height: 24),
                   
                   // БЛОК 2: Валюта
-                  if (_selectedCategory?.name != 'Віддам безкоштовно')
+                  if (_selectedCategory?.name != 'Віддам безкоштовно' && _selectedCategory?.name != 'Знайомства')
                     _buildCurrencyBlock(),
                   
                   const SizedBox(height: 24),
                   
                   // БЛОК 3: Ціна
-                  if (_selectedCategory?.name != 'Віддам безкоштовно')
+                  if (_selectedCategory?.name != 'Віддам безкоштовно' && _selectedCategory?.name != 'Знайомства')
                     _buildBlock2(),
                   
                   const SizedBox(height: 24),
