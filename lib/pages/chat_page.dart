@@ -458,41 +458,41 @@ class _ChatPageState extends State<ChatPage> {
                                 const Spacer(),
                               ],
                             )
-                      : ListView.separated(
-                          itemCount: _chats.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 20),
-                          itemBuilder: (context, index) {
-                            final chat = _chats[index];
-                            return ChatCard(
-                              imageUrl: chat['imageUrl'],
-                              listingTitle: chat['listingTitle'],
-                              userName: chat['userName'],
-                              lastMessage: chat['lastMessage'],
-                              time: chat['time'],
-                              unreadCount: chat['unreadCount'],
-                              onTap: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatDialogPage(
-                                      chatId: chat['chatId'] ?? '',
-                                      userName: chat['userName'] ?? '',
-                                      userAvatarUrl: chat['userAvatarUrl'] ?? '',
-                                      listingTitle: chat['listingTitle'] ?? '',
-                                      listingImageUrl: chat['imageUrl'] ?? '',
-                                      listingPrice: chat['listingPrice'] ?? '',
-                                      listingDate: chat['listingDate'] ?? '',
-                                      listingLocation: chat['listingLocation'] ?? '',
-                                    ),
-                                  ),
+                          : ListView.separated(
+                              itemCount: _chats.length,
+                              separatorBuilder: (context, index) => const SizedBox(height: 20),
+                              itemBuilder: (context, index) {
+                                final chat = _chats[index];
+                                return ChatCard(
+                                  imageUrl: chat['imageUrl'],
+                                  listingTitle: chat['listingTitle'],
+                                  userName: chat['userName'],
+                                  lastMessage: chat['lastMessage'],
+                                  time: chat['time'],
+                                  unreadCount: chat['unreadCount'],
+                                  onTap: () async {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatDialogPage(
+                                          chatId: chat['chatId'] ?? '',
+                                          userName: chat['userName'] ?? '',
+                                          userAvatarUrl: chat['userAvatarUrl'] ?? '',
+                                          listingTitle: chat['listingTitle'] ?? '',
+                                          listingImageUrl: chat['imageUrl'] ?? '',
+                                          listingPrice: chat['listingPrice'] ?? '',
+                                          listingDate: chat['listingDate'] ?? '',
+                                          listingLocation: chat['listingLocation'] ?? '',
+                                        ),
+                                      ),
+                                    );
+                                    // Оновлюємо список чатів при поверненні
+                                    if (mounted) {
+                                      _loadChats();
+                                    }
+                                  },
                                 );
-                                // Оновлюємо список чатів при поверненні
-                                if (mounted) {
-                                  _loadChats();
-                                }
                               },
-                            );
-                          },
-                        ),
+                            ),
             ),
           ],
         ),
@@ -553,11 +553,11 @@ class ChatTypeSwitch extends StatelessWidget {
                         ]
                       : [],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'Купую',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: isBuyerSelected ? Colors.black : Colors.grey[700],
                       fontSize: 14,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,
@@ -598,7 +598,7 @@ class ChatTypeSwitch extends StatelessWidget {
                   child: Text(
                     'Продаю',
                     style: TextStyle(
-                      color: !isBuyerSelected ? Colors.black : Color(0xFF71717A),
+                      color: !isBuyerSelected ? Colors.black : Colors.grey[700],
                       fontSize: 14,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,
@@ -917,11 +917,129 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   }
 
   void _scrollToBottom() {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
+  }
+
+  void _showDeleteChatOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text(
+                'Видалити чат',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                Navigator.pop(context); // Close the first bottom sheet
+                _showDeleteConfirmation();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Видалити чат?',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Ви впевнені, що хочете видалити цей чат? Цю дію неможливо буде скасувати.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    child: Text('Скасувати', style: TextStyle(color: Colors.grey[700])),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close confirmation
+                      _deleteChat();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Так, видалити', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteChat() async {
+    try {
+      final client = Supabase.instance.client;
+      // 1. Delete messages
+      await client.from('chat_messages').delete().eq('chat_id', widget.chatId);
+      // 2. Delete participants
+      await client.from('chat_participants').delete().eq('chat_id', widget.chatId);
+      // 3. Delete chat
+      await client.from('chats').delete().eq('id', widget.chatId);
+
+      // Navigate back after deletion
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не вдалося видалити чат. Спробуйте ще раз.')),
+        );
+      }
+    }
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -1021,7 +1139,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           userName: widget.userName,
           userAvatarUrl: widget.userAvatarUrl,
           onBack: () => Navigator.of(context).pop(),
-          onMenu: () {},
+          onMenu: () => _showDeleteChatOptions(),
         ),
       ),
       body: Column(
@@ -1113,7 +1231,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                         ),
                       )
                     : Container(
-                    color: Color(0xFFFAFAFA),
+                    color: const Color(0xFFFAFAFA),
                     child: ListView.builder(
                       key: ValueKey(_messages.length),
                       controller: _scrollController,
@@ -1155,7 +1273,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                   Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                        color: Color(0xFFFAFAFA),
+                        color: const Color(0xFFFAFAFA),
                           borderRadius: BorderRadius.circular(200),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -1193,7 +1311,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                   // Кнопка відправки: прибрати border
                   Container(
                     decoration: BoxDecoration(
-                      color: Color(0xFF015873),
+                      color: const Color(0xFF015873),
                       borderRadius: BorderRadius.circular(200),
                     ),
                     child: IconButton(
