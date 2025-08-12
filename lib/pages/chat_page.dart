@@ -6,6 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../services/profile_service.dart';
+import '../services/complaint_service.dart';
+import '../widgets/complaint_modal.dart';
+import '../widgets/success_bottom_sheet.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -820,13 +823,20 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
   bool _loading = true;
   String? _currentUserId;
   RealtimeChannel? _realtimeChannel;
+  late final ComplaintService _complaintService;
+  final TextEditingController _complaintDescriptionController =
+      TextEditingController();
+  String _selectedComplaintType = 'Інше';
+  String? _listingId;
 
   @override
   void initState() {
     super.initState();
+    _complaintService = ComplaintService(Supabase.instance.client);
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _loadMessages();
     _subscribeToNewMessages();
+    _getListingId();
   }
 
   @override
@@ -836,10 +846,25 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     _markMessagesAsRead();
   }
 
+  Future<void> _getListingId() async {
+    final client = Supabase.instance.client;
+    final response = await client
+        .from('chats')
+        .select('listing_id')
+        .eq('id', widget.chatId)
+        .single();
+    if (response.isNotEmpty) {
+      setState(() {
+        _listingId = response['listing_id'] as String?;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
     _textController.dispose();
+    _complaintDescriptionController.dispose();
     _realtimeChannel?.unsubscribe();
     super.dispose();
   }
@@ -924,6 +949,35 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     });
   }
 
+  void _showComplaintBottomSheet() {
+    if (_listingId == null) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => ComplaintModal(
+        productId: _listingId!,
+      ),
+    ).then((success) {
+      if (success == true) {
+        _showSuccessBottomSheet();
+      }
+    });
+  }
+
+  void _showSuccessBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      builder: (context) => SuccessBottomSheet(
+        title: 'Скаргу надіслано',
+        message: 'Дякуємо за вашу скаргу! Ми розглянемо її якнайшвидше.',
+        onClose: () {
+          Navigator.of(context).pop(); // Close the success bottom sheet
+        },
+      ),
+    );
+  }
+
   void _showDeleteChatOptions() {
     showModalBottomSheet(
       context: context,
@@ -937,20 +991,44 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text(
-                'Видалити чат',
-                style: TextStyle(color: Colors.red),
-              ),
+            _buildBottomSheetOption(
+              icon: Icons.report_problem_outlined,
+              title: 'Надіслати скаргу',
+              color: Colors.orange,
               onTap: () {
-                Navigator.pop(context); // Close the first bottom sheet
+                Navigator.pop(context);
+                _showComplaintBottomSheet();
+              },
+            ),
+            const Divider(),
+            _buildBottomSheetOption(
+              icon: Icons.delete_outline,
+              title: 'Видалити чат',
+              color: Colors.red,
+              onTap: () {
+                Navigator.pop(context);
                 _showDeleteConfirmation();
               },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomSheetOption({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        title,
+        style: TextStyle(color: color),
+      ),
+      onTap: onTap,
     );
   }
 
