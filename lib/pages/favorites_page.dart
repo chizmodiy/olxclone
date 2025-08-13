@@ -209,8 +209,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildDropdownMenuItem('Сітка з 4 карток', ViewMode.grid4, Icons.grid_view_outlined),
-            _buildDropdownMenuItem('Сітка з 8 карток', ViewMode.grid8, Icons.grid_view_outlined), // Added this line
+            _buildDropdownMenuItem('Сітка', ViewMode.grid4, Icons.grid_view_outlined), // Added this line
             _buildDropdownMenuItem('Список', ViewMode.list, Icons.view_list_outlined),
           ],
         ),

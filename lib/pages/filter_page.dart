@@ -114,6 +114,13 @@ class _FilterPageState extends State<FilterPage> {
       _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _currentMaxPrice;
     }
     
+    // Ensure min <= max after initialization
+    if (_currentMinPrice > _currentMaxPrice) {
+      final temp = _currentMinPrice;
+      _currentMinPrice = _currentMaxPrice;
+      _currentMaxPrice = temp;
+    }
+    
     // Initialize other filters
     _minAreaController.text = (widget.initialFilters['minArea'] ?? 0).toString();
     _maxAreaController.text = (widget.initialFilters['maxArea'] ?? 1000).toString();
@@ -168,8 +175,10 @@ class _FilterPageState extends State<FilterPage> {
 
         // Additionally, ensure _currentMinPrice is not greater than _currentMaxPrice
         if (_currentMinPrice > _currentMaxPrice) {
-          // If min crosses max, set min to max. This will effectively make the range a single point.
+          // Swap values if min is greater than max
+          final temp = _currentMinPrice;
           _currentMinPrice = _currentMaxPrice;
+          _currentMaxPrice = temp;
         }
         
         _sliderMinValue = _minPrice;
@@ -1322,7 +1331,10 @@ class _FilterPageState extends State<FilterPage> {
             width: double.infinity,
             height: 48, // Зменшено висоту до 48 пікселів (тільки для слайдера)
             child: RangeSlider(
-              values: RangeValues(_currentMinPrice, _currentMaxPrice),
+              values: RangeValues(
+                _currentMinPrice.clamp(_minPrice, _currentMaxPrice),
+                _currentMaxPrice.clamp(_currentMinPrice, _maxPrice)
+              ),
               min: _minPrice,
               max: _maxPrice,
               onChanged: (RangeValues values) {
@@ -1994,7 +2006,10 @@ class _FilterPageState extends State<FilterPage> {
 
       // Додатково переконуємось, що min не перевищує max
       if (_currentMinPrice > _currentMaxPrice) {
+        // Swap values if min is greater than max
+        final temp = _currentMinPrice;
         _currentMinPrice = _currentMaxPrice;
+        _currentMaxPrice = temp;
       }
     });
   }
