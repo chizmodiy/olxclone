@@ -24,6 +24,8 @@ import '../widgets/location_picker.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:geolocator/geolocator.dart';
+
 
 class AddListingPage extends StatefulWidget {
   const AddListingPage({super.key});
@@ -214,22 +216,30 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Future<void> _loadRegions() async {
     try {
+      print('Debug: _loadRegions called');
       final regionService = RegionService(Supabase.instance.client);
       
       // Initialize regions if needed
+      print('Debug: Initializing regions');
       await regionService.initializeRegions();
       
+      print('Debug: Getting regions from service');
       final regions = await regionService.getRegions();
-        setState(() {
-          _regions = regions;
-          _isLoadingRegions = false;
-        });
+      print('Debug: Regions loaded: ${regions.length} regions');
+      print('Debug: First region: ${regions.isNotEmpty ? regions.first.name : 'none'}');
+      
+      setState(() {
+        _regions = regions;
+        _isLoadingRegions = false;
+      });
+      print('Debug: _regions updated, length: ${_regions.length}');
     } catch (error) {
-        setState(() {
-          _isLoadingRegions = false;
-        });
-      }
+      print('Debug: Error loading regions: $error');
+      setState(() {
+        _isLoadingRegions = false;
+      });
     }
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -1164,6 +1174,7 @@ class _AddListingPageState extends State<AddListingPage> {
               ),
             ),
         ),
+
       ],
     );
   }
@@ -2851,22 +2862,79 @@ class _AddListingPageState extends State<AddListingPage> {
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
                 LocationPicker(
-                  onLocationSelected: (latLng, address) {
-                    setState(() {
-                      _selectedAddress = address;
-                      _selectedLatitude = latLng?.latitude;
-                      _selectedLongitude = latLng?.longitude;
-                      if (address != null && address.isNotEmpty) {
-                        final region = _regions.firstWhere(
-                          (r) => address.contains(r.name),
-                          orElse: () => _regions.first,
-                        );
-                        _selectedRegion = region;
-                        _selectedRegionName = region.name;
+                  onLocationSelected: (latLng, address) async {
+                    print('Debug: onLocationSelected called with latLng: $latLng, address: $address');
+                    print('Debug: _regions length: ${_regions.length}');
+                    
+                    if (latLng != null) {
+                      // Знаходимо найближчу область на основі координат
+                      Region? nearestRegion;
+                      double shortestDistance = double.infinity;
+                      
+                      print('Debug: Current coordinates: ${latLng.latitude}, ${latLng.longitude}');
+                      
+                      for (final region in _regions) {
+                        print('Debug: Checking region: ${region.name}');
+                        print('Debug: Region coordinates: minLat=${region.minLat}, maxLat=${region.maxLat}, minLon=${region.minLon}, maxLon=${region.maxLon}');
+                        
+                        if (region.minLat != null && region.maxLat != null && 
+                            region.minLon != null && region.maxLon != null) {
+                          // Обчислюємо центр області
+                          final centerLat = (region.minLat! + region.maxLat!) / 2;
+                          final centerLon = (region.minLon! + region.maxLon!) / 2;
+                          
+                          print('Debug: Region center: $centerLat, $centerLon');
+                          
+                          final distance = Geolocator.distanceBetween(
+                            latLng.latitude,
+                            latLng.longitude,
+                            centerLat,
+                            centerLon,
+                          );
+
+                          print('Debug: Distance to ${region.name}: $distance km');
+
+                          if (distance < shortestDistance) {
+                            shortestDistance = distance;
+                            nearestRegion = region;
+                            print('Debug: New nearest region: ${region.name} with distance: $distance');
+                          }
+                        } else {
+                          print('Debug: Region ${region.name} has null coordinates');
+                        }
                       }
-                    });
+
+                      print('Debug: Nearest region found: ${nearestRegion?.name}');
+                      print('Debug: Distance: $shortestDistance');
+
+                      if (nearestRegion != null) {
+                        print('Debug: Setting _selectedRegion to: ${nearestRegion!.name}');
+                        setState(() {
+                          _selectedRegion = nearestRegion;
+                          _selectedRegionName = nearestRegion!.name;
+                          _selectedAddress = address ?? '${nearestRegion!.name}';
+                          _selectedLatitude = latLng.latitude;
+                          _selectedLongitude = latLng.longitude;
+                        });
+                        
+                        print('Debug: After setState - _selectedRegion: ${_selectedRegion?.name}');
+                        print('Debug: After setState - _selectedRegionName: $_selectedRegionName');
+
+                        // Завантажуємо підкатегорії для нової області
+                        if (_selectedCategory != null) {
+                          await _loadSubcategories(_selectedCategory!.id);
+                        }
+                      } else {
+                        print('Debug: No nearest region found');
+                      }
+                    }
                   },
                 ),
+                const SizedBox(height: 20),
+
+                // Region and City Selection
+                _buildRegionSection(),
+                _buildCitySection(),
                 const SizedBox(height: 20),
 
                 // Listing Type Toggle
@@ -3580,6 +3648,8 @@ Widget _buildAreaField() {
     ],
   );
   }
+
+
 }
 
 class DashedBorderPainter extends CustomPainter {
