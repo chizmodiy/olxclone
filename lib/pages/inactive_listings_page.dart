@@ -65,12 +65,6 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
       final products = await _productService.getUserProducts(_currentUserId!);
       // Фільтруємо по status == 'inactive'
       final filtered = products.where((p) => p.status == 'inactive').toList();
-      print('=== ЗАВАНТАЖЕННЯ НЕАКТИВНИХ ОГОЛОШЕНЬ ===');
-      print('Всього оголошень користувача: ${products.length}');
-      print('Неактивних оголошень: ${filtered.length}');
-      for (var product in products) {
-        print('Оголошення ID: ${product.id}, Статус: ${product.status}');
-      }
       setState(() {
         _products = filtered;
         _filteredProducts = filtered;

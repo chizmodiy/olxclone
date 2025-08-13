@@ -245,10 +245,8 @@ class _GeneralPageState extends State<GeneralPage> {
                   }
                   final result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
                   if (result == true && _selectedIndex == 0) {
-                    print('Debug: AddListingPage returned true, refreshing products');
                     // Додаємо більшу затримку для забезпечення оновлення
                     await Future.delayed(const Duration(milliseconds: 1000));
-                    print('Debug: Calling refreshProducts() on HomeContent');
                     // Альтернативний спосіб - примусове оновлення через setState
                     setState(() {
                       // Це примусить перебудувати HomePage
@@ -256,7 +254,7 @@ class _GeneralPageState extends State<GeneralPage> {
                     
                     // Додаткове оновлення після побудови кадру
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      print('Debug: Post frame callback - calling refreshProducts again');
+                      // Оновлення після побудови кадру
                     });
                   }
                 },

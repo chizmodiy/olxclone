@@ -195,7 +195,7 @@ class _FilterPageState extends State<FilterPage> {
 
       });
     } catch (e) {
-
+      // Ігноруємо помилки завантаження
     }
   }
 
@@ -275,92 +275,9 @@ class _FilterPageState extends State<FilterPage> {
 
 
 
-  void _showBrandSelectionDialog() {
-    List<String> brands = ['BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Toyota', 'Honda', 'Ford', 'Chevrolet'];
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Оберіть бренд'),
-          content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                ListTile(
-                  title: Text('Будь-який бренд'),
-                  onTap: () {
-                    setState(() {
-                      _selectedBrand = null;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                ...brands.map((brand) => ListTile(
-                  title: Text(brand),
-                  onTap: () {
-                    setState(() {
-                      _selectedBrand = brand;
-                    });
-                    Navigator.pop(context);
-                  },
-                )),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildBrandOption(String brand) {
-    final isSelected = _selectedBrand == brand;
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedBrand = brand == 'Всі марки' ? null : brand;
-          });
-          Navigator.pop(context);
-        },
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.zinc50 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  brand,
-                  style: AppTextStyles.body1Regular.copyWith(
-                    color: AppColors.color2,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (isSelected)
-                SvgPicture.asset(
-                  'assets/icons/check.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
+
 
   Future<void> _loadMinMaxPrices(String currency) async {
     setState(() {
@@ -1670,151 +1587,9 @@ class _FilterPageState extends State<FilterPage> {
 
 
 
-  Widget _buildCurrencyButton({
-    required String currency,
-    required String iconPath,
-    required String text,
-    required bool isSelected,
-    VoidCallback? onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap, // Use onTap from parameter
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.white,
-            borderRadius: BorderRadius.circular(200),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.zinc200,
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                colorFilter: ColorFilter.mode(
-                  isSelected ? AppColors.white : AppColors.zinc400,
-                  BlendMode.srcIn,
-                ),
-                width: 20,
-                height: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                text,
-                style: AppTextStyles.body1Semibold.copyWith(
-                  color: isSelected ? AppColors.white : AppColors.zinc600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  void _showSizeSelectionDialog() {
-    List<String> sizes = [];
-    
-    // Get sizes based on selected subcategory
-    if (_selectedSubcategory != null) {
-      final extraFields = getExtraFieldsForSubcategory(_selectedSubcategory!.id);
-      if (extraFields != null && extraFields['size'] != null) {
-        sizes = List<String>.from(extraFields['size']);
-      }
-    }
-    
-    // If no specific sizes found, use default sizes
-    if (sizes.isEmpty) {
-      sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-    }
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Оберіть розмір'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text('Всі розміри'),
-                  onTap: () {
-                    setState(() {
-                      _selectedSize = null;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                ...sizes.map((size) => ListTile(
-                  title: Text(size),
-                  onTap: () {
-                    setState(() {
-                      _selectedSize = size;
-                    });
-                    Navigator.pop(context);
-                  },
-                )),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
-  void _showConditionSelectionDialog() {
-    List<String> conditions = ['Нове', 'Б/в', 'Потребує ремонту'];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Оберіть стан'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text('Будь-який стан'),
-                  onTap: () {
-                    setState(() {
-                      _selectedCondition = null;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                ...conditions.map((condition) => ListTile(
-                  title: Text(condition),
-                  onTap: () {
-                    setState(() {
-                      _selectedCondition = condition;
-                    });
-                    Navigator.pop(context);
-                  },
-                )),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showBlockedUserBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: false, // Неможливо закрити
-      enableDrag: false, // Неможливо перетягувати
-      builder: (context) => const BlockedUserBottomSheet(),
-    );
-  }
 
   void _navigateToRegionSelection() async {
     final Map<String, dynamic>? result = await Navigator.push(
@@ -2056,18 +1831,7 @@ class _FilterPageState extends State<FilterPage> {
     return null;
   }
 
-  // Метод для отримання символу валюти
-  String _getCurrencySymbol() {
-    switch (_selectedCurrency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'UAH':
-      default:
-        return '₴';
-    }
-  }
+
 
   // Метод для валідації площі
   String? _validateArea(String? value, bool isMinArea, {bool isRequired = false}) {

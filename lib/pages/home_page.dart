@@ -106,8 +106,6 @@ class HomeContentState extends State<HomeContent> {
     });
 
     final currentFilters = _filterManager.currentFilters;
-    print('Debug HomePage: Loading products with filters: $currentFilters');
-    print('Debug HomePage: isFree filter: ${currentFilters['isFree']}');
 
     try {
       final products = await _productService.getProducts(
@@ -274,42 +272,34 @@ class HomeContentState extends State<HomeContent> {
     int count = 0;
     final currentFilters = _filterManager.currentFilters;
     if (currentFilters.isNotEmpty) {
-      print('Debug: currentFilters = $currentFilters');
       
       // Категорія + підкатегорія = 1 фільтр
       bool hasCategoryFilter = false;
       if (currentFilters['category'] != null && currentFilters['category'].toString().isNotEmpty) {
         hasCategoryFilter = true;
-        print('Debug: Category filter found');
       }
       if (currentFilters['subcategory'] != null && currentFilters['subcategory'].toString().isNotEmpty) {
         hasCategoryFilter = true;
-        print('Debug: Subcategory filter found');
       }
       if (hasCategoryFilter) {
         count++;
-        print('Debug: Category/Subcategory filter counted as 1, total = $count');
       }
       
       // Ціна = 1 фільтр
       bool hasPriceFilter = false;
       if (currentFilters['min_price'] != null && currentFilters['min_price'].toString().isNotEmpty) {
         hasPriceFilter = true;
-        print('Debug: Min price filter found');
       }
       if (currentFilters['max_price'] != null && currentFilters['max_price'].toString().isNotEmpty) {
         hasPriceFilter = true;
-        print('Debug: Max price filter found');
       }
       if (hasPriceFilter) {
         count++;
-        print('Debug: Price filter (min/max) counted as 1, total = $count');
       }
       
       // Безкоштовно = 1 фільтр
       if (currentFilters['is_free'] == true) {
         count++;
-        print('Debug: Free filter found, count = $count');
       }
       
       // Валюта (не гривня) = 1 фільтр
@@ -317,7 +307,6 @@ class HomeContentState extends State<HomeContent> {
           currentFilters['currency'].toString().isNotEmpty && 
           currentFilters['currency'].toString().toLowerCase() != 'uah') {
         count++;
-        print('Debug: Currency filter (not UAH) found, count = $count');
       }
       
       // Інші фільтри (якщо є)
@@ -330,17 +319,14 @@ class HomeContentState extends State<HomeContent> {
             if (entry.value is List) {
               if ((entry.value as List).isNotEmpty) {
                 count++;
-                print('Debug: Other list filter $key is active, count = $count');
               }
             } else {
               count++;
-              print('Debug: Other filter $key is active, count = $count');
             }
           }
         }
       }
     }
-    print('Debug: Total active filters count = $count');
     return count;
   }
 
@@ -367,7 +353,6 @@ class HomeContentState extends State<HomeContent> {
   }
 
   void refreshProducts() {
-    print('Debug: refreshProducts() called');
     setState(() {
       _products = [];
       _currentPage = 0;
@@ -377,7 +362,6 @@ class HomeContentState extends State<HomeContent> {
       _filterManager.clearFilters();
       _sortBy = null;
     });
-    print('Debug: State reset, calling _loadProducts()');
     _loadProducts();
   }
 
