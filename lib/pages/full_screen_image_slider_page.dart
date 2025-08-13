@@ -65,21 +65,39 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
 
           // Left arrow button
           Positioned(
-            left: 30, // Increased padding from edge
-            top: MediaQuery.of(context).size.height / 2 - 24, // Center vertically
-            child: _buildNavigationArrow(
-              Icons.arrow_back_ios,
-              _currentIndex > 0 ? () => _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn) : null,
+            left: 20,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildNavigationButton(
+                Icons.chevron_left,
+                _currentIndex > 0 
+                  ? () => _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300), 
+                      curve: Curves.easeIn
+                    )
+                  : () {}, // Empty function when disabled
+                isEnabled: _currentIndex > 0,
+              ),
             ),
           ),
 
           // Right arrow button
           Positioned(
-            right: 30, // Increased padding from edge
-            top: MediaQuery.of(context).size.height / 2 - 24, // Center vertically
-            child: _buildNavigationArrow(
-              Icons.arrow_forward_ios,
-              _currentIndex < widget.imageUrls.length - 1 ? () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn) : null,
+            right: 20,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _buildNavigationButton(
+                Icons.chevron_right,
+                _currentIndex < widget.imageUrls.length - 1
+                  ? () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300), 
+                      curve: Curves.easeIn
+                    )
+                  : () {}, // Empty function when disabled
+                isEnabled: _currentIndex < widget.imageUrls.length - 1,
+              ),
             ),
           ),
 
@@ -89,12 +107,19 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
             left: 0,
             right: 0,
             child: Center(
-              child: Text(
-                '${_currentIndex + 1}/${widget.imageUrls.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_currentIndex + 1}/${widget.imageUrls.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -108,33 +133,36 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: AppColors.white.withOpacity(0.2), // More transparent white background
+          color: Colors.black.withOpacity(0.3),
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.white.withOpacity(0.3)), // Subtle white border
         ),
-        child: const Icon(Icons.close, color: Colors.white, size: 24),
+        child: const Icon(
+          Icons.close, 
+          color: Colors.white, 
+          size: 20,
+        ),
       ),
     );
   }
 
-  // New method for navigation arrows
-  Widget _buildNavigationArrow(IconData icon, VoidCallback? onTap) {
+  // Перестворена кнопка навігації
+  Widget _buildNavigationButton(IconData icon, VoidCallback onTap, {bool isEnabled = true}) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isEnabled ? onTap : null,
       child: Container(
-        padding: const EdgeInsets.all(8.0), // Revert to symmetric padding for the container
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          color: AppColors.white.withOpacity(0.2), // Same style as close button
+          color: Colors.black.withOpacity(isEnabled ? 0.3 : 0.1),
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.white.withOpacity(0.3)),
         ),
-        child: Transform.translate(
-          offset: icon == Icons.arrow_back_ios
-              ? const Offset(0.0, 0.0) // Adjust for visual centering (back arrow - shifted right slightly)
-              : const Offset(2.0, 0.0), // Adjust right for visual centering (forward arrow)
-          child: Icon(icon, color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5), size: 24),
+        child: Icon(
+          icon, 
+          color: isEnabled ? Colors.white : Colors.white.withOpacity(0.3), 
+          size: 24,
         ),
       ),
     );
