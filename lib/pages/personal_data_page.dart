@@ -188,7 +188,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
       Navigator.of(context).pop(true); // Return true to indicate success
     } catch (e) {
-      print('Error deleting avatar: $e');
+      
       _showErrorSnackBar('Помилка при видаленні фото');
     } finally {
       setState(() => _isLoading = false);
@@ -212,10 +212,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       phoneNumber = user.email;
     }
     
-    print('User phone: ${user.phone}');
-    print('Profile phone: ${profile?.phone}');
-    print('User email: ${user.email}');
-    print('Profile: $profile');
+    
     
     setState(() {
       final fullName = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
@@ -223,7 +220,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       _originalName = fullName; // Зберігаємо оригінальне ім'я
       _avatarUrl = profile?.avatarUrl;
       _phone = phoneNumber ?? '+380951234567'; // Fallback для тестування
-      print('Loaded phone: $_phone');
+      
       _isLoading = false;
     });
   }
@@ -292,7 +289,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
           Navigator.of(context).pop(true); // Return true to indicate success
         }
       } catch (e) {
-        print('Error uploading avatar: $e');
+
         _showErrorSnackBar('Помилка при завантаженні фото');
       } finally {
         setState(() => _isLoading = false);
@@ -556,7 +553,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                     child: Builder(
                                       builder: (context) {
                                         final phoneNumber = _phone?.replaceFirst('+380', '') ?? '';
-                                        print('Displaying phone: $phoneNumber (original: $_phone)');
+                                
                                         return Text(
                                           phoneNumber,
                                           style: const TextStyle(

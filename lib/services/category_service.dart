@@ -13,7 +13,7 @@ class CategoryService {
       
       return (response as List).map((json) => Category.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching categories: $e');
+
       return [];
     }
   }
@@ -28,7 +28,7 @@ class CategoryService {
       
       return (response as List).map((json) => Category.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching subcategories: $e');
+
       return [];
     }
   }

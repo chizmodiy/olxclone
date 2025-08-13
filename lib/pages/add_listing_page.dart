@@ -216,25 +216,20 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Future<void> _loadRegions() async {
     try {
-      print('Debug: _loadRegions called');
+  
       final regionService = RegionService(Supabase.instance.client);
       
       // Initialize regions if needed
-      print('Debug: Initializing regions');
       await regionService.initializeRegions();
       
-      print('Debug: Getting regions from service');
       final regions = await regionService.getRegions();
-      print('Debug: Regions loaded: ${regions.length} regions');
-      print('Debug: First region: ${regions.isNotEmpty ? regions.first.name : 'none'}');
       
       setState(() {
         _regions = regions;
         _isLoadingRegions = false;
       });
-      print('Debug: _regions updated, length: ${_regions.length}');
+
     } catch (error) {
-      print('Debug: Error loading regions: $error');
       setState(() {
         _isLoadingRegions = false;
       });
@@ -1318,7 +1313,7 @@ class _AddListingPageState extends State<AddListingPage> {
           _cities = results;
         });
       } catch (e) {
-        print('Error searching cities: $e');
+
         setState(() {
         _cities = [];
         });
@@ -1882,11 +1877,7 @@ class _AddListingPageState extends State<AddListingPage> {
               onTap: () {
                 setState(() {
                   _isNegotiablePrice = !_isNegotiablePrice;
-                  if (_isNegotiablePrice) {
-                    print('Debug: Договірна ціна увімкнена');
-                  } else {
-                    print('Debug: Договірна ціна вимкнена');
-                  }
+
                 });
               },
               child: AnimatedContainer(
@@ -2160,26 +2151,23 @@ class _AddListingPageState extends State<AddListingPage> {
   String? _validateExtraFields() {
     String? errorMessage; // Make errorMessage nullable
 
-    print('Debug: Starting extra fields validation...');
-    print('  subcategory: ${_selectedSubcategory?.name}');
-    print('  extra fields count: ${_selectedSubcategory?.extraFields.length}');
-    print('  extra field values: $_extraFieldValues');
+
 
     for (var field in _selectedSubcategory!.extraFields) {
-      print('  checking field: ${field.name} (required: ${field.isRequired})');
+      
       if (field.isRequired &&
           (!_extraFieldValues.containsKey(field.id) ||
               _extraFieldValues[field.id] == null ||
               (_extraFieldValues[field.id] is String &&
                   _extraFieldValues[field.id].isEmpty))) {
         errorMessage = 'Будь ласка, заповніть всі обов\'язкові поля.';
-        print('Debug: Extra fields validation failed - missing required field: ${field.name}');
+        
         break;
       }
     }
     
     if (errorMessage == null) {
-      print('Debug: Extra fields validation passed successfully');
+  
     }
     return errorMessage; // Return nullable errorMessage
   }
@@ -2187,85 +2175,71 @@ class _AddListingPageState extends State<AddListingPage> {
   String? _validateForm() {
     String? errorMessage;
 
-    print('Debug: Starting form validation...');
-    print('  title: "${_titleController.text}"');
-    print('  description: "${_descriptionController.text}"');
-    print('  category: ${_selectedCategory?.name}');
-    print('  subcategory: ${_selectedSubcategory?.name}');
-    print('  region: ${_selectedRegion?.name}');
-    print('  isForSale: $_isForSale');
-    print('  isNegotiablePrice: $_isNegotiablePrice');
-    print('  price: "${_priceController.text}"');
-    print('  currency: $_selectedCurrency');
-    print('  phone: "${_phoneController.text}"');
-    print('  whatsapp: "${_whatsappController.text}"');
-    print('  telegram: "${_telegramController.text}"');
-    print('  viber: "${_viberController.text}"');
-    print('  images count: ${_selectedImages.length}');
+
 
     // Check title
     if (_titleController.text.isEmpty) {
       errorMessage = 'Введіть заголовок оголошення';
-      print('Debug: Validation failed - empty title');
+
     }
     // Check description
     else if (_descriptionController.text.isEmpty) {
       errorMessage = 'Введіть опис оголошення';
-      print('Debug: Validation failed - empty description');
+
     }
     // Check category
     else if (_selectedCategory == null) {
       errorMessage = 'Оберіть категорію';
-      print('Debug: Validation failed - no category selected');
+
     }
     // Check subcategory - required for all listings
     else if (_selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
-      print('Debug: Validation failed - no subcategory selected');
+
     } else if (_selectedRegion == null) {
       errorMessage = 'Оберіть область';
-      print('Debug: Validation failed - no region selected');
+
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
       errorMessage = 'Безкоштовні оголошення не можуть мати ціни або валюти';
-      print('Debug: Validation failed - free listing has price or currency');
+      
     } else if (_isForSale && !_isNegotiablePrice &&
         (_priceController.text.isEmpty ||
             double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
       errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
-      print('Debug: Validation failed - invalid price for non-negotiable listing');
+      
     } else if (_isForSale && _isNegotiablePrice &&
         (_priceController.text.isEmpty ||
             double.tryParse(_priceController.text) == null ||
             (double.tryParse(_priceController.text) ?? 0) <= 0)) {
       errorMessage = 'Будь ласка, введіть дійсну ціну більше 0';
-      print('Debug: Validation failed - invalid price for negotiable listing (empty or <=0)');
+      
     } else if (_phoneController.text.isEmpty && 
                _whatsappController.text.isEmpty && 
                _telegramController.text.isEmpty && 
                _viberController.text.isEmpty) {
       errorMessage = 'Будь ласка, введіть хоча б один спосіб зв\'язку';
-      print('Debug: Validation failed - no contact method provided');
+      
     } else if (_phoneController.text.isNotEmpty && !_isValidPhoneWithPrefix(_phoneController.text)) {
       errorMessage = 'Будь ласка, введіть правильний номер телефону';
-      print('Debug: Validation failed - invalid phone number');
+      
     } else if (_whatsappController.text.isNotEmpty && !_isValidPhoneWithPrefix(_whatsappController.text)) {
       errorMessage = 'Будь ласка, введіть правильний номер WhatsApp';
-      print('Debug: Validation failed - invalid WhatsApp number');
+      
     } else if (_viberController.text.isNotEmpty && !_isValidPhoneWithPrefix(_viberController.text)) {
       errorMessage = 'Будь ласка, введіть правильний номер Viber';
-      print('Debug: Validation failed - invalid Viber number');
+      
     } else if (_selectedImages.isEmpty) {
       errorMessage = 'Додайте хоча б одне зображення';
-      print('Debug: Validation failed - no images selected');
+      
     } else {
       // Валідація додаткових полів
       errorMessage = _validateAdditionalFields();
       if (errorMessage != null) {
-        print('Debug: Validation failed - additional fields: $errorMessage');
+
     } else {
-      print('Debug: Form validation passed successfully');
+      
       }
     }
     return errorMessage;
@@ -2394,12 +2368,12 @@ class _AddListingPageState extends State<AddListingPage> {
         final priceText = _priceController.text;
         final priceValue = double.tryParse(priceText);
         priceValid = priceText.isNotEmpty && priceValue != null && priceValue > 0;
-        print('Debug: Договірна ціна активна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
+    
       } else {
         final priceText = _priceController.text;
         final priceValue = double.tryParse(priceText);
         priceValid = priceText.isNotEmpty && priceValue != null && priceValue > 0;
-        print('Debug: Звичайна ціна - текст: "$priceText", значення: $priceValue, валідна: $priceValid');
+    
       }
     } else {
       priceValid = true; // Безкоштовні оголошення не потребують ціни
@@ -2434,18 +2408,10 @@ class _AddListingPageState extends State<AddListingPage> {
                    subcategoryValid && regionValid && priceValid && 
                    contactValid && imagesValid;
     
-    print('Debug: Форма валідна: $isValid (title: $titleValid, desc: $descriptionValid, cat: $categoryValid, subcat: $subcategoryValid, region: $regionValid, price: $priceValid, contact: $contactValid, images: $imagesValid)');
+
     
     if (!isValid) {
-      print('Debug: Form is not valid. Reasons:');
-      if (!titleValid) print('  - Title is empty');
-      if (!descriptionValid) print('  - Description is empty');
-      if (!categoryValid) print('  - Category not selected');
-      if (!subcategoryValid) print('  - Subcategory not selected');
-      if (!regionValid) print('  - Region not selected');
-      if (!priceValid) print('  - Price validation failed');
-      if (!contactValid) print('  - Contact validation failed');
-      if (!imagesValid) print('  - Images validation failed');
+      
     }
     
     return isValid;
@@ -2562,17 +2528,7 @@ class _AddListingPageState extends State<AddListingPage> {
         // Use selected subcategory (now required for all listings)
         final subcategoryId = _selectedSubcategory!.id;
 
-        print('Debug: Creating listing with parameters:');
-        print('  title: ${_titleController.text}');
-        print('  description: ${_descriptionController.text}');
-        print('  categoryId: ${_selectedCategory!.id}');
-        print('  subcategoryId: $subcategoryId');
-        print('  location: $locationString');
-        print('  isFree: ${!_isForSale}');
-        print('  currency: ${_isForSale ? _selectedCurrency : null}');
-        print('  price: ${_isForSale ? double.tryParse(_priceController.text) : null}');
-        print('  isNegotiable: ${_isForSale ? _isNegotiablePrice : null}');
-        print('  images count: ${imagesToUpload.length}');
+        
         
         final listingId = await listingService.createListing(
           title: _titleController.text,
@@ -2596,11 +2552,11 @@ class _AddListingPageState extends State<AddListingPage> {
         longitude: _selectedLongitude,
         );
         
-        print('Debug: Listing created successfully with ID: $listingId');
+
 
         Navigator.of(context).pop(true);
       } catch (error) {
-        print('Error creating listing: $error');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Помилка створення оголошення: ${error.toString()}'),
@@ -2863,19 +2819,17 @@ class _AddListingPageState extends State<AddListingPage> {
                 const SizedBox(height: 20),
                 LocationPicker(
                   onLocationSelected: (latLng, address) async {
-                    print('Debug: onLocationSelected called with latLng: $latLng, address: $address');
-                    print('Debug: _regions length: ${_regions.length}');
+                    
                     
                     if (latLng != null) {
                       // Знаходимо найближчу область на основі координат
                       Region? nearestRegion;
                       double shortestDistance = double.infinity;
                       
-                      print('Debug: Current coordinates: ${latLng.latitude}, ${latLng.longitude}');
+                      
                       
                       for (final region in _regions) {
-                        print('Debug: Checking region: ${region.name}');
-                        print('Debug: Region coordinates: minLat=${region.minLat}, maxLat=${region.maxLat}, minLon=${region.minLon}, maxLon=${region.maxLon}');
+                        
                         
                         if (region.minLat != null && region.maxLat != null && 
                             region.minLon != null && region.maxLon != null) {
@@ -2883,7 +2837,7 @@ class _AddListingPageState extends State<AddListingPage> {
                           final centerLat = (region.minLat! + region.maxLat!) / 2;
                           final centerLon = (region.minLon! + region.maxLon!) / 2;
                           
-                          print('Debug: Region center: $centerLat, $centerLon');
+                          
                           
                           final distance = Geolocator.distanceBetween(
                             latLng.latitude,
@@ -2892,23 +2846,22 @@ class _AddListingPageState extends State<AddListingPage> {
                             centerLon,
                           );
 
-                          print('Debug: Distance to ${region.name}: $distance km');
+                          
 
                           if (distance < shortestDistance) {
                             shortestDistance = distance;
                             nearestRegion = region;
-                            print('Debug: New nearest region: ${region.name} with distance: $distance');
+                            
                           }
                         } else {
-                          print('Debug: Region ${region.name} has null coordinates');
+                          
                         }
                       }
 
-                      print('Debug: Nearest region found: ${nearestRegion?.name}');
-                      print('Debug: Distance: $shortestDistance');
+                      
 
                       if (nearestRegion != null) {
-                        print('Debug: Setting _selectedRegion to: ${nearestRegion!.name}');
+                        
                         setState(() {
                           _selectedRegion = nearestRegion;
                           _selectedRegionName = nearestRegion!.name;
@@ -2917,15 +2870,14 @@ class _AddListingPageState extends State<AddListingPage> {
                           _selectedLongitude = latLng.longitude;
                         });
                         
-                        print('Debug: After setState - _selectedRegion: ${_selectedRegion?.name}');
-                        print('Debug: After setState - _selectedRegionName: $_selectedRegionName');
+                        
 
                         // Завантажуємо підкатегорії для нової області
                         if (_selectedCategory != null) {
                           await _loadSubcategories(_selectedCategory!.id);
                         }
                       } else {
-                        print('Debug: No nearest region found');
+
                       }
                     }
                   },
@@ -2983,10 +2935,10 @@ class _AddListingPageState extends State<AddListingPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _isFormValid ? () {
-                        print('Debug: Confirm button pressed, form is valid');
+                
                         _createListing();
                       } : () {
-                        print('Debug: Confirm button pressed, but form is not valid');
+                        
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isFormValid 

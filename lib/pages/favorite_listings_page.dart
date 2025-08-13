@@ -86,7 +86,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
         _favoriteProductIds = favoriteIds;
       });
     } catch (e) {
-      print('Error loading favorites: $e');
+
     }
   }
 
@@ -107,7 +107,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
         });
       }
     } catch (e) {
-      print('Error toggling favorite: $e');
+
     }
   }
 

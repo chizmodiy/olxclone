@@ -332,10 +332,10 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _onSearchChanged(String value) {
-    print('Debug: Search changed to: "$value"');
+    
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () {
-      print('Debug: Executing search for: "$value"');
+      
       setState(() {
         _searchQuery = value;
         _products = []; // Очищаємо продукти для перезавантаження
@@ -349,7 +349,7 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       _loading = true;
     });
-    print('Debug: Loading products with search: "$_searchQuery"');
+    
     // Використовуємо getProducts з фільтрами, потім залишаємо тільки продукти з координатами
     final products = await _productService.getProducts(
       searchQuery: _searchQuery, // Передаємо пошуковий запит
@@ -372,12 +372,10 @@ class _MapPageState extends State<MapPage> {
       limit: 1000, // Щоб завантажити всі продукти для карти
       offset: 0,
     );
-    print('Debug: Raw products from service: ${products.length}');
     if (products.isNotEmpty) {
-      print('Debug: First product title: "${products.first.title}"');
     }
     final productsWithCoords = products.where((p) => p.latitude != null && p.longitude != null).toList();
-    print('Debug: Loaded ${products.length} products, ${productsWithCoords.length} with coordinates');
+    
     setState(() {
       _products = productsWithCoords;
       _loading = false;
@@ -404,7 +402,6 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     // Використовуємо продукти, які вже відфільтровані сервером
-    print('Debug: Building map with ${_products.length} products, search: "$_searchQuery"');
     final markers = _products.map((product) {
       return Marker(
         width: 28,
@@ -713,7 +710,6 @@ class _MapPageState extends State<MapPage> {
                                     ? IconButton(
                                         icon: const Icon(Icons.clear, color: Color(0xFF838583)),
                                         onPressed: () {
-                                          print('Debug: Clearing search');
                                           _searchController.clear();
                                           setState(() {
                                             _searchQuery = '';

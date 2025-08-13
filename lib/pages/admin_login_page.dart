@@ -60,7 +60,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
             .select('role')
             .eq('id', res.user!.id)
             .maybeSingle();
-        print('Profile: ' + profileRes.toString());
+
         if (profileRes != null && profileRes['role'] == 'admin') {
           Navigator.of(context).pushReplacementNamed('/admin/dashboard');
         } else if (profileRes != null) {

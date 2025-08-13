@@ -40,11 +40,7 @@ class ListingService {
     required List<XFile> images,
   }) async {
     try {
-      print('Debug: ListingService.createListing - parameters:');
-      print('  isFree: $isFree');
-      print('  price: $price');
-      print('  currency: $currency');
-      print('  isNegotiable: $isNegotiable');
+
       
       // Validate price and currency based on isFree and isNegotiable
       if (isFree) {
@@ -110,11 +106,11 @@ class ListingService {
 
       final listingId = response['id'] as String;
       
-      print('Debug: ListingService.createListing - listing created successfully with ID: $listingId');
+
 
       return listingId;
     } catch (error) {
-      print('Debug: ListingService.createListing - error: $error');
+
       throw Exception('Failed to create listing: $error');
     }
   }
@@ -171,7 +167,7 @@ class ListingService {
         'maxPrice': maxPrice,
       };
     } catch (error) {
-      print('Error fetching min/max prices: $error');
+
       // Return default values in case of an error or no listings
       return {'minPrice': 0.0, 'maxPrice': 100.0};
     }
@@ -180,28 +176,26 @@ class ListingService {
   // Оновлений метод для оновлення статусу оголошення
   Future<void> updateListingStatus(String listingId, String status) async {
     try {
-      print('=== ОНОВЛЕННЯ СТАТУСУ ОГОЛОШЕННЯ ===');
-      print('ID оголошення: $listingId');
-      print('Новий статус: $status');
+      
       
       // Спочатку перевіримо поточний статус
       final currentResponse = await _client.from('listings').select('status').eq('id', listingId).single();
-      print('Поточний статус: ${currentResponse['status']}');
+      
       
       // Оновлюємо статус
       final updateResponse = await _client.from('listings').update({
         'status': status,
       }).eq('id', listingId);
       
-      print('Відповідь оновлення: $updateResponse');
+      
       
       // Перевіряємо оновлений статус
       final updatedResponse = await _client.from('listings').select('status').eq('id', listingId).single();
-      print('Оновлений статус: ${updatedResponse['status']}');
       
-      print('Статус успішно оновлено на: $status');
+      
+
     } catch (e) {
-      print('Помилка оновлення статусу: $e');
+
       throw Exception('Не вдалося оновити статус оголошення: $e');
     }
   }
@@ -209,13 +203,8 @@ class ListingService {
   // Додаємо метод для видалення оголошення
   Future<void> deleteListing(String listingId) async {
     try {
-      print('=== ПОЧАТОК ВИДАЛЕННЯ ОГОЛОШЕННЯ ===');
-      print('Видалення оголошення з ID: $listingId');
-      
       // Перевіряємо поточного користувача
       final user = _client.auth.currentUser;
-      print('Поточний користувач: ${user?.id}');
-      print('Email користувача: ${user?.email}');
       
       if (user == null) {
         throw Exception('Користувач не авторизований');
@@ -293,7 +282,7 @@ class ListingService {
         }
       }
 
-      print('Debug: ListingService.updateListing - updating listing with ID: $listingId');
+
       
       // Update the listing
       await _client.from('listings').update({
@@ -319,11 +308,9 @@ class ListingService {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', listingId);
 
-      print('Debug: ListingService.updateListing - listing updated successfully');
+
     } catch (error) {
-      print('Debug: ListingService.updateListing - error: $error');
-      print('Error type: ${error.runtimeType}');
-      print('Error details: $error');
+      
       throw Exception('Failed to update listing: $error');
     }
   }

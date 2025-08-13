@@ -35,7 +35,7 @@ class City {
     if (cityName.isEmpty) {
       cityName = json['display_name'] as String; // Якщо все інше не вдалось
       if (cityName.isEmpty) {
-        print('Warning: City name could not be extracted from Nominatim response: $json');
+
         cityName = 'Unnamed Location'; // Запасне ім'я, якщо нічого не знайдено
       }
     }

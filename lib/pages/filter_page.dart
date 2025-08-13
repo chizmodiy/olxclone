@@ -156,7 +156,7 @@ class _FilterPageState extends State<FilterPage> {
     }
     // --- Кінець блоку ініціалізації області ---
     
-    print('Debug: Initialized filters - isPriceModePrice: $_isPriceModePrice, isFree: ${widget.initialFilters['isFree']}');
+
   }
 
   Future<void> _loadPriceRange() async {
@@ -192,11 +192,10 @@ class _FilterPageState extends State<FilterPage> {
           _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
         }
         
-        print('Debug: Loaded price range - min: $_minPrice, max: $_maxPrice');
-        print('Debug: Current values - min: $_currentMinPrice, max: $_currentMaxPrice');
+
       });
     } catch (e) {
-      print('Error loading price range: $e');
+
     }
   }
 
@@ -254,7 +253,7 @@ class _FilterPageState extends State<FilterPage> {
         // --- Кінець блоку ініціалізації підкатегорії ---
       });
     } catch (e) {
-      print('Error loading subcategories: $e');
+
       setState(() {
         _isLoadingSubcategories = false;
       });
@@ -436,15 +435,12 @@ class _FilterPageState extends State<FilterPage> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
       _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
       
-      print('Debug: Filters reset - isPriceModePrice: $_isPriceModePrice');
+  
     });
   }
 
   void _applyFilters() {
-    print('Debug: Applying filters...');
-    print('Debug: Selected category: ${_selectedCategory?.id}');
-    print('Debug: Selected subcategory: ${_selectedSubcategory?.id}');
-    print('Debug: Price mode: ${_isPriceModePrice ? "Price" : "Free"}');
+
     
     // Перевіряємо наявність помилок валідації перед застосуванням фільтрів
     if (_minPriceError != null || _maxPriceError != null ||
@@ -469,19 +465,19 @@ class _FilterPageState extends State<FilterPage> {
       filters['minPrice'] = null;
       filters['maxPrice'] = null;
       filters['currency'] = null;
-      print('Debug: Category is "Віддам безкоштовно" - setting isFree=true, clearing price filters');
+      
     } else if (_isPriceModePrice) {
       filters['minPrice'] = double.tryParse(_minPriceController.text);
       filters['maxPrice'] = double.tryParse(_maxPriceController.text);
       filters['currency'] = _selectedCurrency;
       filters['isFree'] = null; // Явно очищаємо isFree фільтр у режимі ціни
-      print('Debug: Added price filters - min: ${filters['minPrice']}, max: ${filters['maxPrice']}, currency: ${filters['currency']}');
+      
     } else {
       filters['isFree'] = true;
       filters['minPrice'] = null;
       filters['maxPrice'] = null;
       filters['currency'] = null;
-      print('Debug: Added isFree filter: ${filters['isFree']}');
+      
     }
 
     // Add extra fields filters
@@ -602,8 +598,7 @@ class _FilterPageState extends State<FilterPage> {
       }
     }
 
-    print('Debug: Final filters: $filters');
-    print('Debug: Navigating back with filters');
+
     
     // Зберігаємо фільтри в FilterManager
     filterManager.setFilters(filters);
@@ -1858,7 +1853,7 @@ class _FilterPageState extends State<FilterPage> {
         final minPrice = prices.first;
         final maxPrice = prices.last;
         
-        print('Debug: Found price range - min: $minPrice, max: $maxPrice');
+  
         
         return {
           'min': minPrice,
@@ -1872,7 +1867,7 @@ class _FilterPageState extends State<FilterPage> {
         'max': 100000.0,
       };
     } catch (e) {
-      print('Error getting price range from database: $e');
+
       // Повертаємо дефолтні значення у випадку помилки
       return {
         'min': 0.0,

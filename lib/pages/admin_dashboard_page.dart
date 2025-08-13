@@ -1192,7 +1192,7 @@ class AdminAdTableRow extends StatelessWidget {
                     context: context,
                     onDelete: () async {
                       try {
-                        print('Початок видалення оголошення ${ad.id}');
+                
                         await listingService.deleteListing(ad.id);
                         // Оновлюємо список продуктів для відображення змін
                         onStatusChanged?.call();

@@ -321,7 +321,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     } catch (e) {
       if (mounted) {
         // Error submitting complaint (optional: show error snackbar)
-        print('Error submitting complaint: $e');
+
       }
     }
   }
@@ -788,16 +788,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 if (_product != null) {
                                   try {
                                     final productUrl = 'https://your-app-url.com/product/${_product!.id}'; // TODO: Replace with your actual app URL
-                                    print('Поширення оголошення: ${_product!.title}');
+                            
                                     await Share.share(
                                       'Подивіться на це оголошення: ${_product!.title} - ${_product!.formattedPrice}\n$productUrl'
                                     );
-                                    print('Діалогове вікно "Поділитися" мало з\'явитися.');
+                                    
                                   } catch (e) {
-                                    print('Помилка під час поширення: $e');
+                                    
                                   }
                                 } else {
-                                  print('Кнопка "Поділитися" натиснута, але _product має значення null.');
+                                  
                                 }
                               },
                             ),
@@ -1502,7 +1502,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      print('Could not launch $url');
+      
     }
   }
 

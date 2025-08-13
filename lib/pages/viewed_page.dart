@@ -79,10 +79,10 @@ class _ViewedContentState extends State<ViewedContent> {
 
     try {
       final viewedProductIds = await _profileService.getViewedList();
-      print('Debug: Found ${viewedProductIds.length} viewed product IDs: $viewedProductIds');
+      
       
       if (viewedProductIds.isEmpty) {
-        print('Debug: No viewed products found');
+        
         setState(() {
           _isLoading = false;
           _hasMore = false;
@@ -92,7 +92,7 @@ class _ViewedContentState extends State<ViewedContent> {
 
       // Fetch product details for each ID
       final products = await _productService.getProductsByIds(viewedProductIds);
-      print('Debug: Loaded ${products.length} products from ${viewedProductIds.length} IDs');
+      
 
       // Фільтруємо тільки активні оголошення
       final activeProducts = products.where((p) => p.status == 'active' || p.status == null).toList();
@@ -107,7 +107,7 @@ class _ViewedContentState extends State<ViewedContent> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print('Error loading viewed products: $_errorMessage');
+      
     }
   }
 

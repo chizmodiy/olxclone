@@ -65,10 +65,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       final categoryService = CategoryService();
       final fetchedCategories = await categoryService.getCategories();
       
-      print('Debug: Loaded categories from database:');
-      for (var category in fetchedCategories) {
-        print('Debug: - ${category.id}: ${category.name}');
-      }
+
       
       setState(() {
         _categories = fetchedCategories;
@@ -76,7 +73,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       });
     } catch (e) {
       // Handle error (e.g., show a snackbar or dialog)
-      print('Error loading categories: $e');
+
       setState(() {
         _isLoadingCategories = false;
       });
@@ -93,10 +90,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       final subcategoryService = SubcategoryService(Supabase.instance.client);
       final fetchedSubcategories = await subcategoryService.getSubcategoriesForCategory(categoryId);
       
-      print('Debug: Loaded subcategories for category $categoryId:');
-      for (var subcategory in fetchedSubcategories) {
-        print('Debug: - ${subcategory.id}: ${subcategory.name}');
-      }
+
       
       setState(() {
         _subcategories = fetchedSubcategories;
@@ -110,7 +104,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       });
     } catch (e) {
       // Handle error
-      print('Error loading subcategories: $e');
+
       setState(() {
         _isLoadingSubcategories = false;
       });
@@ -130,9 +124,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
           title: GestureDetector(
             onTap: () {
               // Return selected category and subcategory to previous page
-              print('Debug: Returning from CategorySelectionPage:');
-              print('Debug: - category: ${_selectedCategory?.name}');
-              print('Debug: - subcategory: ${_selectedSubcategory?.name}');
+
               
               Navigator.pop(context, {
                 'category': _selectedCategory,

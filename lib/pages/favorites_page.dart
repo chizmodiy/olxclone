@@ -97,7 +97,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print('Error loading favorite products: $_errorMessage');
+      
     }
   }
 
@@ -109,13 +109,13 @@ class _FavoritesContentState extends State<FavoritesContent> {
         _favoriteProductIds = favoriteIds;
       });
     } catch (e) {
-      print('Error loading favorites: $e');
+
     }
   }
 
   Future<void> _toggleFavorite(Product product) async {
     if (_currentUserId == null) {
-      print('User not logged in. Cannot toggle favorite.');
+
       return;
     }
 
@@ -132,7 +132,7 @@ class _FavoritesContentState extends State<FavoritesContent> {
         });
       }
     } catch (e) {
-      print('Error toggling favorite: $e');
+
     }
   }
 

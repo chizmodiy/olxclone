@@ -898,9 +898,9 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           .eq('is_read', false)
           .neq('sender_id', _currentUserId);
       
-      print('Marked messages as read for chat: ${widget.chatId}, result: $result');
+      
     } catch (e) {
-      print('Error marking messages as read: $e');
+      
     }
   }
 
@@ -1205,7 +1205,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
       setState(() {
         _messages.removeWhere((msg) => msg['is_temp'] == true);
       });
-      print('Error sending message: $e');
+      
     }
   }
 

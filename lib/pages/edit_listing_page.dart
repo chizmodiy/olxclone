@@ -284,7 +284,7 @@ class _EditListingPageState extends State<EditListingPage> {
       }
 
     } catch (e) {
-      print('Error loading listing for editing: $e');
+      
     } finally {
       setState(() {
         _isLoading = false;
@@ -1291,7 +1291,7 @@ class _EditListingPageState extends State<EditListingPage> {
           _cities = results;
         });
       } catch (e) {
-        print('Error searching cities: $e');
+
         setState(() {
           _cities = [];
         });

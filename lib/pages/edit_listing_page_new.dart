@@ -311,7 +311,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         }
       }
     } catch (e) {
-      print('Error loading categories: $e');
+      
       setState(() {
         _isLoadingCategories = false;
       });
@@ -344,7 +344,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
 
       _initializeExtraFields();
     } catch (e) {
-      print('Error loading subcategories: $e');
+      
       setState(() {
         _isLoadingSubcategories = false;
       });
@@ -395,7 +395,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         );
       }
     } catch (e) {
-      print('Error loading regions: $e');
+      
       setState(() {
         _isLoadingRegions = false;
       });
@@ -481,7 +481,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
 
         Navigator.of(context).pop(true);
       } catch (e) {
-        print('Error updating listing: $e');
+
       } finally {
         setState(() => _isLoading = false);
       }

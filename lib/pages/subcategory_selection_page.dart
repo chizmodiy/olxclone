@@ -55,7 +55,7 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
         _selectedSubcategory = null;
       });
     } catch (e) {
-      print('Error loading subcategories: $e');
+      
       setState(() {
         _isLoadingSubcategories = false;
       });

@@ -54,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       }
     } catch (e) {
-      print('Error loading profile image: $e');
+      
     }
   }
 

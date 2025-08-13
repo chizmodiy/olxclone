@@ -3,12 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
 import '../widgets/product_card_list_item.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:developer';
 import '../services/listing_service.dart';
-import '../widgets/common_header.dart';
-import '../models/listing.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
@@ -28,7 +24,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
   String? _errorMessage;
   String? _currentUserId;
   int? _openedActionIndex;
-  final Duration _swipeAnimDuration = const Duration(milliseconds: 250);
+
   final ListingService _listingService = ListingService(Supabase.instance.client);
   final ProfileService _profileService = ProfileService();
 
@@ -77,12 +73,8 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       final products = await _productService.getUserProducts(_currentUserId!);
       // Фільтруємо по status == 'active' або null (активні оголошення)
       final filtered = products.where((p) => p.status == 'active' || p.status == null).toList();
-      print('=== ЗАВАНТАЖЕННЯ АКТИВНИХ ОГОЛОШЕНЬ ===');
-      print('Всього оголошень користувача: ${products.length}');
-      print('Активних оголошень: ${filtered.length}');
-      for (var product in products) {
-        print('Оголошення ID: ${product.id}, Статус: ${product.status}');
-      }
+      
+
       setState(() {
         _products = filtered;
         _filteredProducts = filtered;
@@ -102,7 +94,7 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
       _filteredProducts = query.isEmpty
           ? _products
           : _products.where((p) => p.title.toLowerCase().contains(query)).toList();
-      log('Filtered products count:  [32m${_filteredProducts.length} [0m');
+
     });
   }
 
@@ -277,7 +269,7 @@ class _SwipeableCard extends StatefulWidget {
 
 class _SwipeableCardState extends State<_SwipeableCard> {
   bool _actionVisible = false;
-  static const double overlayWidth = 364.0;
+
   static const double cardHeight = 105.0;
 
   @override
@@ -378,12 +370,12 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                                   onTap: () async {
                                     try {
                                       await widget.listingService.updateListingStatus(widget.productId, 'inactive');
-                                      print('Оголошення ${widget.productId} деактивовано');
+                              
                                       
                                       // Перевіряємо статус після деактивації
                                       final product = await widget.productService.getProductByIdWithDetails(widget.productId);
                                       if (product != null) {
-                                        print('Перевірка після деактивації - ID: ${product.id}, Статус: ${product.status}');
+                                
                                       }
                                       
                                       setState(() {
@@ -393,7 +385,7 @@ class _SwipeableCardState extends State<_SwipeableCard> {
                                       // Оновлюємо список після деактивації
                                       if (widget.onRemove != null) widget.onRemove!();
                                     } catch (e) {
-                                      print('Помилка деактивації: $e');
+                                      // Ігноруємо помилки деактивації
                                     }
                                   },
                                   child: _trySvgOrIcon('assets/icons/slash-circle-01.svg', Icons.block),

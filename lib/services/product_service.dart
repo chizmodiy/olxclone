@@ -41,19 +41,17 @@ class ProductService {
       return [];
     }
     try {
-      print('Debug: Fetching products with IDs: $productIds');
+  
       final response = await _supabase
           .from('listings')
           .select()
           .in_('id', productIds)
           .or('status.is.null,status.eq.active'); // Фільтруємо тільки активні оголошення
       
-      print('Debug: Raw response: $response');
       final products = (response as List).map((json) => Product.fromJson(json)).toList();
-      print('Debug: Parsed ${products.length} products');
       return products;
     } catch (e) {
-      print('Debug: Error in getProductsByIds: $e');
+
       return [];
     }
   }
@@ -61,18 +59,16 @@ class ProductService {
   // Новий метод для отримання всіх оголошень користувача (включаючи неактивні)
   Future<List<Product>> getUserProducts(String userId) async {
     try {
-      print('Debug: Fetching all products for user: $userId');
+  
       final response = await _supabase
           .from('listings')
           .select()
           .eq('user_id', userId);
       
-      print('Debug: Raw response for user products: $response');
       final products = (response as List).map((json) => Product.fromJson(json)).toList();
-      print('Debug: Parsed ${products.length} products for user');
       return products;
     } catch (e) {
-      print('Debug: Error in getUserProducts: $e');
+
       return [];
     }
   }
@@ -80,19 +76,17 @@ class ProductService {
   // Метод для отримання одного оголошення з детальною інформацією
   Future<Product?> getProductByIdWithDetails(String productId) async {
     try {
-      print('Debug: Fetching product with ID: $productId');
+  
       final response = await _supabase
           .from('listings')
           .select()
           .eq('id', productId)
           .single();
       
-      print('Debug: Raw response for product: $response');
       final product = Product.fromJson(response);
-      print('Debug: Parsed product - ID: ${product.id}, Status: ${product.status}');
       return product;
     } catch (e) {
-      print('Debug: Error in getProductByIdWithDetails: $e');
+
       return null;
     }
   }
@@ -119,9 +113,9 @@ class ProductService {
     String? condition,
   }) async {
     try {
-      print('Debug ProductService: searchQuery = "$searchQuery"');
+  
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        print('Debug ProductService: Algolia temporarily disabled, using Supabase');
+        
         // Тимчасово вимикаємо Algolia для тестування
         // --- ALGOLIA SEARCH ---
         /*
@@ -134,34 +128,33 @@ class ProductService {
             ),
           );
           final hits = response.hits;
-          print('Debug ProductService: Algolia returned ${hits.length} hits');
+
           
           if (hits.isEmpty) {
-            print('Debug ProductService: Algolia returned no results, trying without filters');
+
             final responseNoFilters = await searchClient.searchIndex(
               request: SearchForHits(
                 indexName: algoliaIndexName,
                 query: searchQuery,
               ),
             );
-            print('Debug ProductService: Algolia without filters returned ${responseNoFilters.hits.length} hits');
+            
           }
 
           return hits.map((hit) => Product.fromJson(hit)).toList();
         } catch (e) {
-          print('Debug ProductService: Algolia error: $e');
-          print('Debug ProductService: Falling back to Supabase search');
+
         }
         */
       }
       // --- SUPABASE SEARCH (fallback) ---
-      print('Debug ProductService: Using Supabase search');
+      
 
       PostgrestFilterBuilder query = _supabase.from('listings').select();
 
       // Додаємо умови пошуку
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        print('Debug ProductService: Adding Supabase search filter for "$searchQuery"');
+
         query = query.ilike('title', '%$searchQuery%');
       }
 
@@ -188,7 +181,7 @@ class ProductService {
       }
 
       if (isFree != null) {
-        print('Debug ProductService: Adding isFree filter: $isFree');
+
         query = query.eq('is_free', isFree);
       }
 
@@ -252,10 +245,10 @@ class ProductService {
 
       // Return Supabase results
       final data = await query as List<dynamic>;
-      print('Debug ProductService: Supabase returned ${data.length} results');
+      
       return data.map((json) => Product.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
-      print('Debug ProductService: Error in getProducts: $e');
+      
       return [];
     }
   }

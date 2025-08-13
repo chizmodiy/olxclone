@@ -59,7 +59,7 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     final isNegotiable = json['is_negotiable'] as bool? ?? false;
-    print('Debug: Product ${json['id']} - isNegotiable: $isNegotiable');
+
     
     return Product(
       id: json['id'] as String,
