@@ -20,23 +20,47 @@ class City {
     String cityName = '';
 
     if (address != null) {
+      // Пріоритет для українських назв
       cityName = address['city'] as String? ??
                  address['town'] as String? ??
                  address['village'] as String? ??
                  address['hamlet'] as String? ??
-                 address['county'] as String? ?? // Додано для ширшого покриття, якщо застосовно
+                 address['county'] as String? ??
                  json['name'] as String? ??
-                 json['display_name'] as String; // Остання спроба
+                 json['display_name'] as String;
     } else {
       cityName = json['name'] as String? ?? json['display_name'] as String;
     }
 
     // Перевірка, що cityName не пусте
     if (cityName.isEmpty) {
-      cityName = json['display_name'] as String; // Якщо все інше не вдалось
+      cityName = json['display_name'] as String;
       if (cityName.isEmpty) {
+        cityName = 'Невідома локація'; // Українська назва за замовчуванням
+      }
+    }
 
-        cityName = 'Unnamed Location'; // Запасне ім'я, якщо нічого не знайдено
+    // Очищення назви від зайвих частин адреси
+    if (cityName.contains(',')) {
+      cityName = cityName.split(',')[0].trim();
+    }
+    
+    // Видаляємо зайві частини адреси (область, країна тощо)
+    final unwantedParts = [
+      'Україна', 'Ukraine', 'область', 'області', 'region', 'state',
+      'район', 'district', 'місто', 'city', 'село', 'village'
+    ];
+    
+    for (final part in unwantedParts) {
+      if (cityName.toLowerCase().contains(part.toLowerCase())) {
+        // Якщо це не основна назва міста, а додаткова інформація
+        if (cityName.toLowerCase().startsWith(part.toLowerCase())) {
+          continue; // Пропускаємо, якщо це початок назви
+        }
+        // Видаляємо зайві частини
+        final parts = cityName.split(',');
+        cityName = parts.first.trim();
+        break;
       }
     }
 

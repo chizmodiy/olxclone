@@ -207,17 +207,24 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   Future<String?> getCityNameFromLatLng(latlong.LatLng latLng) async {
-    final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${latLng.latitude}&lon=${latLng.longitude}&zoom=10&addressdetails=1');
+    final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${latLng.latitude}&lon=${latLng.longitude}&zoom=10&addressdetails=1&accept-language=uk');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
       final address = data['address'] as Map<String, dynamic>?;
       if (address != null) {
-        return address['city']?.toString() ?? 
-               address['town']?.toString() ?? 
-               address['village']?.toString() ?? 
-               address['state']?.toString() ?? 
-               data['display_name']?.toString();
+        String cityName = address['city']?.toString() ?? 
+                         address['town']?.toString() ?? 
+                         address['village']?.toString() ?? 
+                         address['state']?.toString() ?? 
+                         data['display_name']?.toString() ?? '';
+        
+        // Очищення назви від зайвих частин адреси
+        if (cityName.contains(',')) {
+          cityName = cityName.split(',')[0].trim();
+        }
+        
+        return cityName;
       }
       return data['display_name']?.toString();
     }
@@ -225,7 +232,7 @@ class _LocationPickerState extends State<LocationPicker> {
   }
 
   Future<latlong.LatLng?> getLatLngFromRegion(String regionName) async {
-    final url = Uri.parse('https://nominatim.openstreetmap.org/search?country=Україна&state=${Uri.encodeComponent(regionName)}&format=json&limit=1');
+    final url = Uri.parse('https://nominatim.openstreetmap.org/search?country=Україна&state=${Uri.encodeComponent(regionName)}&format=json&limit=1&accept-language=uk');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as List<dynamic>;

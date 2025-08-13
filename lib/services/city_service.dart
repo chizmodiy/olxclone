@@ -22,6 +22,7 @@ class CityService {
       'addressdetails': '1',
       'limit': '100', // Increased limit to get more results within a bounding box
       'countrycodes': 'ua', // Limit results to Ukraine
+      'accept-language': 'uk', // Request Ukrainian language
     };
 
     // Add viewbox if bounding box coordinates are provided
@@ -60,6 +61,8 @@ class CityService {
 
         // Filter and sort cities alphabetically by name
         List<City> cities = [];
+        Set<String> uniqueNames = {}; // Для уникнення дублікатів
+        
         for (var item in data) {
           final String? nominatimClass = item['class'];
           final String? nominatimType = item['type'];
@@ -82,7 +85,12 @@ class CityService {
 
           if (isSettlement) {
             try {
-              cities.add(City.fromJson(item));
+              final city = City.fromJson(item);
+              // Перевіряємо, чи не є це дублікатом
+              if (!uniqueNames.contains(city.name) && city.name.isNotEmpty) {
+                uniqueNames.add(city.name);
+                cities.add(city);
+              }
             } catch (e) {
               // Error parsing city
             }

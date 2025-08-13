@@ -1339,195 +1339,143 @@ class _AddListingPageState extends State<AddListingPage> {
           style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
         ),
         const SizedBox(height: 6),
-        GestureDetector(
-          key: _cityButtonKey, // Assign the new key here
-          onTap: () {
-            final RenderBox? button = _cityButtonKey.currentContext?.findRenderObject() as RenderBox?;
-            if (button != null) {
-              final buttonPosition = button.localToGlobal(Offset.zero);
-              final buttonSize = button.size;
-              _showCityPicker(
-                position: buttonPosition,
-                size: buttonSize,
-              );
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.zinc50,
-              borderRadius: BorderRadius.circular(200),
-              border: Border.all(
-                color: _submitted && _selectedCity == null ? Colors.red : AppColors.zinc200,
-                width: 1
+        Container(
+          height: 44, // Фіксована висота 44 пікселі
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.zinc50,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(
+              color: _submitted && _selectedCity == null ? Colors.red : AppColors.zinc200,
+              width: 1
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(16, 24, 40, 0.05),
+                offset: Offset(0, 1),
+                blurRadius: 2,
               ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(16, 24, 40, 0.05),
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedCity?.name ?? 'Оберіть місто',
-                    style: AppTextStyles.body1Regular.copyWith(
-                      color: _selectedCity != null ? AppColors.color2 : AppColors.color5,
-                    ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _citySearchController,
+                  style: AppTextStyles.body1Regular.copyWith(
+                    color: _selectedCity != null ? AppColors.color2 : AppColors.color5,
                   ),
+                  decoration: InputDecoration(
+                    hintText: 'Оберіть місто',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    suffixIcon: _isSearchingCities
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : null,
+                  ),
+                  onTap: () {
+                    if (_cities.isEmpty && !_isSearchingCities) {
+                      _onCitySearchChanged('', regionName: _selectedRegion!.name);
+                    }
+                  },
+                  onChanged: (value) {
+                    if (value.isEmpty) {
+                      setState(() {
+                        _selectedCity = null;
+                      });
+                    }
+                    _onCitySearchChanged(value, regionName: _selectedRegion!.name);
+                  },
                 ),
-                SvgPicture.asset(
-                  'assets/icons/chevron_down.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
-                ),
-              ],
-            ),
+              ),
+              SvgPicture.asset(
+                'assets/icons/chevron_down.svg',
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
+              ),
+            ],
           ),
         ),
+        // Випадаючий список
+        if (_cities.isNotEmpty || _isSearchingCities)
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            margin: const EdgeInsets.only(top: 4),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(200),
+                bottomRight: Radius.circular(200),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.03),
+                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: _isSearchingCities
+                ? const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    shrinkWrap: true,
+                    itemCount: _cities.length,
+                    itemBuilder: (context, index) {
+                      final city = _cities[index];
+                      return _buildCityItem(city);
+                    },
+                  ),
+          ),
       ],
     );
   }
 
-  void _showCityPicker({required Offset position, required Size size}) {
-    // Calculate the height of one item (padding + container height)
-    const double itemHeight = 44.0; // 10 vertical padding * 2 + container height
-    const double verticalPadding = 8.0; // 4 padding top + 4 padding bottom
 
-    // Use the smaller of contentHeight or maxHeight
-    final double finalHeight = (250.0); // Fixed height for dialog with search
-
-    // Clear previous search results and controller text, then potentially load initial cities
-    _cities.clear(); // Clear any previous search results
-    _citySearchController.text = _selectedCity?.name ?? ''; // Set initial text if city already selected
-
-    // Trigger an initial search if no city is selected yet or if the search field is empty
-    if (_selectedCity == null || _citySearchController.text.isEmpty) {
-      _onCitySearchChanged('', regionName: _selectedRegion!.name); // RE-ENABLE THIS LINE
-    }
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Stack(
-          children: [
-            Positioned(
-              top: position.dy + size.height + 8, // Adjust to 8 pixels below the input
-              left: position.dx,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: size.width,
-                  height: finalHeight,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.03),
-                        offset: Offset(0, 4),
-                        blurRadius: 6,
-                        spreadRadius: -2,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_selectedRegion != null && (_selectedCity != null || _citySearchController.text.isNotEmpty))
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextField(
-                            controller: _citySearchController,
-                            style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
-                            decoration: InputDecoration(
-                              hintText: 'Введіть місто',
-                              hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: AppColors.zinc200),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: AppColors.primaryColor),
-                              ),
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              suffixIcon: _isSearchingCities
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                  : null,
-                            ),
-                            onChanged: (value) => _onCitySearchChanged(value, regionName: _selectedRegion!.name),
-                          ),
-                        ),
-                      if (_isSearchingCities)
-                        const LinearProgressIndicator(color: AppColors.primaryColor, backgroundColor: Colors.transparent)
-                      else
-                        Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            itemCount: _cities.length,
-                            itemBuilder: (context, index) {
-                              final city = _cities[index];
-                              return _buildCityItem(city);
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _buildCityItem(City city) {
     final isSelected = _selectedCity?.id == city.id;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      child: InkWell(
-        onTap: () => _onCitySelected(city),
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.zinc50 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  city.name,
-                  style: AppTextStyles.body1Regular.copyWith(
-                    color: AppColors.color2,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
+    return InkWell(
+      onTap: () => _onCitySelected(city),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.zinc50 : Colors.transparent,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                city.name,
+                style: AppTextStyles.body1Regular.copyWith(
+                  color: AppColors.color2,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-              if (isSelected)
-                SvgPicture.asset(
-                  'assets/icons/check.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
-                ),
-            ],
-          ),
+            ),
+            if (isSelected)
+              SvgPicture.asset(
+                'assets/icons/check.svg',
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
+              ),
+          ],
         ),
       ),
     );
@@ -1536,11 +1484,12 @@ class _AddListingPageState extends State<AddListingPage> {
   void _onCitySelected(City city) {
     setState(() {
       _selectedCity = city;
-      _citySearchController.text = city.name; // Set text field value
-      _cities.clear(); // Clear suggestions
+      _citySearchController.text = city.name;
+      _cities.clear(); // Закриваємо випадаючий список
     });
-    Navigator.pop(context); // Close the dialog
   }
+
+
 
   Widget _buildListingTypeToggle() {
     return Container(
@@ -2813,31 +2762,23 @@ class _AddListingPageState extends State<AddListingPage> {
                 _buildAreaField(),
                 _buildSizeSelector(),
                 _buildAgeField(),
-                _buildCarBrandSelector(),
+                                _buildCarBrandSelector(),
                 _buildCarFields(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
                 LocationPicker(
                   onLocationSelected: (latLng, address) async {
-                    
-                    
                     if (latLng != null) {
                       // Знаходимо найближчу область на основі координат
                       Region? nearestRegion;
                       double shortestDistance = double.infinity;
                       
-                      
-                      
                       for (final region in _regions) {
-                        
-                        
                         if (region.minLat != null && region.maxLat != null && 
                             region.minLon != null && region.maxLon != null) {
                           // Обчислюємо центр області
                           final centerLat = (region.minLat! + region.maxLat!) / 2;
                           final centerLon = (region.minLon! + region.maxLon!) / 2;
-                          
-                          
                           
                           final distance = Geolocator.distanceBetween(
                             latLng.latitude,
@@ -2846,38 +2787,29 @@ class _AddListingPageState extends State<AddListingPage> {
                             centerLon,
                           );
 
-                          
-
                           if (distance < shortestDistance) {
                             shortestDistance = distance;
                             nearestRegion = region;
-                            
                           }
-                        } else {
-                          
                         }
                       }
 
-                      
-
                       if (nearestRegion != null) {
-                        
                         setState(() {
                           _selectedRegion = nearestRegion;
                           _selectedRegionName = nearestRegion!.name;
                           _selectedAddress = address ?? '${nearestRegion!.name}';
                           _selectedLatitude = latLng.latitude;
                           _selectedLongitude = latLng.longitude;
+                          // Очищаємо вибране місто при зміні області
+                          _selectedCity = null;
+                          _citySearchController.clear();
                         });
                         
-                        
-
                         // Завантажуємо підкатегорії для нової області
                         if (_selectedCategory != null) {
                           await _loadSubcategories(_selectedCategory!.id);
                         }
-                      } else {
-
                       }
                     }
                   },
@@ -2888,6 +2820,8 @@ class _AddListingPageState extends State<AddListingPage> {
                 _buildRegionSection(),
                 _buildCitySection(),
                 const SizedBox(height: 20),
+
+
 
                 // Listing Type Toggle
                 if (_selectedCategory?.name != 'Віддам безкоштовно' && _selectedCategory?.name != 'Знайомства') ...[
