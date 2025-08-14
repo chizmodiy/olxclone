@@ -1,19 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
-import 'package:algoliasearch/algoliasearch.dart';
+import 'algolia_service.dart';
 
 class ProductService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  // Algolia configuration
-  static const String algoliaAppId = '0OP1H6TEU7';
-  static const String algoliaSearchKey = '69c4afc3b8918ea3c03c0f6c11e8fc72';
-  static const String algoliaIndexName = 'products';
-
-  final SearchClient searchClient = SearchClient(
-    appId: algoliaAppId,
-    apiKey: algoliaSearchKey,
-  );
+  // Algolia service
+  final AlgoliaService _algoliaService = AlgoliaService();
 
   Future<Product> getProductById(String id) async {
     try {
@@ -111,41 +104,31 @@ class ProductService {
     double? maxEngineHp,
     String? size,
     String? condition,
+    String? region,
   }) async {
     try {
   
       if (searchQuery != null && searchQuery.isNotEmpty) {
         
-        // Тимчасово вимикаємо Algolia для тестування
         // --- ALGOLIA SEARCH ---
-        /*
         try {
-          final response = await searchClient.searchIndex(
-            request: SearchForHits(
-              indexName: algoliaIndexName,
+          final results = await _algoliaService.searchProducts(
               query: searchQuery,
-              filters: 'status:active OR status:null',
-            ),
+            categoryId: categoryId,
+            region: region,
+            isFree: isFree,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            limit: limit,
           );
-          final hits = response.hits;
-
           
-          if (hits.isEmpty) {
-
-            final responseNoFilters = await searchClient.searchIndex(
-              request: SearchForHits(
-                indexName: algoliaIndexName,
-                query: searchQuery,
-              ),
-            );
-            
+          if (results.isNotEmpty) {
+            return results;
           }
-
-          return hits.map((hit) => Product.fromJson(hit)).toList();
         } catch (e) {
-
+          print('Algolia search error: $e');
+          // Fallback до Supabase
         }
-        */
       }
       // --- SUPABASE SEARCH (fallback) ---
       
@@ -164,6 +147,10 @@ class ProductService {
 
       if (subcategoryId != null) {
         query = query.eq('subcategory_id', subcategoryId);
+      }
+
+      if (region != null) {
+        query = query.eq('region', region);
       }
 
       if (minPrice != null) {

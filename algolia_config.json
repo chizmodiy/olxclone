@@ -1,0 +1,73 @@
+{
+  "indexName": "products",
+  "searchableAttributes": [
+    "title",  
+    "description",
+    "location",
+    "region",
+    "address"
+  ],
+  "attributesForFaceting": [
+    "category_id",
+    "subcategory_id",
+    "region",
+    "is_free",
+    "is_negotiable",
+    "is_blocked",
+    "status",
+    "currency",
+    "price",
+    "user_id"
+  ],
+  "ranking": [
+    "typo",
+    "geo",
+    "words",
+    "filters",
+    "proximity",
+    "attribute",
+    "exact",
+    "custom"
+  ],
+  "customRanking": [
+    "desc(created_at)",
+    "desc(updated_at)"
+  ],
+  "searchableAttributesOrder": [
+    "title",
+    "description",
+    "category_name",
+    "subcategory_name",
+    "location",
+    "region"
+  ],
+  "attributesToHighlight": [
+    "title",
+    "description",
+    "category_name",
+    "subcategory_name"
+  ],
+  "attributesToSnippet": [
+    "description:150"
+  ],
+  "snippetEllipsisText": "...",
+  "highlightPreTag": "<em>",
+  "highlightPostTag": "</em>",
+  "distinct": true,
+  "advancedSyntax": true,
+  "removeWordsIfNoResults": "allOptional",
+  "queryType": "prefixAll",
+  "decompoundQuery": true,
+  "ignorePlurals": true,
+  "removeStopWords": true,
+  "camelCaseAttributes": [
+    "customAttributes"
+  ],
+  "numericAttributesForFiltering": [
+    "price"
+  ],
+  "geoLoc": {
+    "latitude": "latitude",
+    "longitude": "longitude"
+  }
+} 

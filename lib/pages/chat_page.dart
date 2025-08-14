@@ -983,7 +983,6 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -991,18 +990,49 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (widget.listingTitle != 'Оголошення видалено') ...[
-              _buildBottomSheetOption(
-                icon: Icons.report_problem_outlined,
-                title: 'Надіслати скаргу',
-                color: Colors.orange,
-                onTap: () {
-                  Navigator.pop(context);
-                  _showComplaintBottomSheet();
-                },
+            // Заголовок з іконкою хрестика
+            Container(
+              padding: const EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 16),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Опції чату',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const Divider(),
-            ],
+            ),
+            // Опції
+            _buildBottomSheetOption(
+              icon: Icons.report_problem_outlined,
+              title: 'Надіслати скаргу',
+              color: Colors.orange,
+              onTap: () {
+                Navigator.pop(context);
+                _showComplaintBottomSheet();
+              },
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             _buildBottomSheetOption(
               icon: Icons.delete_outline,
               title: 'Видалити чат',
@@ -1012,6 +1042,7 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                 _showDeleteConfirmation();
               },
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -1024,13 +1055,24 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(color: color),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+        leading: Icon(icon, color: color, size: 22),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
-      onTap: onTap,
     );
   }
 
@@ -1039,7 +1081,6 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1047,51 +1088,82 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Видалити чат?',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+            // Заголовок з іконкою хрестика
+            Container(
+              padding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 16),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Видалити чат?',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Ви впевнені, що хочете видалити цей чат? Цю дію неможливо буде скасувати.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+            // Опис
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Ви впевнені, що хочете видалити цей чат? Цю дію неможливо буде скасувати.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      child: Text('Скасувати', style: TextStyle(color: Colors.grey[700])),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close confirmation
+                        _deleteChat();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Так, видалити', style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    child: Text('Скасувати', style: TextStyle(color: Colors.grey[700])),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close confirmation
-                      _deleteChat();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('Так, видалити', style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
