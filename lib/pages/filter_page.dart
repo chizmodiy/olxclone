@@ -962,7 +962,7 @@ class _FilterPageState extends State<FilterPage> {
                     const SizedBox(height: 8),
                     _buildAdditionalFilters(),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
         GestureDetector(
           onTap: _navigateToRegionSelection,
                           child: Container(
@@ -2240,7 +2240,7 @@ class _FilterPageState extends State<FilterPage> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
         ],
         
         // Блок "Рік випуску"
@@ -2255,7 +2255,7 @@ class _FilterPageState extends State<FilterPage> {
             letterSpacing: 0.14,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -2406,7 +2406,7 @@ class _FilterPageState extends State<FilterPage> {
           ],
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         
         // Блок "Двигун, кількість к.с"
         Text(
@@ -2420,7 +2420,7 @@ class _FilterPageState extends State<FilterPage> {
             letterSpacing: 0.14,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(

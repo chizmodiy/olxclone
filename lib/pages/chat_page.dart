@@ -1460,61 +1460,151 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
           // Прибрати Divider або border в самому низу сторінки відкритого чату
           // const Divider(height: 1),
           if (widget.listingTitle != 'Оголошення видалено')
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 36, top: 0),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 36),
+              decoration: const BoxDecoration(color: Colors.white),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Поле введення з іконкою фото
                   Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                        color: const Color(0xFFFAFAFA),
-                          borderRadius: BorderRadius.circular(200),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                          child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                          IconButton(
-                            icon: const Icon(Icons.photo, color: Color(0xFF52525B)),
-                            onPressed: _pickAndUploadImage,
-                            splashRadius: 20,
-                          ),
-                              Expanded(
-                            child: TextField(
-                              controller: _textController,
-                              decoration: const InputDecoration(
-                                hintText: 'Написати повідомлення',
-                                hintStyle: TextStyle(
-                                  color: Color(0xFFA1A1AA),
-                                    fontSize: 16,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w400,
-                                  height: 1.5,
-                                    letterSpacing: 0.16,
+                              Container(
+                                width: double.infinity,
+                                height: 44,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFFFAFAFA) /* Zinc-50 */,
+                                  shape: RoundedRectangleBorder(
+                                    side: const BorderSide(
+                                      width: 1,
+                                      color: Color(0xFFE4E4E7) /* Zinc-200 */,
+                                    ),
+                                    borderRadius: BorderRadius.circular(200),
                                   ),
-                                border: InputBorder.none,
+                                  shadows: const [
+                                    BoxShadow(
+                                      color: Color(0x0C101828),
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1),
+                                      spreadRadius: 0,
+                                    )
+                                  ],
                                 ),
-                              minLines: 1,
-                              maxLines: 4,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: _pickAndUploadImage,
+                                            child: Container(
+                                              width: 20,
+                                              height: 20,
+                                              clipBehavior: Clip.antiAlias,
+                                              decoration: const BoxDecoration(),
+                                              child: const Icon(
+                                                Icons.photo,
+                                                color: Color(0xFF52525B),
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: TextField(
+                                              controller: _textController,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Написати повідомлення',
+                                                hintStyle: TextStyle(
+                                                  color: Color(0xFFA1A1AA) /* Zinc-400 */,
+                                                  fontSize: 16,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                  height: 1.50,
+                                                  letterSpacing: 0.16,
+                                                ),
+                                                border: InputBorder.none,
+                                                contentPadding: EdgeInsets.zero,
+                                              ),
+                                              minLines: 1,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                          ),
                             ],
                           ),
                         ),
-                      ),
-                  const SizedBox(width: 12),
-                  // Кнопка відправки: прибрати border
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF015873),
-                      borderRadius: BorderRadius.circular(200),
+                      ],
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: () => _sendMessage(),
-                      splashRadius: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => _sendMessage(),
+                    child: Container(
                       padding: const EdgeInsets.all(12),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFF015873) /* Primary */,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFF015873) /* Primary */,
+                          ),
+                          borderRadius: BorderRadius.circular(200),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0C101828),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                            spreadRadius: 0,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 20,
+                            height: 20,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: const BoxDecoration(),
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
