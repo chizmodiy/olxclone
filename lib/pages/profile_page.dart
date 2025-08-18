@@ -11,6 +11,7 @@ import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/logout_confirmation_bottom_sheet.dart';
 import '../widgets/delete_account_confirmation_bottom_sheet.dart';
 import '../utils/avatar_utils.dart';
+import '../services/profile_notifier.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -23,11 +24,17 @@ class _ProfilePageState extends State<ProfilePage> {
   final ProfileService _profileService = ProfileService();
   String? _profileImageUrl; // URL фото профілю
   bool _hasProfileImage = false; // Чи є фото профілю
+  late ProfileNotifier _profileNotifier;
 
   @override
   void initState() {
     super.initState();
     print('ProfilePage.initState called');
+    
+    // Ініціалізуємо ProfileNotifier та додаємо слухач
+    _profileNotifier = ProfileNotifier();
+    _profileNotifier.addListener(_onProfileUpdate);
+    
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       print('ProfilePage: Post frame callback executed');
@@ -92,6 +99,14 @@ class _ProfilePageState extends State<ProfilePage> {
       enableDrag: false, // Неможливо перетягувати
       builder: (context) => const BlockedUserBottomSheet(),
     );
+  }
+
+  // Метод для оновлення профілю при змінах
+  void _onProfileUpdate() {
+    print('ProfilePage: Profile update notification received');
+    if (mounted) {
+      _loadProfileImage();
+    }
   }
 
   void _showLogoutConfirmationBottomSheet() {
@@ -236,10 +251,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       MaterialPageRoute(builder: (context) => const PersonalDataPage()),
                     );
                     print('ProfilePage: PersonalDataPage returned: $result');
-                    if (result == true) {
-                      print('ProfilePage: Reloading profile image');
-                      _loadProfileImage(); // Reload the image if personal data was updated
-                    }
+                    // Завжди оновлюємо фото після повернення з PersonalDataPage
+                    print('ProfilePage: Reloading profile image');
+                    await _loadProfileImage();
                   },
                 ),
                 _profileButton(
@@ -315,5 +329,11 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _profileNotifier.removeListener(_onProfileUpdate);
+    super.dispose();
   }
 } 

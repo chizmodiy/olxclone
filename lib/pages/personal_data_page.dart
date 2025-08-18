@@ -27,6 +27,12 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   final ProfileService _profileService = ProfileService();
   XFile? _pickedAvatar;
   Uint8List? _avatarBytes;
+  
+  // Змінні для попереднього перегляду змін
+  String? _tempAvatarUrl; // Тимчасовий URL аватара
+  String? _tempName; // Тимчасове ім'я
+  bool _hasUnsavedChanges = false; // Чи є незбережені зміни
+  bool _isAvatarDeleted = false; // Чи видалено аватар
 
   @override
   void initState() {
@@ -39,6 +45,9 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
         if (_nameError != null) {
           _nameError = null;
         }
+        // Перевіряємо, чи змінилося ім'я
+        _tempName = _nameController.text;
+        _checkForUnsavedChanges();
       });
     });
     
@@ -63,6 +72,16 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       enableDrag: false, // Неможливо перетягувати
       builder: (context) => const BlockedUserBottomSheet(),
     );
+  }
+
+  // Метод для перевірки незбережених змін
+  void _checkForUnsavedChanges() {
+    final nameChanged = _tempName != _originalName;
+    final avatarChanged = _tempAvatarUrl != _avatarUrl || _isAvatarDeleted;
+    
+    setState(() {
+      _hasUnsavedChanges = nameChanged || avatarChanged;
+    });
   }
 
   void _showErrorSnackBar(String message) {
@@ -158,100 +177,14 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   }
 
   Future<void> _deleteAvatar() async {
-    print('Starting avatar deletion process...');
-    setState(() => _isLoading = true);
+    print('Marking avatar for deletion...');
     
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        print('No current user found');
-        return;
-      }
-      print('Current user ID: ${user.id}');
-
-      // Спочатку видаляємо файл з Storage, якщо він існує
-      print('Current avatar URL: $_avatarUrl');
-      if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
-        try {
-          print('Attempting to delete avatar from storage: $_avatarUrl');
-          // Отримуємо ім'я файлу з URL
-          final uri = Uri.parse(_avatarUrl!);
-          final pathSegments = uri.pathSegments;
-          print('Path segments: $pathSegments');
-          if (pathSegments.isNotEmpty) {
-            final fileName = pathSegments.last;
-            print('Removing file from storage: $fileName');
-            await Supabase.instance.client.storage
-                .from('avatars')
-                .remove([fileName]);
-            print('File removed from storage successfully');
-          }
-        } catch (storageError) {
-          // Ігноруємо помилки Storage, продовжуємо видалення з профілю
-          print('Storage removal error: $storageError');
-        }
-      } else {
-        print('No avatar URL to delete from storage');
-      }
-
-      print('Updating profile to remove avatar...');
-      // Видаляємо аватар з профілю
-      await _profileService.updateUserProfile(
-        userId: user.id,
-        avatarUrl: null,
-      );
-      print('Profile updated successfully');
-
-      print('Updating user metadata...');
-      // Видаляємо аватар з метаданів
-      await Supabase.instance.client.auth.updateUser(
-        UserAttributes(
-          data: {
-            'avatar_url': null,
-          },
-        ),
-      );
-      print('User metadata updated successfully');
-
-      // Перевіряємо, чи дійсно видалилося
-      print('Verifying avatar removal...');
-      final updatedProfile = await _profileService.getUser(user.id);
-      print('Updated profile avatar URL: ${updatedProfile?.avatarUrl}');
-      if (updatedProfile?.avatarUrl != null && updatedProfile!.avatarUrl!.isNotEmpty) {
-        throw Exception('Фото не було видалено з профілю');
-      }
-      print('Avatar removal verified successfully');
-
-      setState(() {
-        _avatarUrl = null;
-        _pickedAvatar = null;
-        _avatarBytes = null;
-      });
-
-      _showSuccessSnackBar('Фото успішно видалено');
-      print('Notifying profile update...');
-      ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
-      print('Profile update notification sent');
-      
-      // Оновлюємо локальний стан
-      print('Updating local state...');
-      setState(() {
-        _avatarUrl = null;
-        _pickedAvatar = null;
-        _avatarBytes = null;
-      });
-      print('Local state updated successfully');
-      
-      print('Avatar deletion process completed successfully');
-      Navigator.of(context).pop(true); // Return true to indicate success
-    } catch (e) {
-      print('Avatar deletion error: $e');
-      print('Error stack trace: ${StackTrace.current}');
-      _showErrorSnackBar('Помилка при видаленні фото: $e');
-    } finally {
-      print('Avatar deletion process finished, setting loading to false');
-      setState(() => _isLoading = false);
-    }
+    // Тільки позначаємо аватар як видалений, не видаляємо одразу
+    setState(() {
+      _tempAvatarUrl = null;
+      _isAvatarDeleted = true;
+      _checkForUnsavedChanges();
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -283,14 +216,19 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       final fullName = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
       _nameController.text = fullName;
       _originalName = fullName; // Зберігаємо оригінальне ім'я
+      _tempName = fullName; // Встановлюємо тимчасове ім'я
+      
       // Перевіряємо, чи URL не порожній
       final avatarUrl = profile?.avatarUrl;
       final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
       print('Avatar URL from profile: $avatarUrl, isValid: $isValidAvatar');
       _avatarUrl = isValidAvatar ? avatarUrl : null;
+      _tempAvatarUrl = _avatarUrl; // Встановлюємо тимчасовий URL аватара
       print('Final avatar URL set to: $_avatarUrl');
       _phone = phoneNumber ?? '+380951234567'; // Fallback для тестування
       
+      _hasUnsavedChanges = false;
+      _isAvatarDeleted = false;
       _isLoading = false;
     });
     print('Profile loading completed');
@@ -340,30 +278,12 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
         }
 
         if (avatarUrl != null) {
-          // Оновлюємо профіль з новим URL аватара
-          await _profileService.updateUserProfile(
-            userId: user.id,
-            avatarUrl: avatarUrl,
-          );
-
-          // Оновлюємо метадані користувача
-          await Supabase.instance.client.auth.updateUser(
-            UserAttributes(
-              data: {
-                'avatar_url': avatarUrl,
-              },
-            ),
-          );
-
+          // Тільки встановлюємо тимчасовий URL, не зберігаємо одразу
           setState(() {
-            _avatarUrl = avatarUrl;
-            _pickedAvatar = null;
-            _avatarBytes = null;
+            _tempAvatarUrl = avatarUrl;
+            _isAvatarDeleted = false;
+            _checkForUnsavedChanges();
           });
-
-          _showSuccessSnackBar('Фото успішно оновлено');
-          ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
-          Navigator.of(context).pop(true); // Return true to indicate success
         }
       } catch (e) {
 
@@ -383,20 +303,88 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     }
     print('Current user ID in _saveProfile: ${user.id}');
     
-    final nameParts = _nameController.text.trim().split(' ');
-    final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-    print('Name parts: firstName=$firstName, lastName=$lastName');
-    
     setState(() => _isLoading = true);
-    await _profileService.updateUserProfile(
-      userId: user.id,
-      firstName: firstName,
-      lastName: lastName,
-      // avatarUrl: _avatarUrl, // Додати upload якщо потрібно
-    );
-    setState(() => _isLoading = false);
-    if (mounted) Navigator.of(context).pop();
+    
+    try {
+      // Застосовуємо зміни імені
+      if (_tempName != _originalName) {
+        final nameParts = _tempName?.trim().split(' ') ?? [];
+        final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        print('Name parts: firstName=$firstName, lastName=$lastName');
+        
+        await _profileService.updateUserProfile(
+          userId: user.id,
+          firstName: firstName,
+          lastName: lastName,
+        );
+      }
+      
+      // Застосовуємо зміни аватара
+      if (_tempAvatarUrl != _avatarUrl || _isAvatarDeleted) {
+        if (_isAvatarDeleted) {
+          // Видаляємо аватар
+          if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
+            try {
+              final uri = Uri.parse(_avatarUrl!);
+              final pathSegments = uri.pathSegments;
+              if (pathSegments.isNotEmpty) {
+                final fileName = pathSegments.last;
+                await Supabase.instance.client.storage
+                    .from('avatars')
+                    .remove([fileName]);
+              }
+            } catch (storageError) {
+              print('Storage removal error: $storageError');
+            }
+          }
+          
+          await _profileService.updateUserProfile(
+            userId: user.id,
+            avatarUrl: null,
+          );
+          
+          await Supabase.instance.client.auth.updateUser(
+            UserAttributes(
+              data: {
+                'avatar_url': null,
+              },
+            ),
+          );
+        } else if (_tempAvatarUrl != null) {
+          // Оновлюємо аватар
+          await _profileService.updateUserProfile(
+            userId: user.id,
+            avatarUrl: _tempAvatarUrl,
+          );
+          
+          await Supabase.instance.client.auth.updateUser(
+            UserAttributes(
+              data: {
+                'avatar_url': _tempAvatarUrl,
+              },
+            ),
+          );
+        }
+      }
+      
+      // Оновлюємо локальний стан
+      setState(() {
+        _originalName = _tempName;
+        _avatarUrl = _tempAvatarUrl;
+        _hasUnsavedChanges = false;
+        _isAvatarDeleted = false;
+      });
+      
+      ProfileNotifier().notifyProfileUpdate();
+      
+      if (mounted) Navigator.of(context).pop(true); // Повертаємо true щоб показати, що зміни були збережені
+    } catch (e) {
+      print('Error saving profile: $e');
+      _showErrorSnackBar('Помилка при збереженні змін: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   // Перевіряємо, чи змінилося ім'я
@@ -411,13 +399,14 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
 
   // Перевіряємо, чи можна зберегти
   bool get _canSave {
-    return _hasNameChanged && _isNameValid;
+    return _hasUnsavedChanges && _isNameValid;
   }
 
-  // Перевіряємо, чи є у користувача власна іконка
+  // Перевіряємо, чи є у користувача власна іконка (оригінальна або тимчасова)
   bool get _hasCustomAvatar {
-    final hasCustom = AvatarUtils.isValidAvatarUrl(_avatarUrl);
-    print('_hasCustomAvatar check: $_avatarUrl -> $hasCustom');
+    final currentAvatarUrl = _tempAvatarUrl ?? _avatarUrl;
+    final hasCustom = AvatarUtils.isValidAvatarUrl(currentAvatarUrl);
+    print('_hasCustomAvatar check: $currentAvatarUrl -> $hasCustom');
     return hasCustom;
   }
 
@@ -493,7 +482,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                         : (_pickedAvatar != null && !kIsWeb)
                                             ? ClipOval(child: Image.file(File(_pickedAvatar!.path), fit: BoxFit.cover, width: 64, height: 64))
                                             : AvatarUtils.buildAvatar(
-                                                avatarUrl: _hasCustomAvatar ? _avatarUrl : null,
+                                                avatarUrl: _hasCustomAvatar ? (_tempAvatarUrl ?? _avatarUrl) : null,
                                                 size: 64,
                                                 backgroundColor: const Color(0xFFE4E4E7),
                                                 iconColor: const Color(0xFFA1A1AA),
@@ -503,8 +492,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 ),
                                 Row(
                                   children: [
-                                    // Показуємо "Видалити" тільки якщо є власна іконка
-                                    if (_hasCustomAvatar)
+                                    // Показуємо "Видалити" тільки якщо є власна іконка (оригінальна або тимчасова)
+                                    if (_hasCustomAvatar || _tempAvatarUrl != null)
                                       GestureDetector(
                                         onTap: _deleteAvatar,
                                         child: Container(
@@ -527,7 +516,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                           ),
                                         ),
                                       ),
-                                    if (_hasCustomAvatar)
+                                    if (_hasCustomAvatar || _tempAvatarUrl != null)
                                       const SizedBox(width: 8),
                                     GestureDetector( // Added GestureDetector here
                                       onTap: _pickAvatar, // Call _pickAvatar when 'Оновити' is tapped
@@ -704,7 +693,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               _saveProfile();
                             } : null,
                             child: Text(
-                              'Підтвердити',
+                              _hasUnsavedChanges ? 'Підтвердити зміни' : 'Підтвердити',
                               style: TextStyle(
                                 color: _canSave ? Colors.white : const Color(0xFFA1A1AA),
                                 fontSize: 16,
