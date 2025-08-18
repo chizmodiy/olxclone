@@ -561,7 +561,10 @@ class _FilterPageState extends State<FilterPage> {
     final Subcategory? selectedSubcategory = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SubcategorySelectionPage(category: _selectedCategory!),
+        builder: (context) => SubcategorySelectionPage(
+          category: _selectedCategory!,
+          selectedSubcategory: _selectedSubcategory,
+        ),
       ),
     );
 

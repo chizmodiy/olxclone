@@ -250,8 +250,6 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                     style: AppTextStyles.body1Semibold,
                   ),
                 ),
-                // Show checkmark only if this category is selected and no specific subcategory is chosen
-                // Removed checkmark for main category as per user request
                 if (!isFreeCategory) // Only show arrow for non-free categories
                   Icon(
                     isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
@@ -270,8 +268,10 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                         title: subcategory.name,
                         isSelected: _selectedSubcategory == subcategory,
                         onTap: () {
-                          setState(() {
-                            _selectedSubcategory = subcategory;
+                          // Повертаємося на сторінку фільтрів з обраною категорією та підкатегорією
+                          Navigator.pop(context, {
+                            'category': _selectedCategory,
+                            'subcategory': subcategory,
                           });
                         },
                       );
@@ -305,7 +305,14 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
             Expanded(
               child: Text(
                 title,
-                style: AppTextStyles.body1Semibold.copyWith(color: AppColors.color2), // Use color2 for text
+                style: TextStyle(
+                  color: AppColors.color2,
+                  fontSize: 16,
+                  fontFamily: 'Inter',
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500, // Medium for unselected, Semibold for selected
+                  height: 1.50,
+                  letterSpacing: 0.16,
+                ),
               ),
             ),
             if (isSelected)

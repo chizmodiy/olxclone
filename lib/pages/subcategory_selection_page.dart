@@ -11,8 +11,13 @@ import '../widgets/blocked_user_bottom_sheet.dart';
 
 class SubcategorySelectionPage extends StatefulWidget {
   final Category category; // The category for which to show subcategories
+  final Subcategory? selectedSubcategory; // Currently selected subcategory
 
-  const SubcategorySelectionPage({super.key, required this.category});
+  const SubcategorySelectionPage({
+    super.key, 
+    required this.category,
+    this.selectedSubcategory,
+  });
 
   @override
   State<SubcategorySelectionPage> createState() => _SubcategorySelectionPageState();
@@ -27,6 +32,8 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
   @override
   void initState() {
     super.initState();
+    _selectedSubcategory = widget.selectedSubcategory; // Set the selected subcategory from widget
+    print('SubcategorySelectionPage: selectedSubcategory = ${widget.selectedSubcategory?.name}');
     _loadSubcategories();
     
     // Перевіряємо статус користувача після завантаження
@@ -51,8 +58,8 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
       setState(() {
         _subcategories = fetchedSubcategories;
         _isLoadingSubcategories = false;
-        // Pre-select "All [Category Name]" by setting _selectedSubcategory to null initially
-        _selectedSubcategory = null;
+        print('SubcategorySelectionPage: loaded ${fetchedSubcategories.length} subcategories');
+        print('SubcategorySelectionPage: current _selectedSubcategory = ${_selectedSubcategory?.name}');
       });
     } catch (e) {
       
@@ -120,30 +127,18 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
               child: Column(
                 children: [
-                  // "All [Category Name]" option
-                  _buildSubcategoryButton(
-                    title: 'Усі ${widget.category.name}',
-                    isSelected: _selectedSubcategory == null,
-                    onTap: () {
-                      setState(() {
-                        _selectedSubcategory = null;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
                   // Dynamically build subcategory buttons
                   ..._subcategories.map((subcategory) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0), // Add spacing
-                      child: _buildSubcategoryButton(
-                        title: subcategory.name,
-                        isSelected: _selectedSubcategory == subcategory,
-                        onTap: () {
-                          setState(() {
-                            _selectedSubcategory = subcategory;
-                          });
-                        },
-                      ),
+                    final bool isSelected = _selectedSubcategory?.id == subcategory.id;
+                    print('SubcategorySelectionPage: ${subcategory.name} isSelected = $isSelected');
+                    return _buildSubcategoryButton(
+                      title: subcategory.name,
+                      isSelected: isSelected,
+                      onTap: () {
+                        setState(() {
+                          _selectedSubcategory = subcategory;
+                        });
+                      },
                     );
                   }),
                 ],
@@ -161,37 +156,59 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.zinc100 : AppColors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromRGBO(16, 24, 40, 0.05),
-              offset: Offset(0, 1),
-              blurRadius: 2,
-            ),
-          ],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.zinc200,
-            width: 1,
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
-              child: Text(
-                title,
-                style: AppTextStyles.body1Semibold.copyWith(color: AppColors.color2),
+              child: Container(
+                padding: const EdgeInsets.only(
+                  top: 10,
+                  left: 12,
+                  right: 16,
+                  bottom: 10,
+                ),
+                decoration: ShapeDecoration(
+                  color: isSelected ? const Color(0xFFF4F4F5) : Colors.transparent, // Zinc-100 for selected, transparent for unselected
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: const Color(0xFF0F1728), // Gray-900
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          height: 1.50,
+                          letterSpacing: 0.16,
+                        ),
+                      ),
+                    ),
+                    if (isSelected)
+                      Container(
+                        width: 20,
+                        height: 20,
+                        child: SvgPicture.asset(
+                          'assets/icons/check.svg',
+                          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-            if (isSelected)
-              SvgPicture.asset(
-                'assets/icons/check.svg',
-                colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
-                width: 20,
-                height: 20,
-              ),
           ],
         ),
       ),
