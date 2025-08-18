@@ -527,7 +527,10 @@ class _FilterPageState extends State<FilterPage> {
     final Map<String, dynamic>? result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const CategorySelectionPage(),
+        builder: (context) => CategorySelectionPage(
+          selectedCategory: _selectedCategory,
+          selectedSubcategory: _selectedSubcategory,
+        ),
       ),
     );
 

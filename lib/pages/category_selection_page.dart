@@ -12,7 +12,14 @@ import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
 class CategorySelectionPage extends StatefulWidget {
-  const CategorySelectionPage({super.key});
+  final Category? selectedCategory;
+  final Subcategory? selectedSubcategory;
+
+  const CategorySelectionPage({
+    super.key,
+    this.selectedCategory,
+    this.selectedSubcategory,
+  });
 
   @override
   State<CategorySelectionPage> createState() => _CategorySelectionPageState();
@@ -32,7 +39,16 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.selectedCategory;
+    _selectedSubcategory = widget.selectedSubcategory;
+    print('CategorySelectionPage: initState - selectedCategory = ${_selectedCategory?.name}');
+    print('CategorySelectionPage: initState - selectedSubcategory = ${_selectedSubcategory?.name}');
     _loadCategories();
+    
+    // Якщо категорія вже обрана, завантажуємо її підкатегорії
+    if (_selectedCategory != null) {
+      _loadSubcategories(_selectedCategory!.id);
+    }
     
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -84,7 +100,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
     setState(() {
       _isLoadingSubcategories = true;
       _subcategories = []; // Clear previous subcategories
-      _selectedSubcategory = null; // Clear selected subcategory
+      // Не скидаємо _selectedSubcategory, щоб зберегти обрану підкатегорію
     });
     try {
       final subcategoryService = SubcategoryService(Supabase.instance.client);
@@ -95,12 +111,8 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
       setState(() {
         _subcategories = fetchedSubcategories;
         _isLoadingSubcategories = false;
-        // Automatically select "All [Category Name]" or the first subcategory
-        if (_subcategories.isNotEmpty) {
-          _selectedSubcategory = null; // Represents "All [Category Name]"
-        } else {
-          _selectedSubcategory = null;
-        }
+        print('CategorySelectionPage: _loadSubcategories - loaded ${fetchedSubcategories.length} subcategories');
+        print('CategorySelectionPage: _loadSubcategories - current _selectedSubcategory = ${_selectedSubcategory?.name}');
       });
     } catch (e) {
       // Handle error
@@ -264,9 +276,11 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                   children: [
                     // Dynamically build subcategory buttons
                     ..._subcategories.map((subcategory) {
+                      final bool isSelected = _selectedSubcategory?.id == subcategory.id;
+                      print('CategorySelectionPage: ${subcategory.name} isSelected = $isSelected');
                       return _buildSubcategoryButton(
                         title: subcategory.name,
-                        isSelected: _selectedSubcategory == subcategory,
+                        isSelected: isSelected,
                         onTap: () {
                           // Повертаємося на сторінку фільтрів з обраною категорією та підкатегорією
                           Navigator.pop(context, {
