@@ -146,7 +146,7 @@ class _GeneralPageState extends State<GeneralPage> {
       backgroundColor: Colors.white,
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(8, 6, 8, MediaQuery.of(context).size.width >= 450 ? 36 : 20),
+        padding: EdgeInsets.fromLTRB(0, 6, 0, MediaQuery.of(context).size.width >= 450 ? 36 : 20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: const [
@@ -306,7 +306,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -344,7 +344,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
