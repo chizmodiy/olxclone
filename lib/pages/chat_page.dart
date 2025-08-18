@@ -9,6 +9,7 @@ import '../services/profile_service.dart';
 import '../services/complaint_service.dart';
 import '../widgets/complaint_modal.dart';
 import '../widgets/success_bottom_sheet.dart';
+import 'full_screen_image_slider_page.dart';
 
 
 class ChatPage extends StatefulWidget {
@@ -1685,14 +1686,28 @@ class MessageBubble extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl!,
-                        height: 200,
-                        fit: BoxFit.cover,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FullScreenImageSliderPage(
+                                imageUrls: [imageUrl!],
+                                initialIndex: 0,
+                                showNavigation: false, // Приховуємо навігацію для одного зображення в чаті
+                              ),
+                            ),
+                          );
+                        },
+                        child: Image.network(
+                          imageUrl!,
+                          height: 200,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           ),

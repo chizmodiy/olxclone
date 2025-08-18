@@ -5,11 +5,13 @@ import '../theme/app_colors.dart'; // Import AppColors
 class FullScreenImageSliderPage extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
+  final bool showNavigation; // Додаємо параметр для показу/приховування навігації
 
   const FullScreenImageSliderPage({
     super.key,
     required this.imageUrls,
     this.initialIndex = 0,
+    this.showNavigation = true, // За замовчуванням показуємо навігацію
   });
 
   @override
@@ -63,67 +65,70 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
           // Close button
           Positioned(top: 40, right: 20, child: _buildCloseButton(context)),
 
-          // Left arrow button
-          Positioned(
-            left: 20,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _buildNavigationButton(
-                Icons.chevron_left,
-                _currentIndex > 0 
-                  ? () => _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300), 
-                      curve: Curves.easeIn
-                    )
-                  : () {}, // Empty function when disabled
-                isEnabled: _currentIndex > 0,
-              ),
-            ),
-          ),
-
-          // Right arrow button
-          Positioned(
-            right: 20,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _buildNavigationButton(
-                Icons.chevron_right,
-                _currentIndex < widget.imageUrls.length - 1
-                  ? () => _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300), 
-                      curve: Curves.easeIn
-                    )
-                  : () {}, // Empty function when disabled
-                isEnabled: _currentIndex < widget.imageUrls.length - 1,
-              ),
-            ),
-          ),
-
-          // Image counter
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(20),
+          // Left arrow button - показуємо тільки якщо showNavigation = true і є більше одного зображення
+          if (widget.showNavigation && widget.imageUrls.length > 1)
+            Positioned(
+              left: 20,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNavigationButton(
+                  Icons.chevron_left,
+                  _currentIndex > 0 
+                    ? () => _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300), 
+                        curve: Curves.easeIn
+                      )
+                    : () {}, // Empty function when disabled
+                  isEnabled: _currentIndex > 0,
                 ),
-                child: Text(
-                  '${_currentIndex + 1}/${widget.imageUrls.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+              ),
+            ),
+
+          // Right arrow button - показуємо тільки якщо showNavigation = true і є більше одного зображення
+          if (widget.showNavigation && widget.imageUrls.length > 1)
+            Positioned(
+              right: 20,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNavigationButton(
+                  Icons.chevron_right,
+                  _currentIndex < widget.imageUrls.length - 1
+                    ? () => _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300), 
+                        curve: Curves.easeIn
+                      )
+                    : () {}, // Empty function when disabled
+                  isEnabled: _currentIndex < widget.imageUrls.length - 1,
+                ),
+              ),
+            ),
+
+          // Image counter - показуємо тільки якщо showNavigation = true і є більше одного зображення
+          if (widget.showNavigation && widget.imageUrls.length > 1)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_currentIndex + 1}/${widget.imageUrls.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
