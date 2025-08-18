@@ -10,6 +10,7 @@ import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/logout_confirmation_bottom_sheet.dart';
 import '../widgets/delete_account_confirmation_bottom_sheet.dart';
+import '../utils/avatar_utils.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -26,35 +27,59 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    print('ProfilePage.initState called');
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      print('ProfilePage: Post frame callback executed');
       final currentUser = Supabase.instance.client.auth.currentUser;
       if (currentUser != null) {
+        print('ProfilePage: Current user found: ${currentUser.id}');
         final userStatus = await _profileService.getUserStatus();
+        print('ProfilePage: User status: $userStatus');
         if (userStatus == 'blocked') {
           _showBlockedUserBottomSheet();
         }
         
         // Завантажуємо фото профілю
+        print('ProfilePage: Loading profile image');
         await _loadProfileImage();
+      } else {
+        print('ProfilePage: No current user found');
       }
     });
   }
 
   Future<void> _loadProfileImage() async {
+    print('ProfilePage._loadProfileImage called');
     try {
       final currentUser = Supabase.instance.client.auth.currentUser;
       if (currentUser != null) {
+        print('Loading profile image for user: ${currentUser.id}');
         final profile = await _profileService.getUser(currentUser.id);
-        if (profile != null && profile.avatarUrl != null) {
+        print('Profile loaded in ProfilePage: ${profile?.avatarUrl}');
+        
+        if (AvatarUtils.isValidAvatarUrl(profile?.avatarUrl)) {
+          print('Setting profile image to: ${profile!.avatarUrl}');
           setState(() {
             _profileImageUrl = profile.avatarUrl;
             _hasProfileImage = true;
           });
+        } else {
+          print('No valid profile image, setting to null');
+          setState(() {
+            _profileImageUrl = null;
+            _hasProfileImage = false;
+          });
         }
+      } else {
+        print('No current user in ProfilePage');
       }
     } catch (e) {
-      
+      print('ProfilePage._loadProfileImage error: $e');
+      setState(() {
+        _profileImageUrl = null;
+        _hasProfileImage = false;
+      });
     }
   }
 
@@ -147,6 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    print('ProfilePage.build called, _hasProfileImage=$_hasProfileImage, _profileImageUrl=$_profileImageUrl');
     return Stack(
       children: [
         Scaffold(
@@ -205,10 +231,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 _profileButton(
                   text: 'Особисті данні',
                   onTap: () async { // Make onTap async
+                    print('ProfilePage: Navigating to PersonalDataPage');
                     final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => const PersonalDataPage()),
                     );
+                    print('ProfilePage: PersonalDataPage returned: $result');
                     if (result == true) {
+                      print('ProfilePage: Reloading profile image');
                       _loadProfileImage(); // Reload the image if personal data was updated
                     }
                   },
@@ -274,19 +303,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   ? Border.all(color: Colors.white, width: 1)
                   : null,
               ),
-              child: _hasProfileImage && _profileImageUrl != null
-                ? ClipOval(
-                    child: Image.network(
-                      _profileImageUrl!,
-                      width: 66, // 68 - 2 для контуру
-                      height: 66, // 68 - 2 для контуру
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.person, color: Colors.white, size: 40);
-                      },
-                    ),
-                  )
-                : const Icon(Icons.person, color: Colors.white, size: 40),
+              child: AvatarUtils.buildAvatar(
+                avatarUrl: _hasProfileImage ? _profileImageUrl : null,
+                size: 66, // 68 - 2 для контуру
+                backgroundColor: Colors.grey[300],
+                iconColor: Colors.white,
+                iconSize: 40,
+              ),
             ),
           ),
         ),

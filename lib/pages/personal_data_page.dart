@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../services/profile_notifier.dart'; // Import ProfileNotifier
+import '../utils/avatar_utils.dart';
 
 class PersonalDataPage extends StatefulWidget {
   const PersonalDataPage({super.key});
@@ -157,18 +158,51 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   }
 
   Future<void> _deleteAvatar() async {
+    print('Starting avatar deletion process...');
     setState(() => _isLoading = true);
     
     try {
       final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        print('No current user found');
+        return;
+      }
+      print('Current user ID: ${user.id}');
 
+      // Спочатку видаляємо файл з Storage, якщо він існує
+      print('Current avatar URL: $_avatarUrl');
+      if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
+        try {
+          print('Attempting to delete avatar from storage: $_avatarUrl');
+          // Отримуємо ім'я файлу з URL
+          final uri = Uri.parse(_avatarUrl!);
+          final pathSegments = uri.pathSegments;
+          print('Path segments: $pathSegments');
+          if (pathSegments.isNotEmpty) {
+            final fileName = pathSegments.last;
+            print('Removing file from storage: $fileName');
+            await Supabase.instance.client.storage
+                .from('avatars')
+                .remove([fileName]);
+            print('File removed from storage successfully');
+          }
+        } catch (storageError) {
+          // Ігноруємо помилки Storage, продовжуємо видалення з профілю
+          print('Storage removal error: $storageError');
+        }
+      } else {
+        print('No avatar URL to delete from storage');
+      }
+
+      print('Updating profile to remove avatar...');
       // Видаляємо аватар з профілю
       await _profileService.updateUserProfile(
         userId: user.id,
         avatarUrl: null,
       );
+      print('Profile updated successfully');
 
+      print('Updating user metadata...');
       // Видаляємо аватар з метаданів
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(
@@ -177,6 +211,16 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
           },
         ),
       );
+      print('User metadata updated successfully');
+
+      // Перевіряємо, чи дійсно видалилося
+      print('Verifying avatar removal...');
+      final updatedProfile = await _profileService.getUser(user.id);
+      print('Updated profile avatar URL: ${updatedProfile?.avatarUrl}');
+      if (updatedProfile?.avatarUrl != null && updatedProfile!.avatarUrl!.isNotEmpty) {
+        throw Exception('Фото не було видалено з профілю');
+      }
+      print('Avatar removal verified successfully');
 
       setState(() {
         _avatarUrl = null;
@@ -185,21 +229,42 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       });
 
       _showSuccessSnackBar('Фото успішно видалено');
+      print('Notifying profile update...');
       ProfileNotifier().notifyProfileUpdate(); // Notify listeners about profile update
+      print('Profile update notification sent');
+      
+      // Оновлюємо локальний стан
+      print('Updating local state...');
+      setState(() {
+        _avatarUrl = null;
+        _pickedAvatar = null;
+        _avatarBytes = null;
+      });
+      print('Local state updated successfully');
+      
+      print('Avatar deletion process completed successfully');
       Navigator.of(context).pop(true); // Return true to indicate success
     } catch (e) {
-      
-      _showErrorSnackBar('Помилка при видаленні фото');
+      print('Avatar deletion error: $e');
+      print('Error stack trace: ${StackTrace.current}');
+      _showErrorSnackBar('Помилка при видаленні фото: $e');
     } finally {
+      print('Avatar deletion process finished, setting loading to false');
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _loadProfile() async {
+    print('Loading profile...');
     setState(() => _isLoading = true);
     final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      print('No current user found in _loadProfile');
+      return;
+    }
+    print('Loading profile for user: ${user.id}');
     final profile = await _profileService.getUser(user.id);
+    print('Profile loaded: ${profile?.avatarUrl}');
     
     // Спробуємо отримати номер телефону різними способами
     String? phoneNumber = user.phone;
@@ -218,22 +283,34 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       final fullName = (profile?.firstName ?? '') + (profile?.lastName != null ? ' ${profile!.lastName}' : '');
       _nameController.text = fullName;
       _originalName = fullName; // Зберігаємо оригінальне ім'я
-      _avatarUrl = profile?.avatarUrl;
+      // Перевіряємо, чи URL не порожній
+      final avatarUrl = profile?.avatarUrl;
+      final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
+      print('Avatar URL from profile: $avatarUrl, isValid: $isValidAvatar');
+      _avatarUrl = isValidAvatar ? avatarUrl : null;
+      print('Final avatar URL set to: $_avatarUrl');
       _phone = phoneNumber ?? '+380951234567'; // Fallback для тестування
       
       _isLoading = false;
     });
+    print('Profile loading completed');
   }
 
   Future<void> _pickAvatar() async {
+    print('PersonalDataPage._pickAvatar called');
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
+      print('Image picked: ${picked.path}');
       setState(() => _isLoading = true);
       
       try {
         final user = Supabase.instance.client.auth.currentUser;
-        if (user == null) return;
+        if (user == null) {
+          print('No current user found in _pickAvatar');
+          return;
+        }
+        print('Current user ID in _pickAvatar: ${user.id}');
 
         String? avatarUrl;
         
@@ -298,11 +375,19 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   }
 
   Future<void> _saveProfile() async {
+    print('PersonalDataPage._saveProfile called');
     final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      print('No current user found in _saveProfile');
+      return;
+    }
+    print('Current user ID in _saveProfile: ${user.id}');
+    
     final nameParts = _nameController.text.trim().split(' ');
     final firstName = nameParts.isNotEmpty ? nameParts.first : '';
     final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+    print('Name parts: firstName=$firstName, lastName=$lastName');
+    
     setState(() => _isLoading = true);
     await _profileService.updateUserProfile(
       userId: user.id,
@@ -331,7 +416,9 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
 
   // Перевіряємо, чи є у користувача власна іконка
   bool get _hasCustomAvatar {
-    return _avatarUrl != null && _avatarUrl!.isNotEmpty;
+    final hasCustom = AvatarUtils.isValidAvatarUrl(_avatarUrl);
+    print('_hasCustomAvatar check: $_avatarUrl -> $hasCustom');
+    return hasCustom;
   }
 
   @override
@@ -342,6 +429,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('PersonalDataPage.build called, _avatarUrl=$_avatarUrl, _hasCustomAvatar=$_hasCustomAvatar');
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -404,9 +492,13 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                         ? ClipOval(child: Image.memory(_avatarBytes!, fit: BoxFit.cover, width: 64, height: 64))
                                         : (_pickedAvatar != null && !kIsWeb)
                                             ? ClipOval(child: Image.file(File(_pickedAvatar!.path), fit: BoxFit.cover, width: 64, height: 64))
-                                            : (_avatarUrl != null)
-                                                ? ClipOval(child: Image.network(_avatarUrl!, fit: BoxFit.cover, width: 64, height: 64))
-                                                : const Icon(Icons.person, size: 32, color: Color(0xFFA1A1AA)),
+                                            : AvatarUtils.buildAvatar(
+                                                avatarUrl: _hasCustomAvatar ? _avatarUrl : null,
+                                                size: 64,
+                                                backgroundColor: const Color(0xFFE4E4E7),
+                                                iconColor: const Color(0xFFA1A1AA),
+                                                iconSize: 32,
+                                              ),
                                   ),
                                 ),
                                 Row(

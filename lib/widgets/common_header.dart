@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_bottom_sheet.dart';
 import '../services/profile_service.dart'; // Import ProfileService
 import '../services/profile_notifier.dart'; // Import ProfileNotifier
+import '../utils/avatar_utils.dart'; // Import AvatarUtils
 
 class CommonHeader extends StatefulWidget implements PreferredSizeWidget {
   const CommonHeader({super.key});
@@ -23,36 +24,54 @@ class _CommonHeaderState extends State<CommonHeader> {
   @override
   void initState() {
     super.initState();
+    print('CommonHeader.initState called');
     _loadAvatarUrl();
     ProfileNotifier().addListener(_onProfileUpdate); // Add listener
+    print('CommonHeader: ProfileNotifier listener added');
   }
 
   @override
   void dispose() {
+    print('CommonHeader.dispose called');
     ProfileNotifier().removeListener(_onProfileUpdate); // Remove listener
+    print('CommonHeader: ProfileNotifier listener removed');
     super.dispose();
   }
 
   void _onProfileUpdate() {
+    print('CommonHeader._onProfileUpdate called');
     _loadAvatarUrl(); // Reload avatar when profile is updated
   }
 
   Future<void> _loadAvatarUrl() async {
+    print('CommonHeader._loadAvatarUrl called');
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
+      print('Loading avatar for user: ${user.id}');
       final profile = await _profileService.getUser(user.id);
+      print('Profile loaded in CommonHeader: ${profile?.avatarUrl}');
       if (mounted) {
         setState(() {
-          _avatarUrl = profile?.avatarUrl;
+          // Перевіряємо, чи URL не порожній
+          final avatarUrl = profile?.avatarUrl;
+          final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
+          print('Avatar validation in CommonHeader: $avatarUrl -> $isValidAvatar');
+          _avatarUrl = isValidAvatar ? avatarUrl : null;
+          print('CommonHeader _avatarUrl set to: $_avatarUrl');
         });
       }
+    } else {
+      print('No current user in CommonHeader');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print('CommonHeader.build called');
     final user = Supabase.instance.client.auth.currentUser;
     final avatarUrl = _avatarUrl ?? user?.userMetadata?['avatar_url'] as String?;
+    final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
+    print('CommonHeader.build: user=$user, avatarUrl=$avatarUrl, isValidAvatar=$isValidAvatar');
 
     return Container(
       padding: const EdgeInsets.fromLTRB(13, 42, 13, 16),
@@ -115,22 +134,12 @@ class _CommonHeaderState extends State<CommonHeader> {
                 Navigator.pushNamed(context, '/profile');
               }
             },
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: avatarUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(avatarUrl),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                color: avatarUrl == null ? Colors.grey[300] : null,
-              ),
-              child: avatarUrl == null
-                  ? const Icon(Icons.person, color: Colors.white, size: 24)
-                  : null,
+            child: AvatarUtils.buildAvatar(
+              avatarUrl: isValidAvatar ? avatarUrl : null,
+              size: 48,
+              backgroundColor: Colors.grey[300],
+              iconColor: Colors.white,
+              iconSize: 24,
             ),
           ),
         ],

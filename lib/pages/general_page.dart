@@ -146,7 +146,7 @@ class _GeneralPageState extends State<GeneralPage> {
       backgroundColor: Colors.white,
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(23, 6, 23, MediaQuery.of(context).size.width >= 450 ? 36 : 20),
+        padding: EdgeInsets.fromLTRB(8, 6, 8, MediaQuery.of(context).size.width >= 450 ? 36 : 20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: const [
@@ -169,7 +169,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 index: 0,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Expanded(
               child: _buildNavItem(
                 iconPath: 'assets/icons/heart-rounded.svg',
@@ -177,10 +177,10 @@ class _GeneralPageState extends State<GeneralPage> {
                 index: 1,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: AppColors.primaryColor,
                 boxShadow: const [
@@ -270,7 +270,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Expanded(
               child: _buildNavItem(
                 iconPath: 'assets/icons/book-open-01.svg',
@@ -278,7 +278,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 index: 2,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Expanded(
               child: _buildNavItemWithNotification(
                 iconPath: 'assets/icons/message-circle-01.svg',
@@ -306,7 +306,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -344,7 +344,7 @@ class _GeneralPageState extends State<GeneralPage> {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
