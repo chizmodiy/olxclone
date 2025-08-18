@@ -715,7 +715,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildMainContent(double imageHeight) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 22),
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           // First section - Image gallery
@@ -1235,7 +1235,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   
                   // User section
                   SizedBox(
@@ -1321,7 +1321,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   // Contacts section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1389,9 +1389,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
           // Показуємо кнопку "Написати" тільки якщо це не наше оголошення
-          if (_currentUserId != null && _product != null && _currentUserId != _product!.userId)
+          if (_currentUserId != null && _product != null && _currentUserId != _product!.userId) ...[
+            const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: SizedBox(
                 width: double.infinity,
                 height: 44,
@@ -1420,6 +1421,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
               ),
             ),
+          ],
         ],
       ),
     );

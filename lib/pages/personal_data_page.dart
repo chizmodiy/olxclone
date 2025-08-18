@@ -27,7 +27,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   final ProfileService _profileService = ProfileService();
   XFile? _pickedAvatar;
   Uint8List? _avatarBytes;
-  
+
   // Змінні для попереднього перегляду змін
   String? _tempAvatarUrl; // Тимчасовий URL аватара
   String? _tempName; // Тимчасове ім'я
@@ -180,7 +180,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     print('Marking avatar for deletion...');
     
     // Тільки позначаємо аватар як видалений, не видаляємо одразу
-    setState(() {
+      setState(() {
       _tempAvatarUrl = null;
       _isAvatarDeleted = true;
       _checkForUnsavedChanges();
@@ -309,14 +309,14 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       // Застосовуємо зміни імені
       if (_tempName != _originalName) {
         final nameParts = _tempName?.trim().split(' ') ?? [];
-        final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-        print('Name parts: firstName=$firstName, lastName=$lastName');
-        
-        await _profileService.updateUserProfile(
-          userId: user.id,
-          firstName: firstName,
-          lastName: lastName,
+    final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+    print('Name parts: firstName=$firstName, lastName=$lastName');
+    
+    await _profileService.updateUserProfile(
+      userId: user.id,
+      firstName: firstName,
+      lastName: lastName,
         );
       }
       
@@ -383,7 +383,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       print('Error saving profile: $e');
       _showErrorSnackBar('Помилка при збереженні змін: $e');
     } finally {
-      setState(() => _isLoading = false);
+    setState(() => _isLoading = false);
     }
   }
 

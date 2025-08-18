@@ -378,8 +378,7 @@ class _FilterPageState extends State<FilterPage> {
     final Map<String, dynamic> filters = {
       'category': _selectedCategory?.id, // Передаємо id, а не name
       'subcategory': _selectedSubcategory?.id, // Передаємо id, а не name
-      'region': _selectedRegion?.id,
-      'region_name': _selectedRegion?.name,
+      'region': _selectedRegion?.name, // Передаємо назву області
     };
 
     if (_selectedCategory?.name == 'Віддам безкоштовно') {

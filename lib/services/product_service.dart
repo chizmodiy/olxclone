@@ -150,7 +150,8 @@ class ProductService {
       }
 
       if (region != null) {
-        query = query.eq('region', region);
+        // Фільтруємо за назвою області в полі region або location (часткове співпадіння)
+        query = query.or('region.ilike.%$region%,location.ilike.%$region%');
       }
 
       if (minPrice != null) {

@@ -106,6 +106,7 @@ class HomeContentState extends State<HomeContent> {
     });
 
     final currentFilters = _filterManager.currentFilters;
+    print('Loading products with filters: $currentFilters');
 
     try {
       final products = await _productService.getProducts(
@@ -114,6 +115,7 @@ class HomeContentState extends State<HomeContent> {
         searchQuery: _searchQuery, // Передаємо пошуковий запит
         categoryId: currentFilters['category'], // Pass category filter
         subcategoryId: currentFilters['subcategory'], // Pass subcategory filter
+        region: currentFilters['region'], // Pass region filter
         minPrice: currentFilters['minPrice'], // Pass minPrice filter
         maxPrice: currentFilters['maxPrice'], // Pass maxPrice filter
         hasDelivery: currentFilters['hasDelivery'], // Pass hasDelivery filter

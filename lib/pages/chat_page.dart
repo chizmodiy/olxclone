@@ -1494,8 +1494,8 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                                       width: 1,
                                       color: Color(0xFFE4E4E7) /* Zinc-200 */,
                                     ),
-                                    borderRadius: BorderRadius.circular(200),
-                                  ),
+                          borderRadius: BorderRadius.circular(200),
+                        ),
                                   shadows: const [
                                     BoxShadow(
                                       color: Color(0x0C101828),
@@ -1505,11 +1505,11 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                                     )
                                   ],
                                 ),
-                                child: Row(
+                          child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
+                            children: [
                                     Expanded(
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -1531,28 +1531,28 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          Expanded(
-                                            child: TextField(
-                                              controller: _textController,
-                                              decoration: const InputDecoration(
-                                                hintText: 'Написати повідомлення',
-                                                hintStyle: TextStyle(
+                              Expanded(
+                            child: TextField(
+                              controller: _textController,
+                              decoration: const InputDecoration(
+                                hintText: 'Написати повідомлення',
+                                hintStyle: TextStyle(
                                                   color: Color(0xFFA1A1AA) /* Zinc-400 */,
-                                                  fontSize: 16,
-                                                  fontFamily: 'Inter',
-                                                  fontWeight: FontWeight.w400,
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
                                                   height: 1.50,
-                                                  letterSpacing: 0.16,
-                                                ),
-                                                border: InputBorder.none,
+                                    letterSpacing: 0.16,
+                                  ),
+                                border: InputBorder.none,
                                                 contentPadding: EdgeInsets.zero,
-                                              ),
-                                              minLines: 1,
+                                ),
+                              minLines: 1,
                                               maxLines: 1,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              ),
+                          ),
+                            ],
+                          ),
                                     ),
                                   ],
                                 ),
@@ -1561,8 +1561,8 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                           ),
                         ),
                       ],
-                    ),
-                  ),
+                        ),
+                      ),
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => _sendMessage(),
@@ -1576,8 +1576,8 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                             width: 1,
                             color: Color(0xFF015873) /* Primary */,
                           ),
-                          borderRadius: BorderRadius.circular(200),
-                        ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
                         shadows: const [
                           BoxShadow(
                             color: Color(0x0C101828),
@@ -1832,15 +1832,15 @@ class MessageBubble extends StatelessWidget {
                             ),
                           );
                         },
-                        child: Image.network(
-                          imageUrl!,
-                          height: 200,
-                          fit: BoxFit.cover,
+                      child: Image.network(
+                        imageUrl!,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        ),
                         ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -2010,17 +2010,17 @@ class ChatListingCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         if (date.isNotEmpty)
-                          Text(
-                            date,
-                            style: const TextStyle(
-                              color: Color(0xFF838583),
-                              fontSize: 12,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
-                              height: 1.3,
-                              letterSpacing: 0.24,
-                            ),
+                        Text(
+                          date,
+                          style: const TextStyle(
+                            color: Color(0xFF838583),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
+                            letterSpacing: 0.24,
                           ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -2041,17 +2041,17 @@ class ChatListingCard extends StatelessWidget {
                           ),
                         ),
                         if (location.isNotEmpty)
-                          Text(
-                            location,
-                            style: const TextStyle(
-                              color: Color(0xFFA1A1AA),
-                              fontSize: 12,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500, // medium
-                              height: 1.3,
-                              letterSpacing: 0.24,
-                            ),
+                        Text(
+                          location,
+                          style: const TextStyle(
+                            color: Color(0xFFA1A1AA),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500, // medium
+                            height: 1.3,
+                            letterSpacing: 0.24,
                           ),
+                        ),
                       ],
                     ),
                   ],
