@@ -163,19 +163,6 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
               child: Column(
                 children: [
-                  _buildCategoryButton(
-                    category: Category(id: 'all', name: 'Усі категорії'), // Special "All Categories" option
-                    iconPath: 'assets/icons/grid-01.svg',
-                    isExpanded: _selectedCategory == null, // Expanded if "All Categories" is selected
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = null;
-                        _selectedSubcategory = null;
-                        _subcategories = [];
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
                   // Build category buttons dynamically
                   ..._categories.map((category) {
                     final bool isExpanded = _selectedCategory == category;
@@ -272,23 +259,11 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                   ),
               ],
             ),
-            if (isExpanded && !_isLoadingSubcategories && category.id != 'all' && !isFreeCategory) // Added condition to hide subcategories for "All Categories" and "Віддам безкоштовно"
+            if (isExpanded && !_isLoadingSubcategories && !isFreeCategory) // Hide subcategories for "Віддам безкоштовно"
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: Column(
                   children: [
-                    // "All [Category Name]" subcategory button - show only if not "All Categories" main category
-                    // Removed as per user request.
-                    // if (category.id != 'all')
-                    //   _buildSubcategoryButton(
-                    //     title: 'Усі ${category.name}',
-                    //     isSelected: _selectedSubcategory == null,
-                    //     onTap: () {
-                    //       setState(() {
-                    //         _selectedSubcategory = null; // Represents "All [Category Name]"
-                    //       });
-                    //     },
-                    //   ),
                     // Dynamically build subcategory buttons
                     ..._subcategories.map((subcategory) {
                       return _buildSubcategoryButton(
