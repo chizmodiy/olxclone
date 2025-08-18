@@ -286,19 +286,29 @@ class _FilterPageState extends State<FilterPage> {
     try {
       final prices = await _listingService.getMinMaxPrices(currency);
       setState(() {
-        _minAvailablePrice = prices['minPrice'] ?? 0.0;
+        _minAvailablePrice = 0.0; // Завжди встановлюємо мінімум в 0
         _maxAvailablePrice = prices['maxPrice'] ?? 100.0; // Default if no listings
 
-        // Встановлюємо слайдер у діапазон 0 - max
+        // Оновлюємо діапазон слайдера
+        _minPrice = 0.0;
+        _maxPrice = _maxAvailablePrice;
 
+        // Встановлюємо слайдер у діапазон 0 - max
+        _currentMinPrice = 0.0; // Встановлюємо поточні значення слайдера
+        _currentMaxPrice = _maxAvailablePrice;
         _minPriceController.text = '0';
-        _maxPriceController.text = _maxAvailablePrice.toStringAsFixed(0);
+        _maxPriceController.text = _convertFromUAH(_maxAvailablePrice, currency).toStringAsFixed(0);
       });
     } catch (e) {
       setState(() {
         _minAvailablePrice = 0.0;
         _maxAvailablePrice = 100.0;
-
+        _minPrice = 0.0;
+        _maxPrice = 100.0;
+        _currentMinPrice = 0.0;
+        _currentMaxPrice = 100.0;
+        _minPriceController.text = '0';
+        _maxPriceController.text = _convertFromUAH(100.0, currency).toStringAsFixed(0);
       });
     } finally {
       setState(() {
@@ -329,6 +339,8 @@ class _FilterPageState extends State<FilterPage> {
       _maxAvailableYear = 2024.0;
       _minAvailableEngineHp = 50.0;
       _maxAvailableEngineHp = 500.0;
+      _currentMinPrice = 0.0; // Встановлюємо поточні значення слайдера
+      _currentMaxPrice = 100.0; // Буде оновлено після завантаження з бази
       _selectedBrand = null; // Reset brand selection
       _selectedSize = null; // Reset size selection
       _selectedCondition = null; // Reset condition selection
