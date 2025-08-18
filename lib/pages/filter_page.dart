@@ -315,14 +315,7 @@ class _FilterPageState extends State<FilterPage> {
     setState(() {
       _selectedCategory = null;
       _selectedSubcategory = null;
-      _minPriceController.clear();
-      _maxPriceController.clear();
-      _minAreaController.clear();
-      _maxAreaController.clear();
-      _minYearController.clear();
-      _maxYearController.clear();
-      _minEngineHpController.clear();
-      _maxEngineHpController.clear();
+      _selectedRegion = null; // Очищаємо область
       _selectedCurrency = 'UAH'; // Reset currency
       _subcategories = []; // Clear subcategories on reset
       _isPriceModePrice = true; // Reset price mode to price
@@ -350,10 +343,10 @@ class _FilterPageState extends State<FilterPage> {
       _minEngineHpError = null; // Clear engine HP validation errors
       _maxEngineHpError = null; // Clear engine HP validation errors
       ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
-      _loadMinMaxPrices(_selectedCurrency); // Reload min/max for default currency
-      
-  
     });
+    
+    // Завантажуємо максимальні та мінімальні значення та встановлюємо поля цін
+    _loadMinMaxPrices(_selectedCurrency);
   }
 
   void _applyFilters() {
@@ -962,7 +955,7 @@ class _FilterPageState extends State<FilterPage> {
                     const SizedBox(height: 8),
                     _buildAdditionalFilters(),
                   ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
         GestureDetector(
           onTap: _navigateToRegionSelection,
                           child: Container(

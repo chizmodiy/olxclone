@@ -3482,7 +3482,7 @@ Widget _buildAreaField() {
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
         
         // Двигун, кількість к.с
         Container(
@@ -3496,11 +3496,11 @@ Widget _buildAreaField() {
                 'Двигун, кількість к.с',
                 style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Container(
                 width: double.infinity,
                 height: 44,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.zinc50,
                   borderRadius: BorderRadius.circular(200),
@@ -3530,7 +3530,7 @@ Widget _buildAreaField() {
             ],
         ),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 8),
     ],
   );
   }
