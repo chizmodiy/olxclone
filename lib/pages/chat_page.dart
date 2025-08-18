@@ -165,19 +165,45 @@ class _ChatPageState extends State<ChatPage> {
       if (listingId != null) {
         final listingList = await client
             .from('listings')
-            .select('title, photos')
+            .select('title, photos, price, location, created_at')
             .eq('id', listingId)
             .limit(1);
         if (listingList.isNotEmpty) {
           listing = listingList.first;
         }
       }
+      // Формуємо ціну
+      String priceText = 'Договірна';
+      if (listing?['price'] != null) {
+        final price = listing!['price'];
+        if (price == 0) {
+          priceText = 'Безкоштовно';
+        } else if (price is num) {
+          priceText = '${price.toStringAsFixed(0)} грн';
+        }
+      }
+
+      // Формуємо дату створення
+      String dateText = '';
+      if (listing?['created_at'] != null) {
+        final createdAt = DateTime.tryParse(listing!['created_at'] as String);
+        if (createdAt != null) {
+          dateText = _formatListingDate(createdAt);
+        }
+      }
+
+      // Формуємо місце
+      String locationText = listing?['location'] ?? '';
+
       chatCards.add({
         'chatId': chat['id'],
         'listingTitle': listing?['title'] ?? 'Оголошення видалено',
         'imageUrl': (listing?['photos'] != null && (listing?['photos'] as List).isNotEmpty)
             ? (listing?['photos'] as List).first
             : '', // Changed to empty string for empty state
+        'listingPrice': priceText,
+        'listingDate': dateText,
+        'listingLocation': locationText,
         'userName': (otherProfile != null)
             ? ((otherProfile['first_name'] ?? '') + ' ' + (otherProfile['last_name'] ?? ''))
             : 'Користувач',
@@ -226,6 +252,23 @@ class _ChatPageState extends State<ChatPage> {
       'Нд',
     ];
     return names[weekday];
+  }
+
+  String _formatListingDate(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final listingDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    
+    if (listingDate == today) {
+      return 'Сьогодні';
+    } else if (listingDate == yesterday) {
+      return 'Вчора';
+    } else if (now.difference(dateTime).inDays < 7) {
+      return _shortWeekdayName(dateTime.weekday);
+    } else {
+      return '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}';
+    }
   }
 
   @override
@@ -1876,17 +1919,18 @@ class ChatListingCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            color: Color(0xFF838583),
-                            fontSize: 12,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 1.3,
-                            letterSpacing: 0.24,
+                        if (date.isNotEmpty)
+                          Text(
+                            date,
+                            style: const TextStyle(
+                              color: Color(0xFF838583),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.3,
+                              letterSpacing: 0.24,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -1895,7 +1939,7 @@ class ChatListingCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            price,
+                            price.isNotEmpty ? price : 'Ціна не вказана',
                             style: const TextStyle(
                               color: Color(0xFF52525B),
                               fontSize: 12,
@@ -1906,17 +1950,18 @@ class ChatListingCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Text(
-                          location,
-                          style: const TextStyle(
-                            color: Color(0xFFA1A1AA),
-                            fontSize: 12,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500, // medium
-                            height: 1.3,
-                            letterSpacing: 0.24,
+                        if (location.isNotEmpty)
+                          Text(
+                            location,
+                            style: const TextStyle(
+                              color: Color(0xFFA1A1AA),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500, // medium
+                              height: 1.3,
+                              letterSpacing: 0.24,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ],
