@@ -2896,7 +2896,12 @@ class _AddListingPageState extends State<AddListingPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isFormValid
                             ? AppColors.primaryColor 
-                            : const Color(0xFFF4F4F5),
+                            : AppColors.zinc200,
+                        foregroundColor: _isFormValid ? Colors.white : AppColors.white,
+                        disabledBackgroundColor: AppColors.zinc200,
+                        disabledForegroundColor: AppColors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -2913,7 +2918,7 @@ class _AddListingPageState extends State<AddListingPage> {
                           : Text(
                               'Підтвердити',
                               style: AppTextStyles.body2Semibold.copyWith(
-                                color: _isFormValid ? Colors.white : Colors.black,
+                                color: _isFormValid ? Colors.white : AppColors.white,
                               ),
                             ),
                     ),

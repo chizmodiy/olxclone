@@ -789,7 +789,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                         alignLabelWithHint: true,
                       ),
                       onChanged: (value) {
