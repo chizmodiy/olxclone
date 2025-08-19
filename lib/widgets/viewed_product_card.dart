@@ -8,7 +8,7 @@ class ViewedProductCard extends StatelessWidget {
   final String title;
   final String price;
   final String? date;
-  final String? location;
+  final String? region;
   final List<String> images;
   final bool isNegotiable;
   final VoidCallback? onTap;
@@ -19,7 +19,7 @@ class ViewedProductCard extends StatelessWidget {
     required this.title,
     required this.price,
     this.date,
-    this.location,
+    this.region,
     required this.images,
     this.isNegotiable = false,
     this.onTap,
@@ -160,7 +160,7 @@ class ViewedProductCard extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
-                                        location ?? 'Харків',
+                                        region ?? 'Харків',
                                         style: const TextStyle(
                                           color: Color(0xFF838583),
                                           fontSize: 12,

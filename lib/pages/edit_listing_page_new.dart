@@ -20,11 +20,12 @@ import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:async';
-import '../widgets/location_picker.dart';
+import '../widgets/location_creation_block.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../models/listing.dart';
 import 'package:latlong2/latlong.dart' as latlong;
+import 'package:geolocator/geolocator.dart';
 
 class EditListingPageNew extends StatefulWidget {
   final Listing listing;
@@ -446,12 +447,10 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
         final List<XFile> newImagesToUpload = _selectedImages.whereType<XFile>().toList();
 
         String locationString = '';
-        if (_selectedRegion != null && _selectedCity != null) {
-          locationString = '${_selectedRegion!.name}, ${_selectedCity!.name}';
-        } else if (_selectedRegion != null) {
+        if (_selectedRegion != null) {
           locationString = _selectedRegion!.name;
-        } else if (_selectedCity != null) {
-          locationString = _selectedCity!.name;
+        } else if (_selectedRegionName != null) {
+          locationString = _selectedRegionName!;
         } else {
           locationString = widget.listing.location;
         }
@@ -474,7 +473,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
           newImages: newImagesToUpload,
           existingImageUrls: existingImageUrls,
           address: _selectedAddress,
-          region: _selectedRegion?.name,
+          region: _selectedRegionName,
           latitude: _selectedLatitude,
           longitude: _selectedLongitude,
         );
@@ -617,27 +616,52 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                         _buildSubcategorySection(),
                         const SizedBox(height: 20),
 
-                        // LocationPicker
-                        LocationPicker(
-                          initialLatLng: _selectedLatitude != null && _selectedLongitude != null 
+                        // LocationCreationBlock
+                        LocationCreationBlock(
+                          initialLocation: _selectedLatitude != null && _selectedLongitude != null 
                               ? latlong.LatLng(_selectedLatitude!, _selectedLongitude!)
                               : null,
-                          initialAddress: _selectedAddress,
                           initialRegion: _selectedRegionName,
-                          onLocationSelected: (latLng, address) {
-                            setState(() {
-                              _selectedAddress = address;
-                              _selectedLatitude = latLng?.latitude;
-                              _selectedLongitude = latLng?.longitude;
-                              if (address != null && address.isNotEmpty) {
-                                final region = _regions.firstWhere(
-                                  (r) => address.contains(r.name),
-                                  orElse: () => _regions.first,
-                                );
-                                _selectedRegion = region;
-                                _selectedRegionName = region.name;
+                          initialCity: _selectedCity?.name,
+                          onLocationSelected: (latLng, address, regionName, cityName) async {
+                            if (latLng != null) {
+                              Region? foundRegion;
+                              if (regionName != null) {
+                                foundRegion = _regions.firstWhereOrNull((region) => region.name == regionName);
                               }
-                            });
+
+                              if (foundRegion == null) {
+                                double shortestDistance = double.infinity;
+                                for (final region in _regions) {
+                                  if (region.minLat != null && region.maxLat != null &&
+                                      region.minLon != null && region.maxLon != null) {
+                                    final centerLat = (region.minLat! + region.maxLat!) / 2;
+                                    final centerLon = (region.minLon! + region.maxLon!) / 2;
+
+                                    final distance = Geolocator.distanceBetween(
+                                      latLng.latitude,
+                                      latLng.longitude,
+                                      centerLat,
+                                      centerLon,
+                                    );
+
+                                    if (distance < shortestDistance) {
+                                      shortestDistance = distance;
+                                      foundRegion = region;
+                                    }
+                                  }
+                                }
+                              }
+
+                              setState(() {
+                                _selectedRegion = foundRegion;
+                                _selectedRegionName = foundRegion?.name ?? regionName;
+                                _selectedCity = cityName != null ? City(name: cityName, regionId: regionName ?? '') : null;
+                                _selectedLatitude = latLng.latitude;
+                                _selectedLongitude = latLng.longitude;
+                                _selectedAddress = address ?? 'Обрана локація';
+                              });
+                            }
                           },
                         ),
                         const SizedBox(height: 20),

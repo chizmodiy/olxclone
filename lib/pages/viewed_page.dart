@@ -440,7 +440,7 @@ class _ViewedContentState extends State<ViewedContent> {
                                   title: product.title,
                                   price: product.formattedPrice,
                                   date: DateFormat('dd.MM.yyyy').format(product.createdAt),
-                                  location: product.location,
+                                  region: product.region,
                                   images: product.photos,
                                   isNegotiable: product.isNegotiable,
                                   onTap: () async {

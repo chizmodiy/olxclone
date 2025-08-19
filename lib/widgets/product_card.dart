@@ -9,7 +9,7 @@ class ProductCard extends StatelessWidget {
   final String price;
   final bool isFree;
   final String date;
-  final String location;
+  final String? region;
   final List<String> images;
   final bool showLabel;
   final String? labelText;
@@ -24,7 +24,7 @@ class ProductCard extends StatelessWidget {
     required this.title,
     required this.price,
     required this.date,
-    required this.location,
+    this.region,
     required this.images,
     this.showLabel = false,
     this.labelText,
@@ -279,17 +279,18 @@ class ProductCard extends StatelessWidget {
                       letterSpacing: 0.24,
                     ),
                   ),
-                  Text(
-                    location,
-                    style: const TextStyle(
-                      color: Color(0xFF838583),
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                      height: 1.3,
-                      letterSpacing: 0.24,
+                  if (region != null)
+                    Text(
+                      region!,
+                      style: const TextStyle(
+                        color: Color(0xFF838583),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.3,
+                        letterSpacing: 0.24,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

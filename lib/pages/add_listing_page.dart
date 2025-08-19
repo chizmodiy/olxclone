@@ -2496,12 +2496,10 @@ class _AddListingPageState extends State<AddListingPage> {
       }
 
       String locationString = '';
-      if (_selectedRegion != null && _selectedCity != null) {
-        locationString = '${_selectedRegion!.name}, ${_selectedCity!.name}';
-      } else if (_selectedRegion != null) {
+      if (_selectedRegion != null) {
         locationString = _selectedRegion!.name;
-      } else if (_selectedCity != null) {
-        locationString = _selectedCity!.name;
+      } else if (_selectedRegionName != null) {
+        locationString = _selectedRegionName!;
       }
 
         // Use selected subcategory (now required for all listings)
@@ -2798,7 +2796,7 @@ class _AddListingPageState extends State<AddListingPage> {
                 const SizedBox(height: 20),
                 // LocationCreationBlock для вибору координат
                 LocationCreationBlock(
-                  onLocationSelected: (latLng, address, regionName) async {
+                  onLocationSelected: (latLng, address, regionName, cityName) async {
                     if (latLng != null) {
                       // Спочатку шукаємо область за назвою (якщо передана)
                       Region? foundRegion;
@@ -2836,6 +2834,7 @@ class _AddListingPageState extends State<AddListingPage> {
                       setState(() {
                         _selectedRegion = foundRegion;
                         _selectedRegionName = foundRegion?.name ?? regionName;
+                        _selectedCity = cityName != null ? City(name: cityName, regionId: regionName ?? '') : null;
                         _selectedLatitude = latLng.latitude;
                         _selectedLongitude = latLng.longitude;
                         _selectedAddress = address ?? 'Обрана локація';

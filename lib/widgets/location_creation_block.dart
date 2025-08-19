@@ -10,7 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class LocationCreationBlock extends StatefulWidget {
-  final Function(latlong.LatLng, String, String?)? onLocationSelected; // Додано region parameter
+  final Function(latlong.LatLng, String, String?, String?)? onLocationSelected; // Додано city parameter
   final latlong.LatLng? initialLocation;
   final String? initialRegion;
   final String? initialCity;
@@ -562,7 +562,10 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         ),
       ),
       child: GestureDetector(
-        onTap: _isLoadingLocation ? null : _getCurrentLocation,
+        onTap: _isLoadingLocation ? null : () {
+          print('Кнопка "Моє місцезнаходження" натиснута');
+          _getCurrentLocation();
+        },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -731,7 +734,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       // Викликаємо callback з вибраною локацією
       if (widget.onLocationSelected != null && _selectedLocation != null) {
         final formattedAddress = _formatAddressForDisplay(_selectedCity, _selectedRegion);
-        widget.onLocationSelected!(_selectedLocation!, formattedAddress, _selectedRegion);
+        widget.onLocationSelected!(_selectedLocation!, formattedAddress, _selectedRegion, _selectedCity);
       }
     } catch (e) {
       print('Помилка вибору міста: $e');
@@ -792,15 +795,21 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
 
   // Отримання поточної локації
   Future<void> _getCurrentLocation() async {
+    print('Початок отримання поточної локації');
     setState(() {
       _isLoadingLocation = true;
     });
 
     try {
       // Перевіряємо дозволи
+      print('Перевіряємо дозволи на геолокацію');
       LocationPermission permission = await Geolocator.checkPermission();
+      print('Поточний дозвіл: $permission');
+      
       if (permission == LocationPermission.denied) {
+        print('Запитуємо дозвіл на геолокацію');
         permission = await Geolocator.requestPermission();
+        print('Новий дозвіл: $permission');
         if (permission == LocationPermission.denied) {
           throw Exception('Дозвіл на геолокацію відхилено');
         }
@@ -811,9 +820,11 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       }
 
       // Отримуємо поточну позицію
+      print('Отримуємо поточну позицію');
       final Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      print('Отримана позиція: ${position.latitude}, ${position.longitude}');
 
       final location = latlong.LatLng(position.latitude, position.longitude);
       
@@ -836,9 +847,10 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       // Викликаємо callback з вибраною локацією
       if (widget.onLocationSelected != null) {
         final formattedAddress = _formatAddressForDisplay(_selectedCity, _selectedRegion);
-        widget.onLocationSelected!(location, formattedAddress, _selectedRegion);
+        widget.onLocationSelected!(location, formattedAddress, _selectedRegion, _selectedCity);
       }
     } catch (e) {
+      print('Помилка отримання локації: $e');
       setState(() {
         _isLoadingLocation = false;
       });
