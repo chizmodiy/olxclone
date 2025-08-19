@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert';
+import 'dart:async';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -16,12 +17,82 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
+  // Змінні для області
+  String? _selectedRegion;
+  bool _isRegionDropdownOpen = false;
+  final List<String> _regions = [
+    'Вінницька область',
+    'Волинська область',
+    'Дніпропетровська область',
+    'Донецька область',
+    'Житомирська область',
+    'Закарпатська область',
+    'Запорізька область',
+    'Івано-Франківська область',
+    'Київська область',
+    'Кіровоградська область',
+    'Луганська область',
+    'Львівська область',
+    'Миколаївська область',
+    'Одеська область',
+    'Полтавська область',
+    'Рівненська область',
+    'Сумська область',
+    'Тернопільська область',
+    'Харківська область',
+    'Херсонська область',
+    'Хмельницька область',
+    'Черкаська область',
+    'Чернівецька область',
+    'Чернігівська область',
+    'м. Київ',
+    'м. Севастополь',
+    'АР Крим',
+  ];
+
+  // Змінні для міста
+  final TextEditingController _cityController = TextEditingController();
+  List<Map<String, String>> _cityResults = [];
+  bool _isSearchingCities = false;
+  String? _selectedCity;
+  String? _selectedPlaceId;
+  Timer? _debounceTimer;
+
+  // Змінні для карти
+  late final MapController _mapController;
+  latlong.LatLng? _currentLocation;
+  latlong.LatLng? _selectedLocation;
+  bool _isLoadingLocation = false;
+
+  // Центр України
+  final latlong.LatLng _ukraineCenter = const latlong.LatLng(49.0, 32.0);
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+    _initializeMap();
+  }
+
+  void _initializeMap() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _mapController.move(_ukraineCenter, 6.0);
+    });
+  }
+
+  @override
+  void dispose() {
+    _cityController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Test Page',
+          'Локація',
           style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
         ),
         backgroundColor: Colors.white,
@@ -35,22 +106,750 @@ class _TestPageState extends State<TestPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: GestureDetector(
+        onTap: () {
+          if (_isRegionDropdownOpen) {
+            setState(() {
+              _isRegionDropdownOpen = false;
+            });
+          }
+        },
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Блок створення локації',
-              style: AppTextStyles.heading2Semibold.copyWith(color: AppColors.color2),
+            // Верхня частина з полями вводу
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dropdown для вибору області
+                  _buildRegionDropdown(),
+                  const SizedBox(height: 16),
+                  
+                  // Поле вводу міста (показується тільки після вибору області)
+                  if (_selectedRegion != null) ...[
+                    _buildCityInput(),
+                    const SizedBox(height: 16),
+                  ],
+                ],
+              ),
             ),
-            const SizedBox(height: 32),
             
-            // Тут буде новий блок створення локації
+            // Карта
+            Expanded(
+              child: _buildMap(),
+            ),
             
+            // Кнопка "Моє місцезнаходження"
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildLocationButton(),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  // Dropdown для вибору області
+  Widget _buildRegionDropdown() {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(color: AppColors.zinc200),
+          ),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _isRegionDropdownOpen = !_isRegionDropdownOpen;
+              });
+            },
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedRegion ?? 'Оберіть область',
+                    style: _selectedRegion != null
+                        ? AppTextStyles.body1Regular.copyWith(color: AppColors.color2)
+                        : AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                  ),
+                ),
+                Icon(
+                  _isRegionDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  color: AppColors.color5,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isRegionDropdownOpen)
+          Container(
+            width: double.infinity,
+            height: 320,
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                width: 1,
+                color: const Color(0xFFEAECF0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0x07101828),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -2,
+                ),
+                BoxShadow(
+                  color: const Color(0x14101828),
+                  blurRadius: 16,
+                  offset: const Offset(0, 12),
+                  spreadRadius: -4,
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: _regions.length,
+              itemBuilder: (context, index) {
+                final region = _regions[index];
+                final isSelected = _selectedRegion == region;
+                
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedRegion = region;
+                        _selectedCity = null;
+                        _selectedPlaceId = null;
+                        _cityController.clear();
+                        _cityResults.clear();
+                        _isRegionDropdownOpen = false;
+                      });
+                      
+                      if (region != null) {
+                        _focusMapOnRegion(region);
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        left: 8,
+                        right: 10,
+                        bottom: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFFAFAFA) : Colors.transparent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              region,
+                              style: TextStyle(
+                                color: const Color(0xFF0F1728),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                height: 1.50,
+                                letterSpacing: isSelected ? 0.16 : 0,
+                              ),
+                            ),
+                          ),
+                          if (isSelected)
+                            Container(
+                              width: 20,
+                              height: 20,
+                              child: const Icon(
+                                Icons.check,
+                                color: AppColors.primaryColor,
+                                size: 20,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Поле вводу міста
+  Widget _buildCityInput() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(color: AppColors.zinc200),
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: _cityController,
+            decoration: InputDecoration(
+              hintText: 'Введіть назву міста або села',
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            onChanged: _onCitySearchChanged,
+          ),
+          if (_isSearchingCities)
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          if (_cityResults.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.zinc200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _cityResults.length,
+                itemBuilder: (context, index) {
+                  final city = _cityResults[index];
+                  return ListTile(
+                    title: Text(city['name'] ?? ''),
+                    onTap: () => _onCitySelected(city),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Карта
+  Widget _buildMap() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.zinc200),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          children: [
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                center: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
+                zoom: _selectedLocation != null ? 12.0 : 6.0,
+                onTap: (_, point) {
+                  try {
+                    setState(() {
+                      _selectedLocation = point;
+                    });
+                  } catch (e) {
+                    print('Помилка встановлення маркера: $e');
+                  }
+                },
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: ['a', 'b', 'c'],
+                ),
+                if (_selectedLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        width: 40,
+                        height: 40,
+                        point: _selectedLocation!,
+                        child: const Icon(
+                          Icons.location_on,
+                          color: AppColors.primaryColor,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            // Кнопки керування картою
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Column(
+                children: [
+                  _buildMapControlButton(
+                    icon: Icons.add,
+                    onTap: () {
+                      try {
+                        final currentZoom = _mapController.zoom;
+                        _mapController.move(_mapController.center, currentZoom + 1);
+                      } catch (e) {
+                        print('Помилка збільшення масштабу: $e');
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMapControlButton(
+                    icon: Icons.remove,
+                    onTap: () {
+                      try {
+                        final currentZoom = _mapController.zoom;
+                        _mapController.move(_mapController.center, currentZoom - 1);
+                      } catch (e) {
+                        print('Помилка зменшення масштабу: $e');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Кнопка керування картою
+  Widget _buildMapControlButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: AppColors.color2, size: 20),
+      ),
+    );
+  }
+
+  // Кнопка "Моє місцезнаходження"
+  Widget _buildLocationButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: _isLoadingLocation ? null : _getCurrentLocation,
+        icon: _isLoadingLocation
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Icon(Icons.my_location, color: Colors.white),
+        label: Text(
+          'Моє місцезнаходження',
+          style: AppTextStyles.body2Semibold.copyWith(color: Colors.white),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Методи для роботи з пошуком міст
+  void _onCitySearchChanged(String query) {
+    if (query.isEmpty || _selectedRegion == null) {
+      setState(() {
+        _cityResults.clear();
+      });
+      return;
+    }
+
+    // Debounce запитів
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
+      setState(() {
+        _isSearchingCities = true;
+      });
+
+      try {
+        final results = await _searchCities(query, _selectedRegion!);
+        setState(() {
+          _cityResults = results;
+          _isSearchingCities = false;
+        });
+      } catch (e) {
+        setState(() {
+          _cityResults.clear();
+          _isSearchingCities = false;
+        });
+        print('Помилка пошуку міст: $e');
+      }
+    });
+  }
+
+  Future<List<Map<String, String>>> _searchCities(String query, String region) async {
+    final sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
+    
+    // Перевіряємо, чи користувач не вводить область, яка вже вибрана
+    if (_isSameRegion(query, region)) {
+      return [];
+    }
+    
+    // Додаємо більш точне обмеження пошуку для області
+    final String searchQuery = '$query, $region, Україна';
+    
+    final url = Uri.parse(
+      'https://wcczieoznbopcafdatpk.supabase.co/functions/v1/places-api'
+      '?input=${Uri.encodeComponent(searchQuery)}'
+      '&sessiontoken=$sessionToken'
+      '&region=${Uri.encodeComponent(region)}'
+      '&components=country:ua',
+    );
+    
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjY3ppZW96bmJvcGNhZmRhdHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTc2MTEsImV4cCI6MjA2NjkzMzYxMX0.1OdLDVnzHx9ghZ7D8X2P_lpZ7XvnPtdEKN4ah_guUJ0',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final predictions = data['predictions'] as List<dynamic>;
+          final cities = predictions.map<Map<String, String>>((p) {
+            final Map<String, dynamic> prediction = p as Map<String, dynamic>;
+            final description = prediction['description']?.toString() ?? '';
+            final placeId = prediction['place_id']?.toString() ?? '';
+            return {'name': description, 'placeId': placeId};
+          }).toList();
+          
+          // Фільтруємо результати, прибираючи області та країну
+          return cities.where((city) {
+            final name = city['name']?.toLowerCase() ?? '';
+            final regionLower = region.toLowerCase();
+            
+            // Пропускаємо результат, якщо він містить тільки область або країну
+            if (name == regionLower || 
+                name == 'україна' || 
+                name == 'ukraine') {
+              return false;
+            }
+            
+            // Перевіряємо, чи не є результат областю
+            if (_isSameRegion(name, region)) {
+              return false;
+            }
+            
+            // Результат повинен містити щось більше, ніж область
+            return name.contains(regionLower) || 
+                   name.contains('україна') || 
+                   name.contains('ukraine');
+          }).toList();
+        }
+      }
+    } catch (e) {
+      print('Помилка пошуку міст: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка пошуку міст: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    
+    return [];
+  }
+
+  void _onCitySelected(Map<String, String> city) async {
+    try {
+      setState(() {
+        _selectedCity = city['name'];
+        _selectedPlaceId = city['placeId'];
+        _cityController.text = city['name'] ?? '';
+        _cityResults.clear();
+      });
+      
+      // Отримуємо координати міста та фокусуємо карту
+      if (city['placeId'] != null) {
+        final coordinates = await _getLatLngFromPlaceId(city['placeId']!);
+        if (coordinates != null) {
+          setState(() {
+            _selectedLocation = coordinates;
+          });
+          try {
+          _mapController.move(coordinates, 12.0);
+        } catch (e) {
+          print('Помилка фокусування на місті: $e');
+        }
+        }
+      }
+    } catch (e) {
+      print('Помилка вибору міста: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка вибору міста: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Фокусування карти на області
+  void _focusMapOnRegion(String region) {
+    try {
+      // Координати центрів областей України
+      final regionCoordinates = {
+        'Вінницька область': const latlong.LatLng(49.2331, 28.4682),
+        'Волинська область': const latlong.LatLng(50.7476, 25.3253),
+        'Дніпропетровська область': const latlong.LatLng(48.4647, 35.0462),
+        'Донецька область': const latlong.LatLng(48.0159, 37.8028),
+        'Житомирська область': const latlong.LatLng(50.2547, 28.6587),
+        'Закарпатська область': const latlong.LatLng(48.6208, 22.2879),
+        'Запорізька область': const latlong.LatLng(47.8388, 35.1396),
+        'Івано-Франківська область': const latlong.LatLng(48.9226, 24.7111),
+        'Київська область': const latlong.LatLng(50.4501, 30.5234),
+        'Кіровоградська область': const latlong.LatLng(48.5079, 32.2623),
+        'Луганська область': const latlong.LatLng(48.5740, 39.3078),
+        'Львівська область': const latlong.LatLng(49.8397, 24.0297),
+        'Миколаївська область': const latlong.LatLng(46.9750, 31.9946),
+        'Одеська область': const latlong.LatLng(46.4825, 30.7233),
+        'Полтавська область': const latlong.LatLng(49.5883, 34.5514),
+        'Рівненська область': const latlong.LatLng(50.6199, 26.2516),
+        'Сумська область': const latlong.LatLng(50.9077, 34.7981),
+        'Тернопільська область': const latlong.LatLng(49.5535, 25.5948),
+        'Харківська область': const latlong.LatLng(49.9935, 36.2304),
+        'Херсонська область': const latlong.LatLng(46.6354, 32.6178),
+        'Хмельницька область': const latlong.LatLng(49.4229, 26.9871),
+        'Черкаська область': const latlong.LatLng(49.4444, 32.0598),
+        'Чернівецька область': const latlong.LatLng(48.2917, 25.9352),
+        'Чернігівська область': const latlong.LatLng(51.4982, 31.2893),
+        'м. Київ': const latlong.LatLng(50.4501, 30.5234),
+        'м. Севастополь': const latlong.LatLng(44.6166, 33.5254),
+        'АР Крим': const latlong.LatLng(45.3453, 34.4997),
+      };
+
+      final coordinates = regionCoordinates[region] ?? _ukraineCenter;
+      _mapController.move(coordinates, 8.0);
+    } catch (e) {
+      print('Помилка фокусування на області: $e');
+      try {
+        _mapController.move(_ukraineCenter, 6.0);
+      } catch (e2) {
+        print('Помилка фокусування на центрі України: $e2');
+      }
+    }
+  }
+
+  // Фокусування карти на місті
+  void _focusMapOnCity(String cityName) {
+    // Тут буде логіка для отримання координат міста
+    // Поки що використовуємо центр області
+    if (_selectedRegion != null) {
+      _focusMapOnRegion(_selectedRegion!);
+    }
+  }
+
+  // Отримання поточної локації
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      // Перевіряємо дозволи
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Дозвіл на геолокацію відхилено');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Дозвіл на геолокацію відхилено назавжди');
+      }
+
+      // Отримуємо поточну позицію
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final location = latlong.LatLng(position.latitude, position.longitude);
+      
+      setState(() {
+        _currentLocation = location;
+        _selectedLocation = location;
+        _isLoadingLocation = false;
+      });
+
+      // Фокусуємо карту на поточній локації
+      try {
+        _mapController.move(location, 14.0);
+      } catch (e) {
+        print('Помилка фокусування карти: $e');
+      }
+
+      // Отримуємо адресу та заповнюємо поля
+      await _fillLocationFromCoordinates(location);
+
+    } catch (e) {
+      setState(() {
+        _isLoadingLocation = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка отримання локації: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  // Заповнення полів з координат
+  Future<void> _fillLocationFromCoordinates(latlong.LatLng location) async {
+    try {
+      // Тут буде інтеграція з Reverse Geocoding API
+      // Поки що встановлюємо тестові значення
+      setState(() {
+        _selectedRegion = 'Київська область';
+        _selectedCity = 'Київ';
+        _cityController.text = 'Київ, Київська область';
+      });
+    } catch (e) {
+      print('Помилка отримання адреси: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка отримання адреси: $e'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  // Перевіряє, чи є частина адреси тією ж областю, що вже вибрана
+  bool _isSameRegion(String addressPart, String selectedRegion) {
+    final partLower = addressPart.toLowerCase();
+    final regionLower = selectedRegion.toLowerCase();
+    
+    // Пряме порівняння
+    if (partLower == regionLower) {
+      return true;
+    }
+    
+    // Порівняння без "область" та "м."
+    final cleanPart = partLower
+        .replaceAll('область', '')
+        .replaceAll('м.', '')
+        .trim();
+    final cleanRegion = regionLower
+        .replaceAll('область', '')
+        .replaceAll('м.', '')
+        .trim();
+    
+    if (cleanPart == cleanRegion) {
+      return true;
+    }
+    
+    // Перевіряємо, чи містить частина адреси назву області
+    if (partLower.contains('область') && regionLower.contains('область')) {
+      // Видаляємо слово "область" та порівнюємо
+      final partWithoutRegion = partLower.replaceAll('область', '').trim();
+      final regionWithoutRegion = regionLower.replaceAll('область', '').trim();
+      if (partWithoutRegion == regionWithoutRegion) {
+        return true;
+      }
+    }
+    
+    // Перевіряємо міста-області (Київ, Севастополь)
+    if (regionLower.contains('м. київ') && partLower.contains('київ')) {
+      return true;
+    }
+    if (regionLower.contains('м. севастополь') && partLower.contains('севастополь')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Отримання координат з Place ID
+  Future<latlong.LatLng?> _getLatLngFromPlaceId(String placeId) async {
+    final url = Uri.parse('https://wcczieoznbopcafdatpk.supabase.co/functions/v1/places-api?place_id=$placeId');
+    
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjY3ppZW96bmJvcGNhZmRhdHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTc2MTEsImV4cCI6MjA2NjkzMzYxMX0.1OdLDVnzHx9ghZ7D8X2P_lpZ7XvnPtdEKN4ah_guUJ0',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final result = data['result'] as Map<String, dynamic>;
+          final geometry = result['geometry'] as Map<String, dynamic>;
+          final location = geometry['location'] as Map<String, dynamic>;
+          final lat = location['lat'] as double;
+          final lng = location['lng'] as double;
+          return latlong.LatLng(lat, lng);
+        }
+      }
+    } catch (e) {
+      print('Помилка отримання координат: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка отримання координат: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    
+    return null;
   }
 } 
