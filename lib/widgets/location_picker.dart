@@ -108,6 +108,16 @@ class _LocationPickerState extends State<LocationPicker> {
         });
         return;
       }
+      
+      // Перевіряємо, чи користувач не вводить область
+      if (_isSameRegion(query, _selectedRegion!)) {
+        setState(() {
+          _cityResults = [];
+          _apiError = 'Область вже вибрана. Введіть назву міста або села.';
+        });
+        return;
+      }
+      
       setState(() {
         _isSearchingCities = true;
         _apiError = null;
@@ -140,6 +150,14 @@ class _LocationPickerState extends State<LocationPicker> {
   }) async {
     final sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
     
+    // Перевіряємо, чи користувач не вводить область, яка вже вибрана
+    if (_isSameRegion(query, regionName)) {
+      return {
+        'cities': [],
+        'error': 'Область вже вибрана. Введіть назву міста або села.',
+      };
+    }
+    
     // Додаємо більш точне обмеження пошуку для області
     final String searchQuery = '$query, $regionName, Україна';
     
@@ -170,10 +188,24 @@ class _LocationPickerState extends State<LocationPicker> {
           return {'name': description, 'placeId': placeId};
         }).toList();
         
-        // Додаткова фільтрація результатів на клієнтській стороні
+        // Фільтруємо результати, прибираючи області та країну
         cities = cities.where((city) {
           final name = city['name']?.toLowerCase() ?? '';
           final regionNameLower = regionName.toLowerCase();
+          
+          // Пропускаємо результат, якщо він містить тільки область або країну
+          if (name == regionNameLower || 
+              name == 'україна' || 
+              name == 'ukraine') {
+            return false;
+          }
+          
+          // Перевіряємо, чи не є результат областю
+          if (_isSameRegion(name, regionName)) {
+            return false;
+          }
+          
+          // Результат повинен містити щось більше, ніж область
           return name.contains(regionNameLower) || 
                  name.contains('україна') || 
                  name.contains('ukraine');
@@ -259,11 +291,61 @@ class _LocationPickerState extends State<LocationPicker> {
         continue;
       }
       
+      // ВАЖЛИВО: Пропускаємо область, яка вже вибрана користувачем
+      if (_selectedRegion != null && _isSameRegion(trimmedPart, _selectedRegion!)) {
+        continue;
+      }
+      
       filteredParts.add(trimmedPart);
     }
     
     // Об'єднуємо частини назад
     return filteredParts.join(', ');
+  }
+  
+  /// Перевіряє, чи є частина адреси тією ж областю, що вже вибрана
+  bool _isSameRegion(String addressPart, String selectedRegion) {
+    final partLower = addressPart.toLowerCase();
+    final regionLower = selectedRegion.toLowerCase();
+    
+    // Пряме порівняння
+    if (partLower == regionLower) {
+      return true;
+    }
+    
+    // Порівняння без "область" та "м."
+    final cleanPart = partLower
+        .replaceAll('область', '')
+        .replaceAll('м.', '')
+        .trim();
+    final cleanRegion = regionLower
+        .replaceAll('область', '')
+        .replaceAll('м.', '')
+        .trim();
+    
+    if (cleanPart == cleanRegion) {
+      return true;
+    }
+    
+    // Перевіряємо, чи містить частина адреси назву області
+    if (partLower.contains('область') && regionLower.contains('область')) {
+      // Видаляємо слово "область" та порівнюємо
+      final partWithoutRegion = partLower.replaceAll('область', '').trim();
+      final regionWithoutRegion = regionLower.replaceAll('область', '').trim();
+      if (partWithoutRegion == regionWithoutRegion) {
+        return true;
+      }
+    }
+    
+    // Перевіряємо міста-області (Київ, Севастополь)
+    if (regionLower.contains('м. київ') && partLower.contains('київ')) {
+      return true;
+    }
+    if (regionLower.contains('м. севастополь') && partLower.contains('севастополь')) {
+      return true;
+    }
+    
+    return false;
   }
 
   Future<String?> getCityNameFromLatLng(latlong.LatLng latLng) async {
@@ -668,55 +750,59 @@ class _LocationPickerState extends State<LocationPicker> {
           ),
           // Інпут пошуку
           if (_selectedRegion != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.zinc50,
-                  borderRadius: BorderRadius.circular(200),
-                  border: Border.all(color: AppColors.zinc200, width: 1),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromRGBO(16, 24, 40, 0.05),
-                      offset: Offset(0, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: CompositedTransformTarget(
-                  link: _autocompleteLayerLink,
-                  child: TextField(
-                    controller: _citySearchController,
-                    textAlignVertical: TextAlignVertical.center,
-                    maxLines: 1,
-                    style: AppTextStyles.body1Regular.copyWith(
-                      color: AppColors.color2,
-                      height: 1.0,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Введіть назву міста, вулиці, адреси або закладу',
-                      hintStyle: AppTextStyles.body1Regular.copyWith(
-                        color: AppColors.color5,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Поле пошуку
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                    color: AppColors.zinc50,
+                    borderRadius: BorderRadius.circular(200),
+                    border: Border.all(color: AppColors.zinc200, width: 1),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: CompositedTransformTarget(
+                    link: _autocompleteLayerLink,
+                    child: TextField(
+                      controller: _citySearchController,
+                      textAlignVertical: TextAlignVertical.center,
+                      maxLines: 1,
+                      style: AppTextStyles.body1Regular.copyWith(
+                        color: AppColors.color2,
                         height: 1.0,
                       ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
-                      alignLabelWithHint: true,
+                      decoration: InputDecoration(
+                        hintText: 'Введіть назву міста або села',
+                        hintStyle: AppTextStyles.body1Regular.copyWith(
+                          color: AppColors.color5,
+                          height: 1.0,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                        alignLabelWithHint: true,
+                      ),
+                      onChanged: (value) {
+                        _onCitySearchChanged();
+                        setState(() {
+                          _citySelected = false;
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      _onCitySearchChanged();
-                      setState(() {
-                        _citySelected = false;
-                      });
-                    },
-
-
                   ),
                 ),
-              ),
+                ),
+              ],
             ),
           // Loading, error, empty state, results
           if (_isSearchingCities)
