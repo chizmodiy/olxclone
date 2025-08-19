@@ -714,10 +714,34 @@ class _TestPageState extends State<TestPage> {
           _mapController.move(coordinates, 12.0);
         } catch (e) {
           print('Помилка фокусування на місті: $e');
-        }
-        }
-      }
-    } catch (e) {
+              }
+    }
+  }
+
+  // Форматування адреси для відображення
+  String _formatAddressForDisplay(String? city, String? region) {
+    // Налаштування відображення адреси
+    final bool showCity = true;        // Показувати місто
+    final bool showRegion = false;     // НЕ показувати область
+    final bool showCountry = false;    // НЕ показувати країну
+    
+    final List<String> parts = [];
+    
+    if (showCity && city != null && city.isNotEmpty) {
+      parts.add(city);
+    }
+    
+    if (showRegion && region != null && region.isNotEmpty) {
+      parts.add(region);
+    }
+    
+    if (showCountry) {
+      parts.add('Україна');
+    }
+    
+    return parts.join(', ');
+  }
+} catch (e) {
       print('Помилка вибору міста: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -876,6 +900,27 @@ class _TestPageState extends State<TestPage> {
           region = address['country']?.toString();
         }
         
+        // Виправляємо помилки API - перевіряємо відомі міста та їх області
+        if (city != null) {
+          final cityLower = city.toLowerCase();
+          if (cityLower.contains('мукачево') || cityLower.contains('mukachevo')) {
+            region = 'Закарпатська область';
+          } else if (cityLower.contains('київ') || cityLower.contains('kyiv')) {
+            region = 'Київська область';
+          } else if (cityLower.contains('львів') || cityLower.contains('lviv')) {
+            region = 'Львівська область';
+          } else if (cityLower.contains('одеса') || cityLower.contains('odessa')) {
+            region = 'Одеська область';
+          } else if (cityLower.contains('харків') || cityLower.contains('kharkiv')) {
+            region = 'Харківська область';
+          } else if (cityLower.contains('дніпро') || cityLower.contains('dnipro')) {
+            region = 'Дніпропетровська область';
+          }
+        }
+        
+        // Форматуємо адресу для відображення
+        final formattedAddress = _formatAddressForDisplay(city, region);
+        
         // Перевіряємо, чи це Україна
         final country = address['country']?.toString();
         if (country == 'Україна' || country == 'Ukraine') {
@@ -889,7 +934,7 @@ class _TestPageState extends State<TestPage> {
             setState(() {
               _selectedRegion = region!;
               _selectedCity = city;
-              _cityController.text = city != null ? '$city, ${region!}' : region!;
+              _cityController.text = formattedAddress;
             });
             
             // Фокусуємо карту на області
@@ -899,7 +944,7 @@ class _TestPageState extends State<TestPage> {
             setState(() {
               _selectedRegion = 'Київська область';
               _selectedCity = city ?? 'Київ';
-              _cityController.text = city != null ? '$city, Київська область' : 'Київ, Київська область';
+              _cityController.text = _formatAddressForDisplay(city ?? 'Київ', 'Київська область');
             });
             
             _focusMapOnRegion('Київська область');
@@ -909,7 +954,7 @@ class _TestPageState extends State<TestPage> {
           setState(() {
             _selectedRegion = 'Київська область';
             _selectedCity = 'Київ';
-            _cityController.text = 'Київ, Київська область';
+            _cityController.text = _formatAddressForDisplay('Київ', 'Київська область');
           });
           
           _focusMapOnRegion('Київська область');
@@ -924,7 +969,7 @@ class _TestPageState extends State<TestPage> {
       setState(() {
         _selectedRegion = 'Київська область';
         _selectedCity = 'Київ';
-        _cityController.text = 'Київ, Київська область';
+        _cityController.text = _formatAddressForDisplay('Київ', 'Київська область');
       });
       
       _focusMapOnRegion('Київська область');
@@ -1018,5 +1063,29 @@ class _TestPageState extends State<TestPage> {
     }
     
     return null;
+  }
+
+  // Форматування адреси для відображення
+  String _formatAddressForDisplay(String? city, String? region) {
+    // Налаштування відображення адреси
+    final bool showCity = true;        // Показувати місто
+    final bool showRegion = false;     // НЕ показувати область
+    final bool showCountry = false;    // НЕ показувати країну
+    
+    final List<String> parts = [];
+    
+    if (showCity && city != null && city.isNotEmpty) {
+      parts.add(city);
+    }
+    
+    if (showRegion && region != null && region.isNotEmpty) {
+      parts.add(region);
+    }
+    
+    if (showCountry) {
+      parts.add('Україна');
+    }
+    
+    return parts.join(', ');
   }
 } 
