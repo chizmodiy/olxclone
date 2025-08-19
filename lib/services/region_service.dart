@@ -12,7 +12,7 @@ class RegionService {
     try {
       final response = await _supabaseClient
           .from('regions')
-          .select('id, name')
+          .select('id, name, min_lat, max_lat, min_lon, max_lon')
           .order('name');
 
       return (response as List<dynamic>)

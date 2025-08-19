@@ -15,6 +15,11 @@ class LocationPicker extends StatefulWidget {
   final latlong.LatLng? initialLatLng;
   final String? initialAddress;
   final String? initialRegion;
+  final bool hideCountry; // Приховувати країну
+  final bool hidePostalCode; // Приховувати поштовий індекс
+  final bool hideDuplicateRegion; // Приховувати дублікати області
+  final bool hideStreetDetails; // Приховувати деталі вулиці (номер будинку тощо)
+  final List<String> customHideElements; // Кастомний список елементів для приховування
   
   const LocationPicker({
     super.key, 
@@ -22,6 +27,11 @@ class LocationPicker extends StatefulWidget {
     this.initialLatLng,
     this.initialAddress,
     this.initialRegion,
+    this.hideCountry = true,
+    this.hidePostalCode = true,
+    this.hideDuplicateRegion = true,
+    this.hideStreetDetails = false,
+    this.customHideElements = const [],
   });
 
   @override
@@ -204,6 +214,56 @@ class _LocationPickerState extends State<LocationPicker> {
       }
     }
     return null;
+  }
+
+  /// Форматує адресу, прибираючи зайві елементи
+  String _formatAddress(String fullAddress) {
+    // Розбиваємо адресу на частини
+    final parts = fullAddress.split(', ');
+    
+    // Фільтруємо частини, прибираючи зайві елементи
+    final filteredParts = <String>[];
+    
+    for (final part in parts) {
+      final trimmedPart = part.trim();
+      
+      // Пропускаємо країну та зайві елементи
+      if (widget.hideCountry && (
+          trimmedPart.toLowerCase() == 'ukraine' || 
+          trimmedPart.toLowerCase() == 'україна' ||
+          trimmedPart.toLowerCase() == 'uk' ||
+          trimmedPart.toLowerCase() == 'ua')) {
+        continue;
+      }
+      
+      // Пропускаємо поштові індекси
+      if (widget.hidePostalCode && RegExp(r'^\d{5}$').hasMatch(trimmedPart)) {
+        continue;
+      }
+      
+      // Пропускаємо дублікати області
+      if (widget.hideDuplicateRegion && filteredParts.any((existing) => 
+          existing.toLowerCase().contains('область') && 
+          trimmedPart.toLowerCase().contains('область'))) {
+        continue;
+      }
+      
+      // Пропускаємо деталі вулиці (номер будинку тощо)
+      if (widget.hideStreetDetails && RegExp(r'^\d+[а-яё]?$', caseSensitive: false).hasMatch(trimmedPart)) {
+        continue;
+      }
+      
+      // Пропускаємо кастомні елементи
+      if (widget.customHideElements.any((element) => 
+          trimmedPart.toLowerCase().contains(element.toLowerCase()))) {
+        continue;
+      }
+      
+      filteredParts.add(trimmedPart);
+    }
+    
+    // Об'єднуємо частини назад
+    return filteredParts.join(', ');
   }
 
   Future<String?> getCityNameFromLatLng(latlong.LatLng latLng) async {
@@ -707,7 +767,7 @@ class _LocationPickerState extends State<LocationPicker> {
                     final placeId = cityObj['placeId']!;
                     return ListTile(
                       title: Text(
-                        city,
+                        _formatAddress(city),
                         style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
                       ),
                       onTap: () async {
@@ -717,14 +777,17 @@ class _LocationPickerState extends State<LocationPicker> {
                           _mapCenter = latLng;
                           _selectedCityName = city;
                           _selectedPlaceId = placeId;
-                          _citySearchController.text = city;
+                          // Показуємо форматувану адресу в полі пошуку
+                          _citySearchController.text = _formatAddress(city);
                           _citySelected = true;
                         });
                         FocusScope.of(context).unfocus();
                         final zoom = city.contains(',') ? 15.0 : 11.0;
                         _mapController.move(latLng!, zoom);
                         if (widget.onLocationSelected != null) {
-                          widget.onLocationSelected!(latLng, city);
+                          // Форматуємо адресу, прибираючи зайві елементи
+                          final formattedAddress = _formatAddress(city);
+                          widget.onLocationSelected!(latLng, formattedAddress);
                         }
                       },
                     );

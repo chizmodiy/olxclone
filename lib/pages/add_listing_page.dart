@@ -236,6 +236,8 @@ class _AddListingPageState extends State<AddListingPage> {
     }
   }
 
+
+
   Future<void> _pickImage() async {
     try {
       if (_selectedImages.length >= 7) {
@@ -1334,6 +1336,27 @@ class _AddListingPageState extends State<AddListingPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
+        // Показуємо обрану область
+        if (_selectedRegion != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: AppColors.zinc50,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.zinc200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.location_on, color: AppColors.primaryColor, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Область: ${_selectedRegion!.name}',
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color2),
+                ),
+              ],
+            ),
+          ),
         Text(
           'Місто',
           style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
@@ -2145,8 +2168,8 @@ class _AddListingPageState extends State<AddListingPage> {
     else if (_selectedSubcategory == null) {
       errorMessage = 'Оберіть підкатегорію';
 
-    } else if (_selectedRegion == null) {
-      errorMessage = 'Оберіть область';
+    } else if (_selectedLatitude == null || _selectedLongitude == null) {
+      errorMessage = 'Оберіть локацію на карті';
 
     } else if (!_isForSale &&
         (_priceController.text.isNotEmpty || _selectedCurrency != 'UAH')) {
@@ -2308,7 +2331,8 @@ class _AddListingPageState extends State<AddListingPage> {
     final descriptionValid = _descriptionController.text.isNotEmpty;
     final categoryValid = _selectedCategory != null;
     final subcategoryValid = _selectedSubcategory != null; // Require subcategory for all listings
-    final regionValid = _selectedRegion != null;
+    // Перевіряємо, що локація встановлена (через LocationPicker)
+    final locationValid = _selectedLatitude != null && _selectedLongitude != null;
     
     bool priceValid;
     if (_isForSale) {
@@ -2354,7 +2378,7 @@ class _AddListingPageState extends State<AddListingPage> {
     final imagesValid = _selectedImages.isNotEmpty;
     
     final isValid = titleValid && descriptionValid && categoryValid && 
-                   subcategoryValid && regionValid && priceValid && 
+                   subcategoryValid && locationValid && priceValid && 
                    contactValid && imagesValid;
     
 
@@ -2367,6 +2391,11 @@ class _AddListingPageState extends State<AddListingPage> {
   }
 
   Future<void> _createListing() async {
+    // Захист від множинних натискань
+    if (_isLoading) {
+      return;
+    }
+    
     setState(() {
       _submitted = true;
     });
@@ -2532,7 +2561,7 @@ class _AddListingPageState extends State<AddListingPage> {
         toolbarHeight: 70.0,
         centerTitle: false,
         leading: GestureDetector(
-          onTap: () {
+          onTap: _isLoading ? null : () {
             Navigator.of(context).pop();
           },
           child: Icon(
@@ -2766,10 +2795,11 @@ class _AddListingPageState extends State<AddListingPage> {
                 _buildCarFields(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
-                LocationPicker(
-                  onLocationSelected: (latLng, address) async {
+                // LocationPicker для вибору координат
+                                  LocationPicker(
+                    onLocationSelected: (latLng, address) async {
                     if (latLng != null) {
-                      // Знаходимо найближчу область на основі координат
+                      // Знаходимо область за координатами
                       Region? nearestRegion;
                       double shortestDistance = double.infinity;
                       
@@ -2794,30 +2824,22 @@ class _AddListingPageState extends State<AddListingPage> {
                         }
                       }
 
-                      if (nearestRegion != null) {
-                        setState(() {
-                          _selectedRegion = nearestRegion;
-                          _selectedRegionName = nearestRegion!.name;
-                          _selectedAddress = address ?? '${nearestRegion!.name}';
-                          _selectedLatitude = latLng.latitude;
-                          _selectedLongitude = latLng.longitude;
-                          // Очищаємо вибране місто при зміні області
-                          _selectedCity = null;
-                          _citySearchController.clear();
-                        });
-                        
-                        // Завантажуємо підкатегорії для нової області
-                        if (_selectedCategory != null) {
-                          await _loadSubcategories(_selectedCategory!.id);
-                        }
-                      }
+                      // Встановлюємо знайдену область та координати
+                      setState(() {
+                        _selectedRegion = nearestRegion;
+                        _selectedRegionName = nearestRegion?.name;
+                        _selectedLatitude = latLng.latitude;
+                        _selectedLongitude = latLng.longitude;
+                        _selectedAddress = address ?? 'Обрана локація';
+                      });
+                      
+
                     }
                   },
                 ),
                 const SizedBox(height: 20),
 
-                // Region and City Selection
-                _buildRegionSection(),
+                // City Selection (область вже обирається в LocationPicker)
                 _buildCitySection(),
                 const SizedBox(height: 20),
 
@@ -2868,26 +2890,32 @@ class _AddListingPageState extends State<AddListingPage> {
                     height: 44,
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isFormValid ? () {
-                
+                      onPressed: (_isFormValid && !_isLoading) ? () {
                         _createListing();
-                      } : () {
-                        
-                      },
+                      } : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isFormValid 
+                        backgroundColor: _isFormValid
                             ? AppColors.primaryColor 
                             : const Color(0xFFF4F4F5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
-                        'Підтвердити',
-                        style: AppTextStyles.body2Semibold.copyWith(
-                          color: _isFormValid ? Colors.white : Colors.black,
-                        ),
-                      ),
+                                              child: _isLoading 
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Text(
+                              'Підтвердити',
+                              style: AppTextStyles.body2Semibold.copyWith(
+                                color: _isFormValid ? Colors.white : Colors.black,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -2895,7 +2923,7 @@ class _AddListingPageState extends State<AddListingPage> {
                     height: 44,
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: _isLoading ? null : () {
                         // Clear all data
                         setState(() {
                           _titleController.clear();
