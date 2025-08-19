@@ -107,11 +107,11 @@ class _FilterPageState extends State<FilterPage> {
     // Initialize price filters if they exist
     if (widget.initialFilters['minPrice'] != null) {
       _minPriceController.text = widget.initialFilters['minPrice'].toString();
-      _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? _currentMinPrice;
+      _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? _minPrice;
     }
     if (widget.initialFilters['maxPrice'] != null) {
       _maxPriceController.text = widget.initialFilters['maxPrice'].toString();
-      _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _currentMaxPrice;
+      _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _maxPrice;
     }
     
     // Ensure min <= max after initialization
@@ -168,27 +168,24 @@ class _FilterPageState extends State<FilterPage> {
         _minPrice = priceRange['min'] ?? 0.0;
         _maxPrice = priceRange['max'] ?? 100000.0;
 
-        // Ensure _currentMinPrice is within the new range
-        _currentMinPrice = _currentMinPrice.clamp(_minPrice, _maxPrice);
-        // Ensure _currentMaxPrice is within the new range
-        _currentMaxPrice = _currentMaxPrice.clamp(_minPrice, _maxPrice);
-
-        // Additionally, ensure _currentMinPrice is not greater than _currentMaxPrice
-        if (_currentMinPrice > _currentMaxPrice) {
-          // Swap values if min is greater than max
-          final temp = _currentMinPrice;
-          _currentMinPrice = _currentMaxPrice;
-          _currentMaxPrice = temp;
+        // Встановлюємо важлі в крайні положення після завантаження діапазону з бази
+        // Але тільки якщо користувач не встановив власні значення
+        if (widget.initialFilters['minPrice'] == null) {
+          _currentMinPrice = _minPrice;
+        }
+        if (widget.initialFilters['maxPrice'] == null) {
+          _currentMaxPrice = _maxPrice;
         }
         
         _sliderMinValue = _minPrice;
         _sliderMaxValue = _maxPrice;
         
-        // Оновлюємо текстові поля з початковими значеннями, якщо вони не встановлені
-        if (_minPriceController.text.isEmpty) {
+        // Оновлюємо текстові поля з новими значеннями після завантаження діапазону
+        // Але тільки якщо користувач не встановив власні значення
+        if (widget.initialFilters['minPrice'] == null) {
           _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
         }
-        if (_maxPriceController.text.isEmpty) {
+        if (widget.initialFilters['maxPrice'] == null) {
           _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
         }
         
@@ -339,8 +336,13 @@ class _FilterPageState extends State<FilterPage> {
       _maxAvailableYear = 2024.0;
       _minAvailableEngineHp = 50.0;
       _maxAvailableEngineHp = 500.0;
-      _currentMinPrice = 0.0; // Встановлюємо поточні значення слайдера
-      _currentMaxPrice = 100.0; // Буде оновлено після завантаження з бази
+      _currentMinPrice = _minPrice; // Встановлюємо поточні значення слайдера
+      _currentMaxPrice = _maxPrice; // Встановлюємо максимальне значення з бази
+      
+      // Оновлюємо текстові поля з новими значеннями
+      _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
+      _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
+      
       _selectedBrand = null; // Reset brand selection
       _selectedSize = null; // Reset size selection
       _selectedCondition = null; // Reset condition selection
@@ -1254,15 +1256,16 @@ class _FilterPageState extends State<FilterPage> {
             height: 48, // Зменшено висоту до 48 пікселів (тільки для слайдера)
             child: RangeSlider(
               values: RangeValues(
-                _currentMinPrice.clamp(_minPrice, _currentMaxPrice),
+                _currentMinPrice.clamp(_minPrice, _maxPrice),
                 _currentMaxPrice.clamp(_currentMinPrice, _maxPrice)
               ),
               min: _minPrice,
               max: _maxPrice,
               onChanged: (RangeValues values) {
                 setState(() {
-                  _currentMinPrice = values.start;
-                  _currentMaxPrice = values.end;
+                  // Переконуємося, що значення в межах дозволеного діапазону
+                  _currentMinPrice = values.start.clamp(_minPrice, _maxPrice);
+                  _currentMaxPrice = values.end.clamp(_currentMinPrice, _maxPrice);
                   _updateSliderValues(_currentMinPrice, _currentMaxPrice);
                 });
               },
@@ -1690,12 +1693,13 @@ class _FilterPageState extends State<FilterPage> {
   // Метод для оновлення значень слайдера
   void _updateSliderValues(double minValue, double maxValue) {
     setState(() {
-      _currentMinPrice = minValue;
-      _currentMaxPrice = maxValue;
+      // Переконуємося, що значення в межах дозволеного діапазону
+      _currentMinPrice = minValue.clamp(_minPrice, _maxPrice);
+      _currentMaxPrice = maxValue.clamp(_currentMinPrice, _maxPrice);
       
       // Оновлюємо текстові поля з конвертованими значеннями
-      _minPriceController.text = _convertFromUAH(minValue, _selectedCurrency).toStringAsFixed(2);
-      _maxPriceController.text = _convertFromUAH(maxValue, _selectedCurrency).toStringAsFixed(2);
+      _minPriceController.text = _convertFromUAH(_currentMinPrice, _selectedCurrency).toStringAsFixed(2);
+      _maxPriceController.text = _convertFromUAH(_currentMaxPrice, _selectedCurrency).toStringAsFixed(2);
     });
   }
 
