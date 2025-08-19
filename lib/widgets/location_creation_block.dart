@@ -10,7 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class LocationCreationBlock extends StatefulWidget {
-  final Function(latlong.LatLng, String)? onLocationSelected;
+  final Function(latlong.LatLng, String, String?)? onLocationSelected; // Додано region parameter
   final latlong.LatLng? initialLocation;
   final String? initialRegion;
   final String? initialCity;
@@ -174,7 +174,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFFAFAFA),
             borderRadius: BorderRadius.circular(200),
             border: Border.all(color: AppColors.zinc200),
           ),
@@ -313,7 +313,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFFAFAFA),
             borderRadius: BorderRadius.circular(200),
             border: Border.all(color: AppColors.zinc200),
           ),
@@ -452,6 +452,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                     options: MapOptions(
                       center: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
                       zoom: _selectedLocation != null ? 12.0 : 6.0,
+                      interactiveFlags: InteractiveFlag.none, // Вимикаємо всі жести
                     ),
                     children: [
                       TileLayer(
@@ -730,7 +731,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       // Викликаємо callback з вибраною локацією
       if (widget.onLocationSelected != null && _selectedLocation != null) {
         final formattedAddress = _formatAddressForDisplay(_selectedCity, _selectedRegion);
-        widget.onLocationSelected!(_selectedLocation!, formattedAddress);
+        widget.onLocationSelected!(_selectedLocation!, formattedAddress, _selectedRegion);
       }
     } catch (e) {
       print('Помилка вибору міста: $e');
@@ -835,7 +836,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       // Викликаємо callback з вибраною локацією
       if (widget.onLocationSelected != null) {
         final formattedAddress = _formatAddressForDisplay(_selectedCity, _selectedRegion);
-        widget.onLocationSelected!(location, formattedAddress);
+        widget.onLocationSelected!(location, formattedAddress, _selectedRegion);
       }
     } catch (e) {
       setState(() {

@@ -2798,37 +2798,44 @@ class _AddListingPageState extends State<AddListingPage> {
                 const SizedBox(height: 20),
                 // LocationCreationBlock для вибору координат
                 LocationCreationBlock(
-                  onLocationSelected: (latLng, address) async {
+                  onLocationSelected: (latLng, address, regionName) async {
                     if (latLng != null) {
-                      // Знаходимо область за координатами
-                      Region? nearestRegion;
-                      double shortestDistance = double.infinity;
+                      // Спочатку шукаємо область за назвою (якщо передана)
+                      Region? foundRegion;
+                      if (regionName != null) {
+                        foundRegion = _regions.firstWhereOrNull((region) => region.name == regionName);
+                      }
                       
-                      for (final region in _regions) {
-                        if (region.minLat != null && region.maxLat != null && 
-                            region.minLon != null && region.maxLon != null) {
-                          // Обчислюємо центр області
-                          final centerLat = (region.minLat! + region.maxLat!) / 2;
-                          final centerLon = (region.minLon! + region.maxLon!) / 2;
-                          
-                          final distance = Geolocator.distanceBetween(
-                            latLng.latitude,
-                            latLng.longitude,
-                            centerLat,
-                            centerLon,
-                          );
+                      // Якщо область не знайдена за назвою, шукаємо за координатами
+                      if (foundRegion == null) {
+                        double shortestDistance = double.infinity;
+                        
+                        for (final region in _regions) {
+                          if (region.minLat != null && region.maxLat != null && 
+                              region.minLon != null && region.maxLon != null) {
+                            // Обчислюємо центр області
+                            final centerLat = (region.minLat! + region.maxLat!) / 2;
+                            final centerLon = (region.minLon! + region.maxLon!) / 2;
+                            
+                            final distance = Geolocator.distanceBetween(
+                              latLng.latitude,
+                              latLng.longitude,
+                              centerLat,
+                              centerLon,
+                            );
 
-                          if (distance < shortestDistance) {
-                            shortestDistance = distance;
-                            nearestRegion = region;
+                            if (distance < shortestDistance) {
+                              shortestDistance = distance;
+                              foundRegion = region;
+                            }
                           }
                         }
                       }
 
                       // Встановлюємо знайдену область та координати
                       setState(() {
-                        _selectedRegion = nearestRegion;
-                        _selectedRegionName = nearestRegion?.name;
+                        _selectedRegion = foundRegion;
+                        _selectedRegionName = foundRegion?.name ?? regionName;
                         _selectedLatitude = latLng.latitude;
                         _selectedLongitude = latLng.longitude;
                         _selectedAddress = address ?? 'Обрана локація';
