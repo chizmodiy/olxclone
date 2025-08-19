@@ -1547,25 +1547,28 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
             const SizedBox(width: 8),
           ],
           Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
-              inputFormatters: _getContactInputFormatters(),
-              decoration: InputDecoration(
-                hintText: isTelegramInput ? hintText : '(XX) XXX-XX-XX',
-                hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
-                contentPadding: EdgeInsets.only(
-                  left: isTelegramInput ? 16 : 0,
-                  right: 16,
-                  top: 12,
-                  bottom: 12,
+            child: Center(
+              child: TextField(
+                controller: controller,
+                keyboardType: isTelegramInput ? TextInputType.text : TextInputType.phone,
+                inputFormatters: _getContactInputFormatters(),
+                decoration: InputDecoration(
+                  hintText: isTelegramInput ? hintText : '(XX) XXX-XX-XX',
+                  hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                  contentPadding: EdgeInsets.only(
+                    left: isTelegramInput ? 16 : 0,
+                    right: 16,
+                    top: 0,
+                    bottom: 0,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
                 ),
-                border: InputBorder.none,
-              ),
-              style: AppTextStyles.body1Regular.copyWith(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+                style: AppTextStyles.body1Regular.copyWith(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),
