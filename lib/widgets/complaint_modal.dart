@@ -121,7 +121,7 @@ class _ComplaintModalState extends State<ComplaintModal> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Опишіть проблему яку ви зустріли з цим продавцемк',
+              'Опишіть проблему яку ви зустріли з цим продавцем',
               style: AppTextStyles.body1Regular.copyWith(color: AppColors.color7),
             ),
             const SizedBox(height: 24),

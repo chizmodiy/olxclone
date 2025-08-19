@@ -1519,14 +1519,14 @@ class _ChatDialogPageState extends State<ChatDialogPage> {
                                           GestureDetector(
                                             onTap: _pickAndUploadImage,
                                             child: Container(
-                                              width: 20,
-                                              height: 20,
+                                              width: 24,
+                                              height: 24,
                                               clipBehavior: Clip.antiAlias,
                                               decoration: const BoxDecoration(),
                                               child: const Icon(
                                                 Icons.photo,
                                                 color: Color(0xFF52525B),
-                                                size: 20,
+                                                size: 24,
                                               ),
                                             ),
                                           ),
