@@ -818,15 +818,7 @@ class _LocationPickerState extends State<LocationPicker> {
                 style: TextStyle(color: Colors.red),
               ),
             ),
-          if (!_isSearchingCities && _apiError == null && _citySearchController.text.isNotEmpty && _cityResults.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: Text(
-                'Нічого не знайдено',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          if (!_isSearchingCities && _cityResults.isNotEmpty && !_citySelected && _citySearchController.text.isNotEmpty)
+          if (!_isSearchingCities && _citySearchController.text.isNotEmpty && !_citySelected)
             Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
               child: Container(
@@ -844,41 +836,54 @@ class _LocationPickerState extends State<LocationPicker> {
                     ),
                   ],
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _cityResults.length,
-                  itemBuilder: (context, index) {
-                    final cityObj = _cityResults[index];
-                    final city = cityObj['name']!;
-                    final placeId = cityObj['placeId']!;
-                    return ListTile(
-                      title: Text(
-                        _formatAddress(city),
-                        style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                child: _cityResults.isNotEmpty
+                    ? ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _cityResults.length,
+                        itemBuilder: (context, index) {
+                          final cityObj = _cityResults[index];
+                          final city = cityObj['name']!;
+                          final placeId = cityObj['placeId']!;
+                          return ListTile(
+                            title: Text(
+                              _formatAddress(city),
+                              style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                            ),
+                            onTap: () async {
+                              final latLng = await getLatLngFromPlaceId(placeId);
+                              setState(() {
+                                _selectedLatLng = latLng;
+                                _mapCenter = latLng;
+                                _selectedCityName = city;
+                                _selectedPlaceId = placeId;
+                                // Показуємо форматувану адресу в полі пошуку
+                                _citySearchController.text = _formatAddress(city);
+                                _citySelected = true;
+                              });
+                              FocusScope.of(context).unfocus();
+                              final zoom = city.contains(',') ? 15.0 : 11.0;
+                              _mapController.move(latLng!, zoom);
+                              if (widget.onLocationSelected != null) {
+                                // Форматуємо адресу, прибираючи зайві елементи
+                                final formattedAddress = _formatAddress(city);
+                                widget.onLocationSelected!(latLng, formattedAddress);
+                              }
+                            },
+                          );
+                        },
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            'Нічого не знайдено',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
                       ),
-                      onTap: () async {
-                        final latLng = await getLatLngFromPlaceId(placeId);
-                        setState(() {
-                          _selectedLatLng = latLng;
-                          _mapCenter = latLng;
-                          _selectedCityName = city;
-                          _selectedPlaceId = placeId;
-                          // Показуємо форматувану адресу в полі пошуку
-                          _citySearchController.text = _formatAddress(city);
-                          _citySelected = true;
-                        });
-                        FocusScope.of(context).unfocus();
-                        final zoom = city.contains(',') ? 15.0 : 11.0;
-                        _mapController.move(latLng!, zoom);
-                        if (widget.onLocationSelected != null) {
-                          // Форматуємо адресу, прибираючи зайві елементи
-                          final formattedAddress = _formatAddress(city);
-                          widget.onLocationSelected!(latLng, formattedAddress);
-                        }
-                      },
-                    );
-                  },
-                ),
               ),
             ),
 
