@@ -2851,8 +2851,8 @@ class _AddListingPageState extends State<AddListingPage> {
                   const SizedBox(height: 20),
                 ],
 
-                // Currency Section (only show if not free and not negotiable)
-                if (_isForSale && !_isNegotiablePrice) ...[
+                // Currency Section (only show if not free)
+                if (_isForSale) ...[
                   _buildCurrencySection(),
                   const SizedBox(height: 20),
                 ],
