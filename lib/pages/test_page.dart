@@ -292,64 +292,113 @@ class _TestPageState extends State<TestPage> {
 
   // Поле вводу міста
   Widget _buildCityInput() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(200),
-        border: Border.all(color: AppColors.zinc200),
-      ),
-      child: Column(
-        children: [
-          TextField(
-            controller: _cityController,
-            decoration: InputDecoration(
-              hintText: 'Введіть назву міста або села',
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onChanged: _onCitySearchChanged,
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(200),
+            border: Border.all(color: AppColors.zinc200),
           ),
-          if (_isSearchingCities)
-            const Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          if (_cityResults.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.zinc200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _cityController,
+                  decoration: InputDecoration(
+                    hintText: 'Введіть назву міста або села',
+                    hintStyle: AppTextStyles.body1Regular.copyWith(color: AppColors.color5),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
-                ],
+                  style: AppTextStyles.body1Regular.copyWith(color: AppColors.color2),
+                  onChanged: _onCitySearchChanged,
+                ),
               ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _cityResults.length,
-                itemBuilder: (context, index) {
-                  final city = _cityResults[index];
-                  return ListTile(
-                    title: Text(city['name'] ?? ''),
-                    onTap: () => _onCitySelected(city),
-                  );
-                },
+              if (_isSearchingCities)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+        ),
+        if (_cityResults.isNotEmpty)
+          Container(
+            width: double.infinity,
+            height: 200,
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                width: 1,
+                color: const Color(0xFFEAECF0),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0x07101828),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -2,
+                ),
+                BoxShadow(
+                  color: const Color(0x14101828),
+                  blurRadius: 16,
+                  offset: const Offset(0, 12),
+                  spreadRadius: -4,
+                ),
+              ],
             ),
-        ],
-      ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: _cityResults.length,
+              itemBuilder: (context, index) {
+                final city = _cityResults[index];
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: GestureDetector(
+                    onTap: () => _onCitySelected(city),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        left: 8,
+                        right: 10,
+                        bottom: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              city['name'] ?? '',
+                              style: TextStyle(
+                                color: const Color(0xFF0F1728),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                height: 1.50,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -468,28 +517,51 @@ class _TestPageState extends State<TestPage> {
 
   // Кнопка "Моє місцезнаходження"
   Widget _buildLocationButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: _isLoadingLocation ? null : _getCurrentLocation,
-        icon: _isLoadingLocation
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.my_location, color: Colors.white),
-        label: Text(
-          'Моє місцезнаходження',
-          style: AppTextStyles.body2Semibold.copyWith(color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F4F5), // Zinc-100
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(
+          width: 1,
+          color: const Color(0xFFF4F4F5), // Zinc-100
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+      ),
+      child: GestureDetector(
+        onTap: _isLoadingLocation ? null : _getCurrentLocation,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isLoadingLocation)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+              )
+            else
+              Container(
+                width: 20,
+                height: 20,
+                child: const Icon(
+                  Icons.my_location,
+                  color: Colors.black,
+                  size: 20,
+                ),
+              ),
+            const SizedBox(width: 8),
+            Text(
+              'Моє місцезнаходження',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 14,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+                height: 1.40,
+                letterSpacing: 0.14,
+              ),
+            ),
+          ],
         ),
       ),
     );
