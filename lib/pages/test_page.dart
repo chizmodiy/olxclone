@@ -118,10 +118,11 @@ class _TestPageState extends State<TestPage> {
           children: [
             // Верхня частина з полями вводу
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 16),
                   // Dropdown для вибору області
                   _buildRegionDropdown(),
                   const SizedBox(height: 16),
@@ -136,15 +137,20 @@ class _TestPageState extends State<TestPage> {
             ),
             
             // Карта
-            Expanded(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: _buildMap(),
             ),
             
+            const SizedBox(height: 16),
+            
             // Кнопка "Моє місцезнаходження"
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: _buildLocationButton(),
             ),
+            
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -404,88 +410,101 @@ class _TestPageState extends State<TestPage> {
 
   // Карта
   Widget _buildMap() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.zinc200),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                center: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
-                zoom: _selectedLocation != null ? 12.0 : 6.0,
-                onTap: (_, point) {
-                  try {
-                    setState(() {
-                      _selectedLocation = point;
-                    });
-                  } catch (e) {
-                    print('Помилка встановлення маркера: $e');
-                  }
-                },
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                if (_selectedLocation != null)
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        width: 40,
-                        height: 40,
-                        point: _selectedLocation!,
-                        child: const Icon(
-                          Icons.location_on,
-                          color: AppColors.primaryColor,
-                          size: 40,
-                        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Отримуємо ширину екрану
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Розраховуємо розмір карти пропорційно
+        // При ширині екрану 390px карта має бути 364x364
+        final mapSize = (screenWidth - 32) * (364.0 / 358.0); // 358 = 390 - 32 (відступи)
+        
+        // Обмежуємо максимальний розмір
+        final maxMapSize = screenWidth - 32;
+        final finalMapSize = mapSize > maxMapSize ? maxMapSize : mapSize;
+        
+        // Обмежуємо висоту карти, щоб вона не була занадто великою
+        final maxHeight = screenWidth * 0.8; // 80% від ширини екрану
+        final finalHeight = finalMapSize > maxHeight ? maxHeight : finalMapSize;
+        
+        return Center(
+          child: Container(
+            width: finalMapSize,
+            height: finalHeight,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.zinc200),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                  FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      center: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
+                      zoom: _selectedLocation != null ? 12.0 : 6.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        subdomains: ['a', 'b', 'c'],
                       ),
+                      if (_selectedLocation != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              width: 40,
+                              height: 40,
+                              point: _selectedLocation!,
+                              child: const Icon(
+                                Icons.location_on,
+                                color: AppColors.primaryColor,
+                                size: 40,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
-              ],
-            ),
-            // Кнопки керування картою
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Column(
-                children: [
-                  _buildMapControlButton(
-                    icon: Icons.add,
-                    onTap: () {
-                      try {
-                        final currentZoom = _mapController.zoom;
-                        _mapController.move(_mapController.center, currentZoom + 1);
-                      } catch (e) {
-                        print('Помилка збільшення масштабу: $e');
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  _buildMapControlButton(
-                    icon: Icons.remove,
-                    onTap: () {
-                      try {
-                        final currentZoom = _mapController.zoom;
-                        _mapController.move(_mapController.center, currentZoom - 1);
-                      } catch (e) {
-                        print('Помилка зменшення масштабу: $e');
-                      }
-                    },
+                  // Кнопки керування картою
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Column(
+                      children: [
+                        _buildMapControlButton(
+                          icon: Icons.add,
+                          onTap: () {
+                            try {
+                              final currentZoom = _mapController.zoom;
+                              _mapController.move(_mapController.center, currentZoom + 1);
+                            } catch (e) {
+                              print('Помилка збільшення масштабу: $e');
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _buildMapControlButton(
+                          icon: Icons.remove,
+                          onTap: () {
+                            try {
+                              final currentZoom = _mapController.zoom;
+                              _mapController.move(_mapController.center, currentZoom - 1);
+                            } catch (e) {
+                              print('Помилка зменшення масштабу: $e');
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -825,15 +844,91 @@ class _TestPageState extends State<TestPage> {
   // Заповнення полів з координат
   Future<void> _fillLocationFromCoordinates(latlong.LatLng location) async {
     try {
-      // Тут буде інтеграція з Reverse Geocoding API
-      // Поки що встановлюємо тестові значення
+      // Використовуємо Nominatim OpenStreetMap API для Reverse Geocoding
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?'
+        'lat=${location.latitude}&lon=${location.longitude}'
+        '&format=json&accept-language=uk&addressdetails=1'
+      );
+      
+      final response = await http.get(
+        url,
+        headers: {
+          'User-Agent': 'YourApp/1.0',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final address = data['address'] as Map<String, dynamic>;
+        
+        // Отримуємо область та місто з адреси
+        String? region = address['state']?.toString() ?? address['province']?.toString() ?? address['region']?.toString();
+        String? city = address['city']?.toString() ?? address['town']?.toString() ?? address['village']?.toString() ?? address['municipality']?.toString();
+        
+        // Якщо місто не знайдено, беремо перший доступний населений пункт
+        if (city == null) {
+          city = address['suburb']?.toString() ?? address['county']?.toString() ?? address['district']?.toString();
+        }
+        
+        // Якщо область не знайдено, беремо країну
+        if (region == null) {
+          region = address['country']?.toString();
+        }
+        
+        // Перевіряємо, чи це Україна
+        final country = address['country']?.toString();
+        if (country == 'Україна' || country == 'Ukraine') {
+          // Додаємо "область" до назви області, якщо її немає
+          if (region != null && !region!.toLowerCase().contains('область')) {
+            region = '$region область';
+          }
+          
+          // Перевіряємо, чи область є в нашому списку
+          if (region != null && _regions.contains(region!)) {
+            setState(() {
+              _selectedRegion = region!;
+              _selectedCity = city;
+              _cityController.text = city != null ? '$city, ${region!}' : region!;
+            });
+            
+            // Фокусуємо карту на області
+            _focusMapOnRegion(region!);
+          } else {
+            // Якщо область не знайдена в списку, встановлюємо за замовчуванням
+            setState(() {
+              _selectedRegion = 'Київська область';
+              _selectedCity = city ?? 'Київ';
+              _cityController.text = city != null ? '$city, Київська область' : 'Київ, Київська область';
+            });
+            
+            _focusMapOnRegion('Київська область');
+          }
+        } else {
+          // Якщо це не Україна, встановлюємо за замовчуванням
+          setState(() {
+            _selectedRegion = 'Київська область';
+            _selectedCity = 'Київ';
+            _cityController.text = 'Київ, Київська область';
+          });
+          
+          _focusMapOnRegion('Київська область');
+        }
+      } else {
+        throw Exception('Помилка отримання адреси: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Помилка отримання адреси: $e');
+      
+      // При помилці встановлюємо за замовчуванням
       setState(() {
         _selectedRegion = 'Київська область';
         _selectedCity = 'Київ';
         _cityController.text = 'Київ, Київська область';
       });
-    } catch (e) {
-      print('Помилка отримання адреси: $e');
+      
+      _focusMapOnRegion('Київська область');
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка отримання адреси: $e'),
