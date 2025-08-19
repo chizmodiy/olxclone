@@ -21,6 +21,7 @@ import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:async'; // Add this import for Timer
 import '../widgets/location_picker.dart';
+import '../widgets/location_creation_block.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -2795,9 +2796,9 @@ class _AddListingPageState extends State<AddListingPage> {
                 _buildCarFields(),
                 // Додаємо LocationPicker після категорії та підкатегорії
                 const SizedBox(height: 20),
-                // LocationPicker для вибору координат
-                                  LocationPicker(
-                    onLocationSelected: (latLng, address) async {
+                // LocationCreationBlock для вибору координат
+                LocationCreationBlock(
+                  onLocationSelected: (latLng, address) async {
                     if (latLng != null) {
                       // Знаходимо область за координатами
                       Region? nearestRegion;
@@ -2832,8 +2833,6 @@ class _AddListingPageState extends State<AddListingPage> {
                         _selectedLongitude = latLng.longitude;
                         _selectedAddress = address ?? 'Обрана локація';
                       });
-                      
-
                     }
                   },
                 ),
