@@ -814,6 +814,28 @@ class _TestPageState extends State<TestPage> {
     });
 
     try {
+      // Перевіряємо чи увімкнені сервіси геолокації
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Будь ласка, увімкніть GPS в налаштуваннях телефону'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Налаштування',
+              onPressed: () async {
+                await Geolocator.openLocationSettings();
+              },
+            ),
+          ),
+        );
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
+      }
+
       // Перевіряємо дозволи
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -829,7 +851,9 @@ class _TestPageState extends State<TestPage> {
 
       // Отримуємо поточну позицію
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.best, // Змінено на найвищу точність
+        timeLimit: const Duration(seconds: 15), // Збільшено таймаут
+        forceAndroidLocationManager: false,     // Використовуємо Google Play Services
       );
 
       final location = latlong.LatLng(position.latitude, position.longitude);

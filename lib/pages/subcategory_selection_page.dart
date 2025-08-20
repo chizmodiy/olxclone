@@ -138,6 +138,8 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
                         setState(() {
                           _selectedSubcategory = subcategory;
                         });
+                        // Одразу повертаємося на сторінку фільтр з обраною підкатегорією
+                        Navigator.pop(context, subcategory);
                       },
                     );
                   }),

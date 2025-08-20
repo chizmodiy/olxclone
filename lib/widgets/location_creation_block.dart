@@ -801,6 +801,31 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
     });
 
     try {
+      // Перевіряємо чи увімкнені сервіси геолокації
+      print('Перевіряємо чи увімкнені сервіси геолокації');
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        print('Сервіси геолокації вимкнені');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Будь ласка, увімкніть GPS в налаштуваннях телефону'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Налаштування',
+              onPressed: () async {
+                await Geolocator.openLocationSettings();
+              },
+            ),
+          ),
+        );
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
+      }
+      print('Сервіси геолокації увімкнені');
+
       // Перевіряємо дозволи
       print('Перевіряємо дозволи на геолокацію');
       LocationPermission permission = await Geolocator.checkPermission();
@@ -822,9 +847,23 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       // Отримуємо поточну позицію
       print('Отримуємо поточну позицію');
       final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.best, // Змінено на найвищу точність
+        timeLimit: const Duration(seconds: 15), // Збільшено таймаут
+        forceAndroidLocationManager: false,     // Використовуємо Google Play Services
       );
       print('Отримана позиція: ${position.latitude}, ${position.longitude}');
+      print('Точність: ${position.accuracy} метрів');
+
+      // Перевіряємо точність позиції
+      if (position.accuracy > 50) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Увага: Низька точність геолокації (${position.accuracy.toStringAsFixed(1)}м). Перевірте налаштування GPS.'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
 
       final location = latlong.LatLng(position.latitude, position.longitude);
       

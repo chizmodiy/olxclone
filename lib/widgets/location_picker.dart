@@ -528,9 +528,16 @@ class _LocationPickerState extends State<LocationPicker> {
         // Показуємо повідомлення користувачу
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Будь ласка, увімкніть геолокацію в налаштуваннях телефону'),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: const Text('Будь ласка, увімкніть GPS в налаштуваннях телефону'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'Налаштування',
+                onPressed: () async {
+                  await Geolocator.openLocationSettings();
+                },
+              ),
             ),
           );
         }
@@ -558,8 +565,9 @@ class _LocationPickerState extends State<LocationPicker> {
 
       // Отримуємо поточну позицію
       final pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.best, // Змінено на найвищу точність
+        timeLimit: const Duration(seconds: 15), // Збільшено таймаут
+        forceAndroidLocationManager: false,     // Використовуємо Google Play Services
       );
       
       final latLng = latlong.LatLng(pos.latitude, pos.longitude);
