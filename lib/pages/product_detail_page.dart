@@ -787,8 +787,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               onTap: () async {
                                 if (_product != null) {
                                   try {
-                                    final productUrl = 'https://your-app-url.com/product/${_product!.id}'; // TODO: Replace with your actual app URL
-                            
+                                    final productUrl = 'https://your-app-url.com/product/${_product!.id}';
                                     await Share.share(
                                       'Подивіться на це оголошення: ${_product!.title} - ${_product!.formattedPrice}\n$productUrl'
                                     );

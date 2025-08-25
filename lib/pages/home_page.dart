@@ -176,7 +176,7 @@ class HomeContentState extends State<HomeContent> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                     child: Container(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                     ),
                   ),
                 ),
@@ -563,7 +563,7 @@ class HomeContentState extends State<HomeContent> {
                             ]
                           : [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
                               ),
@@ -599,7 +599,7 @@ class HomeContentState extends State<HomeContent> {
                             ]
                           : [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
                               ),
@@ -683,7 +683,7 @@ class HomeContentState extends State<HomeContent> {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
@@ -728,7 +728,7 @@ class HomeContentState extends State<HomeContent> {
                         color: activeFiltersCount > 0 ? const Color(0xFFF0F9FF) : Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -845,7 +845,7 @@ class HomeContentState extends State<HomeContent> {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  Container(
+                                  SizedBox(
                                     width: double.infinity,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,

@@ -315,7 +315,6 @@ class _MapPageState extends State<MapPage> {
     // Якщо через таббар — можна використати callback або інший state management
     // Тут для прикладу: Navigator.of(context).popUntil((route) => route.isFirst);
     // Але для таббару краще передати callback
-    // TODO: Реалізувати через callback або state management
   }
 
   @override

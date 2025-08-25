@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -83,7 +82,7 @@ class StorageService {
   Future<void> deleteImage(String imageUrl) async {
     try {
       final uri = Uri.parse(imageUrl);
-      final fileName = path.basename(uri.path);
+      final fileName = uri.pathSegments.last;
 
       await _client.storage
           .from(_bucketName)

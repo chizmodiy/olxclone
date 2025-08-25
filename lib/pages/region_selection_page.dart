@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class RegionSelectionPage extends StatefulWidget {
-  const RegionSelectionPage({Key? key}) : super(key: key);
+  const RegionSelectionPage({super.key});
 
   @override
   State<RegionSelectionPage> createState() => _RegionSelectionPageState();

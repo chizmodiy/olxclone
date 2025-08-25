@@ -86,7 +86,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
         _favoriteProductIds = favoriteIds;
       });
     } catch (e) {
-
+      // Ignore errors when loading favorite product IDs
     }
   }
 

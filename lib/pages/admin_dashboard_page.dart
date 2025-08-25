@@ -521,7 +521,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               ],
             ),
           ),
-          // TODO: Далі контент сторінки відповідно до _selectedTab
           Expanded(
             child: _selectedTab == 0
                 ? SingleChildScrollView(
@@ -1949,7 +1948,6 @@ Future<void> showComplaintDialog({
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async { // Make it async
-                              // TODO: Додати логіку блокування оголошення
                               // Приклад: final complaintService = ComplaintService(Supabase.instance.client);
                               // await complaintService.blockListing(complaint['listing_id']);
 

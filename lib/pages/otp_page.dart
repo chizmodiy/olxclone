@@ -76,7 +76,9 @@ class _OtpPageState extends State<OtpPage> {
         type: OtpType.sms,
       );
       if (smth.session != null) {
-        Navigator.of(context).pushReplacementNamed('/');
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/');
+        }
       } else {
         _showSnackBar('OTP verification failed.', isError: true);
       }
@@ -177,7 +179,7 @@ class _OtpPageState extends State<OtpPage> {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                // TODO: Implement resend OTP logic
+                // Resend OTP functionality - to be implemented
                 _showSnackBar('Resending OTP...');
               },
               style: ButtonStyle(

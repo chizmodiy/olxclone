@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import '../theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_bottom_sheet.dart';
@@ -102,7 +101,7 @@ class _CommonHeaderState extends State<CommonHeader> {
                           child: GestureDetector(
                             onTap: () => Navigator.of(context).pop(),
                             child: Container(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                             ),
                           ),
                         ),

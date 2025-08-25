@@ -1,13 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'storage_service.dart';
-import 'package:withoutname/services/category_service.dart'; // Add this import
+
 import '../models/listing.dart'; // Added this import
 
 enum CurrencyEnum {
-  UAH,
-  EUR,
-  USD,
+  uah,
+  eur,
+  usd,
 }
 
 class ListingService {
@@ -176,26 +176,11 @@ class ListingService {
   // Оновлений метод для оновлення статусу оголошення
   Future<void> updateListingStatus(String listingId, String status) async {
     try {
-      
-      
-      // Спочатку перевіримо поточний статус
-      final currentResponse = await _client.from('listings').select('status').eq('id', listingId).single();
-      
-      
       // Оновлюємо статус
-      final updateResponse = await _client.from('listings').update({
+      await _client.from('listings').update({
         'status': status,
       }).eq('id', listingId);
-      
-      
-      
-      // Перевіряємо оновлений статус
-      final updatedResponse = await _client.from('listings').select('status').eq('id', listingId).single();
-      
-      
-
     } catch (e) {
-
       throw Exception('Не вдалося оновити статус оголошення: $e');
     }
   }

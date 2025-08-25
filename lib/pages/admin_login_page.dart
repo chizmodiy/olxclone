@@ -4,7 +4,7 @@ import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 
 class AdminLoginPage extends StatefulWidget {
-  const AdminLoginPage({Key? key}) : super(key: key);
+  const AdminLoginPage({super.key});
 
   @override
   State<AdminLoginPage> createState() => _AdminLoginPageState();
@@ -62,7 +62,9 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
             .maybeSingle();
 
         if (profileRes != null && profileRes['role'] == 'admin') {
-          Navigator.of(context).pushReplacementNamed('/admin/dashboard');
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/admin/dashboard');
+          }
         } else if (profileRes != null) {
           setState(() { _error = 'Немає доступу'; });
         } else {

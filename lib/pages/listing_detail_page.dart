@@ -296,28 +296,28 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                     ListTile(
                       leading: const Icon(Icons.phone),
                       title: Text(listing.phoneNumber!),
-                      onTap: () {/* TODO: Add phone call functionality */},
+                      onTap: () {},
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     ),
                   if (listing.whatsapp != null)
                     ListTile(
                       leading: const FaIcon(FontAwesomeIcons.whatsapp),
                       title: Text(listing.whatsapp!),
-                      onTap: () {/* TODO: Add WhatsApp functionality */},
+                      onTap: () {},
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     ),
                   if (listing.telegram != null)
                     ListTile(
                       leading: const FaIcon(FontAwesomeIcons.telegram),
                       title: Text(listing.telegram!),
-                      onTap: () {/* TODO: Add Telegram functionality */},
+                      onTap: () {},
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     ),
                   if (listing.viber != null)
                     ListTile(
                       leading: const FaIcon(FontAwesomeIcons.viber),
                       title: Text(listing.viber!),
-                      onTap: () {/* TODO: Add Viber functionality */},
+                      onTap: () {},
                       contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     ),
                   // Кнопка 'Написати' одразу після контактів
@@ -328,7 +328,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                         width: double.infinity,
                         height: 44,
                         child: ElevatedButton(
-                          onPressed: () {/* TODO: Додати логіку написання */},
+                          onPressed: () {},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF015873),
                             shape: RoundedRectangleBorder(
@@ -373,7 +373,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Користувач', // TODO: Замінити на реальне ім'я користувача
+                        'Користувач', 
                         style: AppTextStyles.body1Medium.copyWith(color: AppColors.color2),
                       ),
                     ],

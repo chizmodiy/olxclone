@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:withoutname/theme/app_colors.dart';
 import 'package:withoutname/theme/app_text_styles.dart';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/category.dart';
 import '../services/category_service.dart';
