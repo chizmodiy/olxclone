@@ -12,7 +12,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class ViewedPage extends StatelessWidget {
-  const ViewedPage({super.key});
+  const ViewedPage({super.key, this.contentKey});
+
+  final GlobalKey<ViewedContentState>? contentKey;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class ViewedPage extends StatelessWidget {
       appBar: const CommonHeader(),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 8),
-        child: ViewedContent(key: key),
+        child: ViewedContent(key: contentKey),
       ),
     );
   }
@@ -314,30 +316,30 @@ class ViewedContentState extends State<ViewedContent> {
                               const Spacer(),
                             ],
                           )
-                    : ListView.builder(
-                        controller: _scrollController,
+                        : ListView.builder(
+                            controller: _scrollController,
                             padding: const EdgeInsets.only(top: 0),
-                        itemCount: filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
+                            itemCount: filteredProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = filteredProducts[index];
                               return ViewedProductCard(
-                                  id: product.id,
-                                  title: product.title,
-                                  price: product.formattedPrice,
-                            date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
-                                  region: product.region,
-                            images: product.images,
-                                  isNegotiable: product.isNegotiable,
-                                  onTap: () async {
-                                    await Navigator.of(context).pushNamed(
-                                      '/product-detail',
-                                      arguments: {'id': product.id},
-                                    );
-                                  },
+                                id: product.id,
+                                title: product.title,
+                                price: product.formattedPrice,
+                                date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
+                                region: product.region,
+                                images: product.images,
+                                isNegotiable: product.isNegotiable,
+                                onTap: () async {
+                                  await Navigator.of(context).pushNamed(
+                                    '/product-detail',
+                                    arguments: {'id': product.id},
+                                  );
+                                },
                               );
-                        },
+                            },
                           ),
-                      ),
+                  ),
           ),
         ],
       ),

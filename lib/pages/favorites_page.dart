@@ -13,7 +13,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
+  const FavoritesPage({super.key, this.contentKey});
+
+  final GlobalKey<FavoritesContentState>? contentKey;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class FavoritesPage extends StatelessWidget {
       appBar: const CommonHeader(),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 8),
-        child: FavoritesContent(key: key),
+        child: FavoritesContent(key: contentKey),
       ),
     );
   }
@@ -326,7 +328,7 @@ class FavoritesContentState extends State<FavoritesContent> {
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
@@ -480,7 +482,7 @@ class FavoritesContentState extends State<FavoritesContent> {
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           mainAxisAlignment: MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Container(
                                               width: 52,

@@ -38,8 +38,8 @@ class _GeneralPageState extends State<GeneralPage> {
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
     HomePage(key: _homePageKey),
-    FavoritesPage(key: _favoritesKey),
-    ViewedPage(key: _viewedKey),
+    FavoritesPage(contentKey: _favoritesKey),
+    ViewedPage(contentKey: _viewedKey),
     const ChatPage(),
   ];
 
