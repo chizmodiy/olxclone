@@ -104,6 +104,11 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
     });
   }
 
+  // Метод для оновлення списку активних оголошень
+  void refreshProducts() {
+    _loadProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

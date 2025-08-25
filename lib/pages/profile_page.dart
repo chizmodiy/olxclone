@@ -283,26 +283,44 @@ class _ProfilePageState extends State<ProfilePage> {
                 _sectionTitle('Мої оголошення'),
                 _profileButton(
                   text: 'Активні',
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => ActiveListingsPage()),
                     );
+                    // Якщо повернулися з додавання оголошення, оновлюємо сторінку
+                    if (result == true) {
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
                   },
                 ),
                 _profileButton(
                   text: 'Неактивні',
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => InactiveListingsPage()),
                     );
+                    // Якщо повернулися з додавання оголошення, оновлюємо сторінку
+                    if (result == true) {
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
                   },
                 ),
                 _profileButton(
                   text: 'Улюблені оголошення',
-                  onTap: () {
-                    Navigator.of(context).push(
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => FavoriteListingsPage()),
                     );
+                    // Якщо повернулися з додавання оголошення, оновлюємо сторінку
+                    if (result == true) {
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
                   },
                 ),
                 const SizedBox(height: 40),

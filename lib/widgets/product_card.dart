@@ -268,29 +268,39 @@ class ProductCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12), // Changed from 8 to 12
-                  Text(
-                    date,
-                    style: const TextStyle(
-                      color: Color(0xFF838583),
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                      height: 1.3,
-                      letterSpacing: 0.24,
-                    ),
-                  ),
-                  if (region != null)
-                    Text(
-                      region!,
-                      style: const TextStyle(
-                        color: Color(0xFF838583),
-                        fontSize: 12,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                        height: 1.3,
-                        letterSpacing: 0.24,
+                  // Дата та область в одному рядку
+                  Row(
+                    children: [
+                      Text(
+                        date,
+                        style: const TextStyle(
+                          color: Color(0xFF838583),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.3,
+                          letterSpacing: 0.24,
+                        ),
                       ),
-                    ),
+                      if (region != null) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            region!,
+                            style: const TextStyle(
+                              color: Color(0xFF838583),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.3,
+                              letterSpacing: 0.24,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),

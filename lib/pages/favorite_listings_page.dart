@@ -91,15 +91,20 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
   }
 
   Future<void> _toggleFavorite(Product product) async {
+    print('_toggleFavorite called for product: ${product.id}, current favorites: $_favoriteProductIds');
     if (_currentUserId == null) return;
     try {
       if (_favoriteProductIds.contains(product.id)) {
         await _profileService.removeFavoriteProduct(product.id);
         setState(() {
           _favoriteProductIds.remove(product.id);
+          // Видаляємо продукт з обох списків
           _filteredProducts.removeWhere((p) => p.id == product.id);
           _products.removeWhere((p) => p.id == product.id);
         });
+        print('Product ${product.id} removed from favorites. Remaining: ${_filteredProducts.length}');
+        print('Updated favoriteProductIds: $_favoriteProductIds');
+        print('Updated filteredProducts length: ${_filteredProducts.length}');
       } else {
         await _profileService.addFavoriteProduct(product.id);
         setState(() {
@@ -107,7 +112,7 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
         });
       }
     } catch (e) {
-
+      print('Error toggling favorite: $e');
     }
   }
 
@@ -118,6 +123,11 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
           ? _products
           : _products.where((p) => p.title.toLowerCase().contains(query)).toList();
     });
+  }
+
+  // Метод для оновлення списку улюблених оголошень
+  void refreshProducts() {
+    _loadProducts();
   }
 
   void _showBlockedUserBottomSheet() {
@@ -219,6 +229,8 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
                                 itemCount: _filteredProducts.length,
                                 itemBuilder: (context, index) {
                                   final product = _filteredProducts[index];
+                                  final isFavorite = _favoriteProductIds.contains(product.id);
+                                  print('Building product ${product.id}, isFavorite: $isFavorite');
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
                                     child: ProductCardListItem(
@@ -227,8 +239,11 @@ class _FavoriteListingsPageState extends State<FavoriteListingsPage> {
                                       price: product.formattedPrice,
                                       images: product.photos,
                                       isNegotiable: product.isNegotiable,
-                                      isFavorite: _favoriteProductIds.contains(product.id),
-                                      onFavoriteToggle: () => _toggleFavorite(product),
+                                      isFavorite: isFavorite,
+                                      onFavoriteToggle: () {
+                                        print('Favorite toggle called for product: ${product.id}');
+                                        _toggleFavorite(product);
+                                      },
                                       onTap: () async {
                                         await Navigator.of(context).pushNamed(
                                           '/product-detail',

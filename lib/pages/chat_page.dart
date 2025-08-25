@@ -86,6 +86,11 @@ class _ChatPageState extends State<ChatPage> {
       ..subscribe();
   }
 
+  // Метод для оновлення списку чатів
+  void refreshProducts() {
+    _loadChats();
+  }
+
   Future<void> _loadChats() async {
     if (_currentUserId == null) {
       setState(() {

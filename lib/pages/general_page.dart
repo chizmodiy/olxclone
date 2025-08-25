@@ -28,10 +28,13 @@ class _GeneralPageState extends State<GeneralPage> {
   final ChatService _chatService = ChatService();
   bool _hasUnreadMessages = false;
   Timer? _timer;
+  
+  // Додаємо GlobalKey для HomePage
+  final GlobalKey<HomeContentState> _homePageKey = GlobalKey<HomeContentState>();
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(),
+    HomePage(key: _homePageKey),
     const FavoritesPage(),
     const ViewedPage(),
     const ChatPage(),
@@ -244,18 +247,32 @@ class _GeneralPageState extends State<GeneralPage> {
                     return;
                   }
                   final result = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddListingPage()));
-                  if (result == true && _selectedIndex == 0) {
-                    // Додаємо більшу затримку для забезпечення оновлення
-                    await Future.delayed(const Duration(milliseconds: 1000));
-                    // Альтернативний спосіб - примусове оновлення через setState
-                    setState(() {
-                      // Це примусить перебудувати HomePage
-                    });
-                    
-                    // Додаткове оновлення після побудови кадру
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      // Оновлення після побудови кадру
-                    });
+                  if (result == true) {
+                    // Оновлюємо список оголошень та фільтри на HomePage якщо ми на головній вкладці
+                    if (_selectedIndex == 0) {
+                      _homePageKey.currentState?.refreshProducts();
+                    }
+                    // Оновлюємо список оголошень на ViewedPage якщо ми на вкладці "Проглянуті"
+                    if (_selectedIndex == 2) {
+                      // Оновлюємо сторінку проглянутих
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
+                    // Оновлюємо список оголошень на FavoritesPage якщо ми на вкладці "Улюблені"
+                    if (_selectedIndex == 1) {
+                      // Оновлюємо сторінку улюблених
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
+                    // Оновлюємо список оголошень на ChatPage якщо ми на вкладці "Чат"
+                    if (_selectedIndex == 3) {
+                      // Оновлюємо сторінку чату
+                      setState(() {
+                        // Примусове оновлення сторінки
+                      });
+                    }
                   }
                 },
                 backgroundColor: Colors.transparent,

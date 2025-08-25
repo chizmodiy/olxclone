@@ -113,6 +113,17 @@ class _FavoritesContentState extends State<FavoritesContent> {
     }
   }
 
+  // Метод для оновлення списку улюблених оголошень
+  void refreshProducts() {
+    setState(() {
+      _products.clear();
+      _errorMessage = null;
+    });
+    _loadFavorites().then((_) {
+      _loadProducts();
+    });
+  }
+
   Future<void> _toggleFavorite(Product product) async {
     if (_currentUserId == null) {
 

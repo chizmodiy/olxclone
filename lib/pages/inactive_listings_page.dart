@@ -94,6 +94,11 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
     });
   }
 
+  // Метод для оновлення списку неактивних оголошень
+  void refreshProducts() {
+    _loadProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

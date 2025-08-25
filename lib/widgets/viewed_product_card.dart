@@ -123,43 +123,58 @@ class ViewedProductCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    title,
-                                    style: const TextStyle(
-                                      color: Color(0xFF27272A), // Zinc-800
-                                      fontSize: 14,
-                                      fontFamily: 'Inter',
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.40,
-                                      letterSpacing: 0.14,
+                                // Перший рядок: назва і ціна
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          color: Color(0xFF27272A), // Zinc-800
+                                          fontSize: 14,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.40,
+                                          letterSpacing: 0.14,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      price,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.40,
+                                        letterSpacing: 0.14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 8),
-                                Container(
-                                  width: double.infinity,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        date ?? '12 Березня 16:00',
-                                        style: const TextStyle(
-                                          color: Color(0xFF838583),
-                                          fontSize: 12,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.30,
-                                          letterSpacing: 0.24,
-                                        ),
+                                // Другий рядок: дата і область
+                                Row(
+                                  children: [
+                                    Text(
+                                      date ?? '12 Березня 16:00',
+                                      style: const TextStyle(
+                                        color: Color(0xFF838583),
+                                        fontSize: 12,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.30,
+                                        letterSpacing: 0.24,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Text(
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
                                         region ?? 'Харків',
                                         style: const TextStyle(
                                           color: Color(0xFF838583),
@@ -169,23 +184,12 @@ class ViewedProductCard extends StatelessWidget {
                                           height: 1.30,
                                           letterSpacing: 0.24,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            price,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
-                              height: 1.40,
-                              letterSpacing: 0.14,
                             ),
                           ),
                         ],

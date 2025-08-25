@@ -172,15 +172,18 @@ class ProductCardListItem extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          region ?? 'Харків',
-                          style: const TextStyle(
-                            color: Color(0xFF838583),
-                            fontSize: 12,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 1.30,
-                            letterSpacing: 0.24,
+                        Expanded(
+                          child: Text(
+                            region ?? 'Харків',
+                            style: const TextStyle(
+                              color: Color(0xFF838583),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                              height: 1.30,
+                              letterSpacing: 0.24,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

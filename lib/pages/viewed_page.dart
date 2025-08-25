@@ -115,6 +115,15 @@ class _ViewedContentState extends State<ViewedContent> {
     // No pagination for viewed products, so no need to load more on scroll
   }
 
+  // Метод для оновлення списку проглянутих оголошень
+  void refreshProducts() {
+    setState(() {
+      _products.clear();
+      _errorMessage = null;
+    });
+    _loadViewedProducts();
+  }
+
   void _onSortChanged(String? newSortBy) {
     // Sorting logic can be implemented here if needed for viewed list
     setState(() {

@@ -404,6 +404,10 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
 
   // Перевіряємо, чи є у користувача власна іконка (оригінальна або тимчасова)
   bool get _hasCustomAvatar {
+    // Якщо аватар позначений як видалений, не показуємо його
+    if (_isAvatarDeleted) {
+      return false;
+    }
     final currentAvatarUrl = _tempAvatarUrl ?? _avatarUrl;
     final hasCustom = AvatarUtils.isValidAvatarUrl(currentAvatarUrl);
     print('_hasCustomAvatar check: $currentAvatarUrl -> $hasCustom');
@@ -492,8 +496,8 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                 ),
                                 Row(
                                   children: [
-                                    // Показуємо "Видалити" тільки якщо є власна іконка (оригінальна або тимчасова)
-                                    if (_hasCustomAvatar || _tempAvatarUrl != null)
+                                    // Показуємо "Видалити" тільки якщо є власна іконка і вона не позначена як видалена
+                                    if (_hasCustomAvatar)
                                       GestureDetector(
                                         onTap: _deleteAvatar,
                                         child: Container(
@@ -516,7 +520,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                                           ),
                                         ),
                                       ),
-                                    if (_hasCustomAvatar || _tempAvatarUrl != null)
+                                    if (_hasCustomAvatar)
                                       const SizedBox(width: 8),
                                     GestureDetector( // Added GestureDetector here
                                       onTap: _pickAvatar, // Call _pickAvatar when 'Оновити' is tapped
@@ -567,6 +571,12 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               ),
                               child: TextField(
                                 controller: _nameController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _tempName = value;
+                                    _checkForUnsavedChanges();
+                                  });
+                                },
                                 textAlignVertical: TextAlignVertical.center,
                                 textAlign: TextAlign.left,
                                 decoration: const InputDecoration(
@@ -717,7 +727,17 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
                               elevation: 0,
                             ),
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed: () {
+                              // Відновлюємо оригінальний стан при скасуванні
+                              setState(() {
+                                _tempName = _originalName;
+                                _nameController.text = _originalName ?? '';
+                                _tempAvatarUrl = _avatarUrl;
+                                _isAvatarDeleted = false;
+                                _hasUnsavedChanges = false;
+                              });
+                              Navigator.of(context).pop();
+                            },
                             child: const Text(
                               'Скасувати',
                               style: TextStyle(
