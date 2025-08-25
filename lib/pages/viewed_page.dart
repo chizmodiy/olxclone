@@ -314,30 +314,30 @@ class ViewedContentState extends State<ViewedContent> {
                               const Spacer(),
                             ],
                           )
-                        : ListView.builder(
-                            controller: _scrollController,
+                    : ListView.builder(
+                        controller: _scrollController,
                             padding: const EdgeInsets.only(top: 0),
-                            itemCount: filteredProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = filteredProducts[index];
+                        itemCount: filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = filteredProducts[index];
                               return ViewedProductCard(
-                            id: product.id,
-                            title: product.title,
-                            price: product.formattedPrice,
+                                  id: product.id,
+                                  title: product.title,
+                                  price: product.formattedPrice,
                             date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
-                            region: product.region,
+                                  region: product.region,
                             images: product.images,
-                            isNegotiable: product.isNegotiable,
-                            onTap: () async {
-                              await Navigator.of(context).pushNamed(
-                                '/product-detail',
-                                arguments: {'id': product.id},
+                                  isNegotiable: product.isNegotiable,
+                                  onTap: () async {
+                                    await Navigator.of(context).pushNamed(
+                                      '/product-detail',
+                                      arguments: {'id': product.id},
+                                    );
+                                  },
                               );
-                            },
-                          );
-                            },
+                        },
                           ),
-                  ),
+                      ),
           ),
         ],
       ),

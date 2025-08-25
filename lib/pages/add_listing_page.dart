@@ -88,6 +88,11 @@ class _AddListingPageState extends State<AddListingPage> {
   double? _selectedLatitude;
   double? _selectedLongitude;
   final ProfileService _profileService = ProfileService();
+  
+  // Inline dropdown visibility flags
+  bool _isCategoryOpen = false;
+  bool _isSubcategoryOpen = false;
+  bool _isRegionOpen = false;
 
   @override
   void initState() {
@@ -312,46 +317,41 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Widget _buildCategorySection() {
     return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
           'Категорія',
-                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-            ),
-            const SizedBox(height: 6),
+          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+        ),
+        const SizedBox(height: 6),
         GestureDetector(
           key: _categoryButtonKey,
           onTap: () {
-            final RenderBox? button = _categoryButtonKey.currentContext?.findRenderObject() as RenderBox?;
-            if (button != null) {
-              final buttonPosition = button.localToGlobal(Offset.zero);
-              final buttonSize = button.size;
-              
-              _showCategoryPicker(
-                position: buttonPosition,
-                size: buttonSize,
-              );
-            }
+            setState(() {
+              _isCategoryOpen = !_isCategoryOpen;
+              _isSubcategoryOpen = false;
+              _isRegionOpen = false;
+            });
           },
-                child: Container(
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.zinc50,
+            decoration: BoxDecoration(
+              color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
               border: Border.all(
                 color: _submitted && _selectedCategory == null ? Colors.red : AppColors.zinc200,
-                width: 1
+                width: 1,
               ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.05),
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.05),
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
             child: Row(
-                    children: [
+              children: [
                 Expanded(
                   child: Text(
                     _selectedCategory?.name ?? 'Оберіть категорію',
@@ -365,11 +365,38 @@ class _AddListingPageState extends State<AddListingPage> {
                   width: 20,
                   height: 20,
                   colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
+        ),
+        if (_isCategoryOpen)
+          Container(
+            constraints: const BoxConstraints(maxHeight: 320),
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.zinc200),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.03),
+                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              shrinkWrap: true,
+              itemCount: _categories.length,
+              itemBuilder: (context, index) {
+                final category = _categories[index];
+                return _buildCategoryItem(category);
+              },
+            ),
+          ),
       ],
     );
   }
@@ -511,7 +538,10 @@ class _AddListingPageState extends State<AddListingPage> {
         });
       }
     });
-    Navigator.pop(context);
+    setState(() {
+      _isCategoryOpen = false;
+      _isSubcategoryOpen = false;
+    });
   }
 
   Widget _buildSubcategorySection() {
@@ -533,16 +563,11 @@ class _AddListingPageState extends State<AddListingPage> {
         GestureDetector(
           key: _subcategoryButtonKey,
           onTap: () {
-            final RenderBox? button = _subcategoryButtonKey.currentContext?.findRenderObject() as RenderBox?;
-            if (button != null) {
-              final buttonPosition = button.localToGlobal(Offset.zero);
-              final buttonSize = button.size;
-              
-              _showSubcategoryPicker(
-                position: buttonPosition,
-                size: buttonSize,
-              );
-            }
+            setState(() {
+              _isSubcategoryOpen = !_isSubcategoryOpen;
+              _isCategoryOpen = false;
+              _isRegionOpen = false;
+            });
           },
           child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -581,6 +606,33 @@ class _AddListingPageState extends State<AddListingPage> {
             ),
           ),
         ),
+        if (_isSubcategoryOpen)
+          Container(
+            constraints: const BoxConstraints(maxHeight: 320),
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.zinc200),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(16, 24, 40, 0.03),
+                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              shrinkWrap: true,
+              itemCount: _subcategories.length,
+              itemBuilder: (context, index) {
+                final subcategory = _subcategories[index];
+                return _buildSubcategoryItem(subcategory);
+              },
+            ),
+          ),
       ],
     );
   }
@@ -714,8 +766,8 @@ class _AddListingPageState extends State<AddListingPage> {
           _extraFieldControllers['age_range_max'] = TextEditingController();
         }
       }
+      _isSubcategoryOpen = false;
     });
-    Navigator.pop(context);
   }
 
   Widget _buildExtraFieldsSection() {
@@ -1123,16 +1175,11 @@ class _AddListingPageState extends State<AddListingPage> {
         GestureDetector(
           key: _regionButtonKey,
           onTap: () {
-            final RenderBox? button = _regionButtonKey.currentContext?.findRenderObject() as RenderBox?;
-            if (button != null) {
-              final buttonPosition = button.localToGlobal(Offset.zero);
-              final buttonSize = button.size;
-              
-              _showRegionPicker(
-                position: buttonPosition,
-                size: buttonSize,
-              );
-            }
+            setState(() {
+              _isRegionOpen = !_isRegionOpen;
+              _isCategoryOpen = false;
+              _isSubcategoryOpen = false;
+            });
           },
           child: Container(
               height: 44, // Фіксована висота 44 пікселі
@@ -1170,8 +1217,35 @@ class _AddListingPageState extends State<AddListingPage> {
                   ),
                 ],
               ),
+                          ),
             ),
-        ),
+          if (_isRegionOpen)
+            Container(
+              constraints: const BoxConstraints(maxHeight: 320),
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.zinc200),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(16, 24, 40, 0.03),
+                    offset: Offset(0, 4),
+                    blurRadius: 6,
+                    spreadRadius: -2,
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                shrinkWrap: true,
+                itemCount: _regions.length,
+                itemBuilder: (context, index) {
+                  final region = _regions[index];
+                  return _buildRegionItem(region);
+                },
+              ),
+            ),
 
       ],
     );
@@ -1283,8 +1357,8 @@ class _AddListingPageState extends State<AddListingPage> {
       _selectedCity = null; // Clear selected city when region changes
       _cities.clear(); // Clear city search results
       _citySearchController.clear(); // Clear city search input
+      _isRegionOpen = false;
     });
-    Navigator.pop(context);
     // Automatically search for cities in the selected region or prompt user
     // _onCitySearchChanged('', regionName: region.name); // You can uncomment this to auto-load cities
   }
