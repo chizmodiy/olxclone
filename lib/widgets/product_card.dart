@@ -92,7 +92,7 @@ class ProductCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           backgroundBlendMode: BlendMode.overlay,
                         ),
                         child: Row(
@@ -108,7 +108,7 @@ class ProductCard extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 color: index == 0
                                     ? AppColors.primaryColor
-                                    : Colors.white.withOpacity(0.25),
+                                    : Colors.white.withValues(alpha: 0.25),
                               ),
                             ),
                           ),

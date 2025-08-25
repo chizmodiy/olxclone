@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/common_header.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
@@ -8,8 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/viewed_product_card.dart'; // Import ProductCardListItem
 import 'dart:async'; // Import Timer
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
 
 class ViewedPage extends StatelessWidget {
   const ViewedPage({super.key, this.contentKey});
@@ -43,8 +40,6 @@ class ViewedContentState extends State<ViewedContent> {
   
   List<Product> _products = [];
   bool _isLoading = false;
-  bool _hasMore = true;
-  final int _currentPage = 0; // Changed to 0 as we'll fetch all viewed IDs first
   String? _sortBy; 
   bool _isGrid = false;
   String? _errorMessage;
@@ -87,7 +82,6 @@ class ViewedContentState extends State<ViewedContent> {
         
         setState(() {
           _isLoading = false;
-          _hasMore = false;
         });
         return;
       }
@@ -102,7 +96,7 @@ class ViewedContentState extends State<ViewedContent> {
       setState(() {
         _products = activeProducts; // Directly assign as we're not paginating here based on viewed IDs
         _isLoading = false;
-        _hasMore = false; // No more pages, all loaded at once
+        // _hasMore = false; // No more pages, all loaded at once
       });
     } catch (e) {
       setState(() {
@@ -124,30 +118,6 @@ class ViewedContentState extends State<ViewedContent> {
       _errorMessage = null;
     });
     _loadViewedProducts();
-  }
-
-  void _onSortChanged(String? newSortBy) {
-    // Sorting logic can be implemented here if needed for viewed list
-    setState(() {
-      if (_sortBy == 'price_asc') {
-        _sortBy = 'price_desc';
-      } else if (_sortBy == 'price_desc') {
-        _sortBy = null;
-      } else {
-        _sortBy = 'price_asc';
-      }
-      // Re-sort existing products or reload if sorting needs backend support
-      _products = []; // Clear for re-fetch or re-sort
-      _loadViewedProducts(); // Reload with new sort preference
-    });
-  }
-
-  void _toggleView() {
-    setState(() {
-      _isGrid = !_isGrid;
-      _products = []; // Clear for re-fetch or re-render based on view type
-      _loadViewedProducts();
-    });
   }
 
   void _onSearchChanged(String value) {
@@ -272,7 +242,7 @@ class ViewedContentState extends State<ViewedContent> {
                                               ),
                                             ),
                                           ),
-                                          const Positioned(
+                                          Positioned(
                                             left: 14,
                                             top: 14,
                                             child: Icon(
@@ -285,7 +255,7 @@ class ViewedContentState extends State<ViewedContent> {
                                       ),
                                     ),
                                     const SizedBox(height: 20),
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,

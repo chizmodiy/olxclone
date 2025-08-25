@@ -29,7 +29,7 @@ class SuccessBottomSheet extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.successColor.withOpacity(0.1),
+              color: AppColors.successColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
