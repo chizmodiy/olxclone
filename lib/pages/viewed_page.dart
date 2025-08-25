@@ -16,12 +16,12 @@ class ViewedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CommonHeader(),
+      appBar: const CommonHeader(),
       body: Padding(
-        padding: EdgeInsets.only(top: 20, bottom: 8),
-        child: ViewedContent(),
+        padding: const EdgeInsets.only(top: 20, bottom: 8),
+        child: ViewedContent(key: key),
       ),
     );
   }
@@ -31,10 +31,10 @@ class ViewedContent extends StatefulWidget {
   const ViewedContent({super.key});
 
   @override
-  State<ViewedContent> createState() => _ViewedContentState();
+  State<ViewedContent> createState() => ViewedContentState();
 }
 
-class _ViewedContentState extends State<ViewedContent> {
+class ViewedContentState extends State<ViewedContent> {
   final ProductService _productService = ProductService();
   final ProfileService _profileService = ProfileService();
   final ScrollController _scrollController = ScrollController();
@@ -207,7 +207,7 @@ class _ViewedContentState extends State<ViewedContent> {
                           decoration: const InputDecoration(
                             hintText: 'Пошук',
                             hintStyle: TextStyle(
-                              color: Color(0xFF838583),
+                              color: const Color(0xFF838583),
                               fontSize: 16,
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w400,
@@ -218,10 +218,6 @@ class _ViewedContentState extends State<ViewedContent> {
                           ),
                           style: const TextStyle(
                             color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
                           ),
                           onChanged: _onSearchChanged,
                         ),
@@ -238,133 +234,15 @@ class _ViewedContentState extends State<ViewedContent> {
                 ? Center(
                     child: Text('Помилка завантаження товарів: $_errorMessage'),
                   )
-                : _currentUserId == null
-                    ? Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.only(top: 40),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Content
-                                Column(
-                                  children: [
-                                    // Featured icon with book
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.zinc100,
-                                        borderRadius: BorderRadius.circular(28),
-                                        border: Border.all(
-                                          color: AppColors.zinc50,
-                                          width: 8,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/book-open-01.svg',
-                                          width: 24,
-                                          height: 24,
-                                          colorFilter: const ColorFilter.mode(AppColors.primaryColor, BlendMode.srcIn),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    // Text content
-                                    Column(
-                                      children: [
-                                        Text(
-                                          'Історія переглядів',
-                                          textAlign: TextAlign.center,
-                                          style: AppTextStyles.heading1Semibold.copyWith(
-                                            color: Colors.black,
-                                            fontSize: 24,
-                                            height: 28.8 / 24,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'Увійдіть або створіть профіль, щоб бачити історію переглянутих товарів.',
-                                          textAlign: TextAlign.center,
-                                          style: AppTextStyles.body1Regular.copyWith(
-                                            color: AppColors.color7,
-                                            height: 22.4 / 16,
-                                            letterSpacing: 0.16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 40),
-                                // Buttons
-                                Column(
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pushNamed('/auth');
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primaryColor,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(200),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                                          elevation: 0,
-                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                                        ),
-                                        child: Text(
-                                          'Увійти',
-                                          style: AppTextStyles.body1Medium.copyWith(
-                                            color: Colors.white,
-                                            letterSpacing: 0.16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pushNamed('/auth');
-                                        },
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.black,
-                                          side: const BorderSide(color: AppColors.zinc200, width: 1),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(200),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                                          elevation: 0,
-                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                                        ),
-                                        child: Text(
-                                          'Створити акаунт',
-                                          style: AppTextStyles.body1Medium.copyWith(
-                                            color: Colors.black,
-                                            letterSpacing: 0.16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                        ],
-                      )
-                    : filteredProducts.isEmpty
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _products = [];
+                        _errorMessage = null;
+                      });
+                      await _loadViewedProducts();
+                    },
+                    child: filteredProducts.isEmpty && !_isLoading
                         ? Column(
                             children: [
                               Container(
@@ -436,34 +314,30 @@ class _ViewedContentState extends State<ViewedContent> {
                               const Spacer(),
                             ],
                           )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        shrinkWrap: true,
-                        itemCount: filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
-                          return Padding(
-                                padding: const EdgeInsets.only(bottom: 10), // Space between list items
-                                child: ViewedProductCard(
-                                  id: product.id,
-                                  title: product.title,
-                                  price: product.formattedPrice,
-                                  date: DateFormat('dd.MM.yyyy').format(product.createdAt),
-                                  region: product.region,
-                                  images: product.photos,
-                                  isNegotiable: product.isNegotiable,
-                                  onTap: () async {
-                                    await Navigator.of(context).pushNamed(
-                                      '/product-detail',
-                                      arguments: {'id': product.id},
-                                    );
-                                    // Оновлюємо список при поверненні
-                                    _loadViewedProducts();
-                                  },
-                                ),
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.only(top: 0),
+                            itemCount: filteredProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = filteredProducts[index];
+                              return ViewedProductCard(
+                            id: product.id,
+                            title: product.title,
+                            price: product.formattedPrice,
+                            date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
+                            region: product.region,
+                            images: product.images,
+                            isNegotiable: product.isNegotiable,
+                            onTap: () async {
+                              await Navigator.of(context).pushNamed(
+                                '/product-detail',
+                                arguments: {'id': product.id},
                               );
-                        },
-                      ),
+                            },
+                          );
+                            },
+                          ),
+                  ),
           ),
         ],
       ),

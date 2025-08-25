@@ -17,12 +17,12 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CommonHeader(),
+      appBar: const CommonHeader(),
       body: Padding(
-        padding: EdgeInsets.only(top: 20, bottom: 8),
-        child: FavoritesContent(),
+        padding: const EdgeInsets.only(top: 20, bottom: 8),
+        child: FavoritesContent(key: key),
       ),
     );
   }
@@ -32,10 +32,10 @@ class FavoritesContent extends StatefulWidget {
   const FavoritesContent({super.key});
 
   @override
-  State<FavoritesContent> createState() => _FavoritesContentState();
+  State<FavoritesContent> createState() => FavoritesContentState();
 }
 
-class _FavoritesContentState extends State<FavoritesContent> {
+class FavoritesContentState extends State<FavoritesContent> {
   final ProductService _productService = ProductService();
   final ProfileService _profileService = ProfileService();
   final ScrollController _scrollController = ScrollController();

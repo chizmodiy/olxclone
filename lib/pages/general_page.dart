@@ -31,12 +31,15 @@ class _GeneralPageState extends State<GeneralPage> {
   
   // Додаємо GlobalKey для HomePage
   final GlobalKey<HomeContentState> _homePageKey = GlobalKey<HomeContentState>();
+  // Додаємо GlobalKeys для інших вкладок з контентом
+  final GlobalKey<FavoritesContentState> _favoritesKey = GlobalKey<FavoritesContentState>();
+  final GlobalKey<ViewedContentState> _viewedKey = GlobalKey<ViewedContentState>();
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
     HomePage(key: _homePageKey),
-    const FavoritesPage(),
-    const ViewedPage(),
+    FavoritesPage(key: _favoritesKey),
+    ViewedPage(key: _viewedKey),
     const ChatPage(),
   ];
 
@@ -78,6 +81,23 @@ class _GeneralPageState extends State<GeneralPage> {
   }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) {
+      // Повторне натискання на активну вкладку: оновлюємо її
+      if (index == 0) {
+        _homePageKey.currentState?.refreshProducts();
+      } else if (index == 1) {
+        _favoritesKey.currentState?.refreshProducts();
+      } else if (index == 2) {
+        _viewedKey.currentState?.refreshProducts();
+      }
+      if (index == 3) {
+        setState(() {
+          _hasUnreadMessages = false;
+        });
+      }
+      return;
+    }
+
     if (index == 3) {
       setState(() {
         _hasUnreadMessages = false;
