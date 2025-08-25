@@ -394,10 +394,9 @@ class _LocationPickerState extends State<LocationPicker> {
     // Overlay видалено - використовуємо тільки вбудований список
   }
 
-  void _hideAutocompleteOverlay() {
-    _autocompleteOverlay?.remove();
-    _autocompleteOverlay = null;
-  }
+  // Removed: unused overlay method
+  // void _hideAutocompleteOverlay() {}
+
 
   void _showRegionDropdown(BuildContext context) {
     // Не показуємо випадаюче вікно під час ініціалізації
@@ -906,8 +905,8 @@ class _LocationPickerState extends State<LocationPicker> {
                     child: FlutterMap(
                       mapController: _mapController,
                       options: MapOptions(
-                        center: _mapCenter ?? latlong.LatLng(49.0, 32.0),
-                        zoom: _selectedLatLng != null ? 11 : 6,
+                        initialCenter: _mapCenter ?? latlong.LatLng(49.0, 32.0),
+                        initialZoom: _selectedLatLng != null ? 11 : 6,
                       ),
                       children: [
                         TileLayer(

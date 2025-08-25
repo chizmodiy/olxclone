@@ -304,33 +304,33 @@ class FavoritesContentState extends State<FavoritesContent> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(200),
-                                border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+                                border: Border.all(color: Color(0xFFE4E4E7), width: 1),
                                 boxShadow: _isViewDropdownOpen
                                     ? [
                                         BoxShadow(
-                                          color: const Color.fromRGBO(16, 24, 40, 0.10),
-                                          offset: const Offset(0, 1),
+                                          color: Color.fromRGBO(16, 24, 40, 0.10),
+                                          offset: Offset(0, 1),
                                           blurRadius: 0,
                                           spreadRadius: 5,
-                                      ),
-                                    ]
-                                  : [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
-                                        blurRadius: 2,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ],
-                            ),
-                            child: Icon(
-                              _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view, // Always show current view mode icon
-                              size: 20,
+                                        ),
+                                      ]
+                                    : [
+                                        BoxShadow(
+                                          color: Color(0x0D000000),
+                                          blurRadius: 2,
+                                          offset: Offset(0, 1),
+                                        ),
+                                      ],
+                              ),
+                              child: Icon(
+                                _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
                       ],
-                    ],
-                  ),
+                    ),
                 ],
               ),
               const SizedBox(height: 20),
