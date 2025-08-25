@@ -71,12 +71,10 @@ class AlgoliaService {
         
         return hits.map((hit) => Product.fromJson(hit)).toList();
       } else {
-        print('Algolia search error: ${response.statusCode} - ${response.body}');
         return [];
       }
       
     } catch (e) {
-      print('Algolia search exception: $e');
       return [];
     }
   }
@@ -113,12 +111,10 @@ class AlgoliaService {
         
         return hits.map((hit) => Product.fromJson(hit)).toList();
       } else {
-        print('Algolia geo search error: ${response.statusCode}');
         return [];
       }
       
     } catch (e) {
-      print('Algolia geo search exception: $e');
       return [];
     }
   }
@@ -145,12 +141,10 @@ class AlgoliaService {
         final data = jsonDecode(response.body);
         return data['facets'] ?? {};
       } else {
-        print('Algolia facets error: ${response.statusCode}');
         return {};
       }
       
     } catch (e) {
-      print('Algolia facets exception: $e');
       return {};
     }
   }

@@ -480,7 +480,7 @@ class _TestPageState extends State<TestPage> {
                               final currentZoom = _mapController.zoom;
                               _mapController.move(_mapController.center, currentZoom + 1);
                             } catch (e) {
-                              print('Помилка збільшення масштабу: $e');
+                              // Error zooming in
                             }
                           },
                         ),
@@ -492,7 +492,7 @@ class _TestPageState extends State<TestPage> {
                               final currentZoom = _mapController.zoom;
                               _mapController.move(_mapController.center, currentZoom - 1);
                             } catch (e) {
-                              print('Помилка зменшення масштабу: $e');
+                              // Error zooming out
                             }
                           },
                         ),
@@ -613,7 +613,6 @@ class _TestPageState extends State<TestPage> {
           _cityResults.clear();
           _isSearchingCities = false;
         });
-        print('Помилка пошуку міст: $e');
       }
     });
   }
@@ -682,7 +681,6 @@ class _TestPageState extends State<TestPage> {
         }
       }
     } catch (e) {
-      print('Помилка пошуку міст: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка пошуку міст: $e'),
@@ -713,7 +711,7 @@ class _TestPageState extends State<TestPage> {
           try {
           _mapController.move(coordinates, 12.0);
         } catch (e) {
-          print('Помилка фокусування на місті: $e');
+          // Error focusing on city
               }
     }
   }
@@ -742,7 +740,6 @@ class _TestPageState extends State<TestPage> {
     return parts.join(', ');
   }
 } catch (e) {
-      print('Помилка вибору міста: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка вибору міста: $e'),
@@ -789,11 +786,10 @@ class _TestPageState extends State<TestPage> {
       final coordinates = regionCoordinates[region] ?? _ukraineCenter;
       _mapController.move(coordinates, 8.0);
     } catch (e) {
-      print('Помилка фокусування на області: $e');
       try {
         _mapController.move(_ukraineCenter, 6.0);
       } catch (e2) {
-        print('Помилка фокусування на центрі України: $e2');
+        // Error focusing on Ukraine center
       }
     }
   }
@@ -868,7 +864,7 @@ class _TestPageState extends State<TestPage> {
       try {
         _mapController.move(location, 14.0);
       } catch (e) {
-        print('Помилка фокусування карти: $e');
+        // Error focusing map
       }
 
       // Отримуємо адресу та заповнюємо поля
@@ -987,8 +983,6 @@ class _TestPageState extends State<TestPage> {
         throw Exception('Помилка отримання адреси: ${response.statusCode}');
       }
     } catch (e) {
-      print('Помилка отримання адреси: $e');
-      
       // При помилці встановлюємо за замовчуванням
       setState(() {
         _selectedRegion = 'Київська область';
@@ -1077,7 +1071,6 @@ class _TestPageState extends State<TestPage> {
         }
       }
     } catch (e) {
-      print('Помилка отримання координат: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка отримання координат: $e'),

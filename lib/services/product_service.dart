@@ -126,7 +126,6 @@ class ProductService {
             return results;
           }
         } catch (e) {
-          print('Algolia search error: $e');
           // Fallback до Supabase
         }
       }

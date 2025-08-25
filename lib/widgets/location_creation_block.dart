@@ -489,7 +489,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                               final currentZoom = _mapController.zoom;
                               _mapController.move(_mapController.center, currentZoom + 1);
                             } catch (e) {
-                              print('Помилка збільшення масштабу: $e');
+                              // Error zooming in
                             }
                           },
                         ),
@@ -501,7 +501,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                               final currentZoom = _mapController.zoom;
                               _mapController.move(_mapController.center, currentZoom - 1);
                             } catch (e) {
-                              print('Помилка зменшення масштабу: $e');
+                              // Error zooming out
                             }
                           },
                         ),
@@ -563,7 +563,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       ),
       child: GestureDetector(
         onTap: _isLoadingLocation ? null : () {
-          print('Кнопка "Моє місцезнаходження" натиснута');
           _getCurrentLocation();
         },
         child: Row(
@@ -630,7 +629,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
           _cityResults.clear();
           _isSearchingCities = false;
         });
-        print('Помилка пошуку міст: $e');
       }
     });
   }
@@ -695,7 +693,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         }
       }
     } catch (e) {
-      print('Помилка пошуку міст: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка пошуку міст: $e'),
@@ -726,7 +723,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
           try {
             _mapController.move(coordinates, 12.0);
           } catch (e) {
-            print('Помилка фокусування на місті: $e');
+            // Error focusing on city
           }
         }
       }
@@ -737,7 +734,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         widget.onLocationSelected!(_selectedLocation!, formattedAddress, _selectedRegion, _selectedCity);
       }
     } catch (e) {
-      print('Помилка вибору міста: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка вибору міста: $e'),
@@ -784,28 +780,24 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       final coordinates = regionCoordinates[region] ?? _ukraineCenter;
       _mapController.move(coordinates, 8.0);
     } catch (e) {
-      print('Помилка фокусування на області: $e');
       try {
         _mapController.move(_ukraineCenter, 6.0);
       } catch (e2) {
-        print('Помилка фокусування на центрі України: $e2');
+        // Error focusing on Ukraine center
       }
     }
   }
 
   // Отримання поточної локації
   Future<void> _getCurrentLocation() async {
-    print('Початок отримання поточної локації');
     setState(() {
       _isLoadingLocation = true;
     });
 
     try {
       // Перевіряємо чи увімкнені сервіси геолокації
-      print('Перевіряємо чи увімкнені сервіси геолокації');
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        print('Сервіси геолокації вимкнені');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Будь ласка, увімкніть GPS в налаштуваннях телефону'),
@@ -824,17 +816,12 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         });
         return;
       }
-      print('Сервіси геолокації увімкнені');
 
       // Перевіряємо дозволи
-      print('Перевіряємо дозволи на геолокацію');
       LocationPermission permission = await Geolocator.checkPermission();
-      print('Поточний дозвіл: $permission');
       
       if (permission == LocationPermission.denied) {
-        print('Запитуємо дозвіл на геолокацію');
         permission = await Geolocator.requestPermission();
-        print('Новий дозвіл: $permission');
         if (permission == LocationPermission.denied) {
           throw Exception('Дозвіл на геолокацію відхилено');
         }
@@ -845,14 +832,11 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       }
 
       // Отримуємо поточну позицію
-      print('Отримуємо поточну позицію');
       final Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best, // Змінено на найвищу точність
         timeLimit: const Duration(seconds: 15), // Збільшено таймаут
         forceAndroidLocationManager: false,     // Використовуємо Google Play Services
       );
-      print('Отримана позиція: ${position.latitude}, ${position.longitude}');
-      print('Точність: ${position.accuracy} метрів');
 
       // Перевіряємо точність позиції
       if (position.accuracy > 50) {
@@ -877,7 +861,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       try {
         _mapController.move(location, 14.0);
       } catch (e) {
-        print('Помилка фокусування карти: $e');
+        // Error focusing map
       }
 
       // Отримуємо адресу та заповнюємо поля
@@ -889,7 +873,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         widget.onLocationSelected!(location, formattedAddress, _selectedRegion, _selectedCity);
       }
     } catch (e) {
-      print('Помилка отримання локації: $e');
       setState(() {
         _isLoadingLocation = false;
       });
@@ -1092,7 +1075,6 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         }
       }
     } catch (e) {
-      print('Помилка отримання координат: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Помилка отримання координат: $e'),

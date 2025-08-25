@@ -33,7 +33,6 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
   void initState() {
     super.initState();
     _selectedSubcategory = widget.selectedSubcategory; // Set the selected subcategory from widget
-    print('SubcategorySelectionPage: selectedSubcategory = ${widget.selectedSubcategory?.name}');
     _loadSubcategories();
     
     // Перевіряємо статус користувача після завантаження
@@ -58,8 +57,6 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
       setState(() {
         _subcategories = fetchedSubcategories;
         _isLoadingSubcategories = false;
-        print('SubcategorySelectionPage: loaded ${fetchedSubcategories.length} subcategories');
-        print('SubcategorySelectionPage: current _selectedSubcategory = ${_selectedSubcategory?.name}');
       });
     } catch (e) {
       
@@ -130,7 +127,6 @@ class _SubcategorySelectionPageState extends State<SubcategorySelectionPage> {
                   // Dynamically build subcategory buttons
                   ..._subcategories.map((subcategory) {
                     final bool isSelected = _selectedSubcategory?.id == subcategory.id;
-                    print('SubcategorySelectionPage: ${subcategory.name} isSelected = $isSelected');
                     return _buildSubcategoryButton(
                       title: subcategory.name,
                       isSelected: isSelected,

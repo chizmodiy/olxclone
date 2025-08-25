@@ -10,8 +10,6 @@ class ProfileNotifier extends ChangeNotifier {
   ProfileNotifier._internal();
 
   void notifyProfileUpdate() {
-    print('ProfileNotifier.notifyProfileUpdate called');
     notifyListeners();
-    print('ProfileNotifier listeners notified');
   }
 } 

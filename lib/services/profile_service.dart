@@ -8,23 +8,17 @@ class ProfileService {
       : _client = client ?? Supabase.instance.client;
 
   Future<UserProfile?> getUser(String userId) async {
-    print('ProfileService.getUser called with: userId=$userId');
-    
     try {
-      print('Executing database query...');
       final response = await _client
           .from('profiles')
           .select()
           .eq('id', userId)
           .single();
-      print('Database response: $response');
       
       final userProfile = response != null ? UserProfile.fromJson(response as Map<String, dynamic>) : null;
-      print('Parsed user profile: ${userProfile?.avatarUrl}');
       
       return userProfile;
     } catch (e) {
-      print('ProfileService.getUser error: $e');
       return null;
     }
   }
@@ -88,25 +82,17 @@ class ProfileService {
     String? lastName,
     String? avatarUrl,
   }) async {
-    print('ProfileService.updateUserProfile called with: userId=$userId, firstName=$firstName, lastName=$lastName, avatarUrl=$avatarUrl');
-    
     final updates = <String, dynamic>{};
     if (firstName != null) updates['first_name'] = firstName;
     if (lastName != null) updates['last_name'] = lastName;
     // Обробляємо avatarUrl окремо, щоб можна було встановити null
     updates['avatar_url'] = avatarUrl;
 
-    print('Updates to apply: $updates');
-
     if (updates.isNotEmpty) {
-      print('Executing database update...');
       await _client
           .from('profiles')
           .update(updates)
           .eq('id', userId);
-      print('Database update completed');
-    } else {
-      print('No updates to apply');
     }
   }
 

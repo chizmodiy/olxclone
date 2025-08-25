@@ -30,7 +30,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    print('ProfilePage.initState called');
     
     // Ініціалізуємо ProfileNotifier та додаємо слухач
     _profileNotifier = ProfileNotifier();
@@ -38,52 +37,38 @@ class _ProfilePageState extends State<ProfilePage> {
     
     // Перевіряємо статус користувача після завантаження
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      print('ProfilePage: Post frame callback executed');
       final currentUser = Supabase.instance.client.auth.currentUser;
       if (currentUser != null) {
-        print('ProfilePage: Current user found: ${currentUser.id}');
         final userStatus = await _profileService.getUserStatus();
-        print('ProfilePage: User status: $userStatus');
         if (userStatus == 'blocked') {
           _showBlockedUserBottomSheet();
         }
         
         // Завантажуємо фото профілю
-        print('ProfilePage: Loading profile image');
         await _loadProfileImage();
-      } else {
-        print('ProfilePage: No current user found');
       }
     });
   }
 
   Future<void> _loadProfileImage() async {
-    print('ProfilePage._loadProfileImage called');
     try {
       final currentUser = Supabase.instance.client.auth.currentUser;
       if (currentUser != null) {
-        print('Loading profile image for user: ${currentUser.id}');
         final profile = await _profileService.getUser(currentUser.id);
-        print('Profile loaded in ProfilePage: ${profile?.avatarUrl}');
         
         if (AvatarUtils.isValidAvatarUrl(profile?.avatarUrl)) {
-          print('Setting profile image to: ${profile!.avatarUrl}');
           setState(() {
-            _profileImageUrl = profile.avatarUrl;
+            _profileImageUrl = profile!.avatarUrl;
             _hasProfileImage = true;
           });
         } else {
-          print('No valid profile image, setting to null');
           setState(() {
             _profileImageUrl = null;
             _hasProfileImage = false;
           });
         }
-      } else {
-        print('No current user in ProfilePage');
       }
     } catch (e) {
-      print('ProfilePage._loadProfileImage error: $e');
       setState(() {
         _profileImageUrl = null;
         _hasProfileImage = false;
@@ -104,7 +89,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Метод для оновлення профілю при змінах
   void _onProfileUpdate() {
-    print('ProfilePage: Profile update notification received');
     if (mounted) {
       _loadProfileImage();
     }
@@ -188,7 +172,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    print('ProfilePage.build called, _hasProfileImage=$_hasProfileImage, _profileImageUrl=$_profileImageUrl');
     return Stack(
       children: [
         Scaffold(
@@ -247,13 +230,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 _profileButton(
                   text: 'Особисті данні',
                   onTap: () async { // Make onTap async
-                    print('ProfilePage: Navigating to PersonalDataPage');
                     final result = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => const PersonalDataPage()),
                     );
-                    print('ProfilePage: PersonalDataPage returned: $result');
                     // Завжди оновлюємо фото після повернення з PersonalDataPage
-                    print('ProfilePage: Reloading profile image');
                     await _loadProfileImage();
                   },
                 ),

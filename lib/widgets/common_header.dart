@@ -24,54 +24,51 @@ class _CommonHeaderState extends State<CommonHeader> {
   @override
   void initState() {
     super.initState();
-    print('CommonHeader.initState called');
+    // init
     _loadAvatarUrl();
     ProfileNotifier().addListener(_onProfileUpdate); // Add listener
-    print('CommonHeader: ProfileNotifier listener added');
+    // listener added
   }
 
   @override
   void dispose() {
-    print('CommonHeader.dispose called');
+    // dispose
     ProfileNotifier().removeListener(_onProfileUpdate); // Remove listener
-    print('CommonHeader: ProfileNotifier listener removed');
+    // listener removed
     super.dispose();
   }
 
   void _onProfileUpdate() {
-    print('CommonHeader._onProfileUpdate called');
+    // profile update
     _loadAvatarUrl(); // Reload avatar when profile is updated
   }
 
   Future<void> _loadAvatarUrl() async {
-    print('CommonHeader._loadAvatarUrl called');
+    // load avatar
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
-      print('Loading avatar for user: ${user.id}');
+      // loading avatar
       final profile = await _profileService.getUser(user.id);
-      print('Profile loaded in CommonHeader: ${profile?.avatarUrl}');
+      // profile loaded
       if (mounted) {
         setState(() {
           // Перевіряємо, чи URL не порожній
           final avatarUrl = profile?.avatarUrl;
           final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
-          print('Avatar validation in CommonHeader: $avatarUrl -> $isValidAvatar');
           _avatarUrl = isValidAvatar ? avatarUrl : null;
-          print('CommonHeader _avatarUrl set to: $_avatarUrl');
         });
       }
     } else {
-      print('No current user in CommonHeader');
+      // no current user
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('CommonHeader.build called');
+    // build
     final user = Supabase.instance.client.auth.currentUser;
     final avatarUrl = _avatarUrl ?? user?.userMetadata?['avatar_url'] as String?;
     final isValidAvatar = AvatarUtils.isValidAvatarUrl(avatarUrl);
-    print('CommonHeader.build: user=$user, avatarUrl=$avatarUrl, isValidAvatar=$isValidAvatar');
 
     return Container(
       padding: const EdgeInsets.fromLTRB(13, 42, 13, 16),

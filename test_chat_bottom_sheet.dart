@@ -84,7 +84,6 @@ class TestPage extends StatelessWidget {
               color: Colors.orange,
               onTap: () {
                 Navigator.pop(context);
-                print('Скарга натиснута');
               },
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
@@ -94,7 +93,6 @@ class TestPage extends StatelessWidget {
               color: Colors.red,
               onTap: () {
                 Navigator.pop(context);
-                print('Видалити чат натиснуто');
               },
             ),
             const SizedBox(height: 20),
