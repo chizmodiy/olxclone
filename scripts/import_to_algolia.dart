@@ -47,21 +47,15 @@ class AlgoliaImporter {
     try {
       print('🔄 Імпортуємо ${products.length} записів...');
       
-      // Використовуємо batch операцію для ефективності
-      final response = await searchClient.batch(
-        request: BatchRequest(
-          requests: products.map((product) => 
-            BatchRequestAction(
-              action: Action.addObject,
-              indexName: indexName,
-              body: product,
-            )
-          ).toList(),
-        ),
-      );
+      // Імпортуємо кожен продукт окремо
+      for (final product in products) {
+        await searchClient.saveObject(
+          indexName: indexName,
+          body: product,
+        );
+      }
 
-      print('✅ Batch операція завершена');
-      print('📈 Відповідь: ${response.taskID}');
+      print('✅ Імпорт завершено');
       
     } catch (e) {
       print('❌ Помилка batch операції: $e');
@@ -82,29 +76,24 @@ class AlgoliaImporter {
       
       // Налаштовуємо пошукові атрибути
       await searchClient.setSettings(
-        request: SetSettingsRequest(
-          indexName: indexName,
-          indexSettings: IndexSettings(
-            searchableAttributes: config['searchableAttributes'] as List<String>?,
-            attributesForFaceting: config['attributesForFaceting'] as List<String>?,
-            ranking: config['ranking'] as List<String>?,
-            customRanking: config['customRanking'] as List<String>?,
-            searchableAttributesOrder: config['searchableAttributesOrder'] as List<String>?,
-            attributesToHighlight: config['attributesToHighlight'] as List<String>?,
-            attributesToSnippet: config['attributesToSnippet'] as List<String>?,
-            snippetEllipsisText: config['snippetEllipsisText'] as String?,
-            highlightPreTag: config['highlightPreTag'] as String?,
-            highlightPostTag: config['highlightPostTag'] as String?,
-            distinct: config['distinct'] as bool?,
-            advancedSyntax: config['advancedSyntax'] as bool?,
-            removeWordsIfNoResults: config['removeWordsIfNoResults'] as String?,
-            queryType: config['queryType'] as String?,
-            decompoundQuery: config['decompoundQuery'] as bool?,
-            ignorePlurals: config['ignorePlurals'] as bool?,
-            removeStopWords: config['removeStopWords'] as bool?,
-            camelCaseAttributes: config['camelCaseAttributes'] as List<String>?,
-            numericAttributesForFiltering: config['numericAttributesForFiltering'] as List<String>?,
-          ),
+        indexName: indexName,
+        indexSettings: IndexSettings(
+          searchableAttributes: config['searchableAttributes'] as List<String>?,
+          attributesForFaceting: config['attributesForFaceting'] as List<String>?,
+          ranking: config['ranking'] as List<String>?,
+          customRanking: config['customRanking'] as List<String>?,
+          attributesToHighlight: config['attributesToHighlight'] as List<String>?,
+          attributesToSnippet: config['attributesToSnippet'] as List<String>?,
+          snippetEllipsisText: config['snippetEllipsisText'] as String?,
+          highlightPreTag: config['highlightPreTag'] as String?,
+          highlightPostTag: config['highlightPostTag'] as String?,
+          distinct: config['distinct'] as bool?,
+          advancedSyntax: config['advancedSyntax'] as bool?,
+          decompoundQuery: config['decompoundQuery'] as bool?,
+          ignorePlurals: config['ignorePlurals'] as bool?,
+          removeStopWords: config['removeStopWords'] as bool?,
+          camelCaseAttributes: config['camelCaseAttributes'] as List<String>?,
+          numericAttributesForFiltering: config['numericAttributesForFiltering'] as List<String>?,
         ),
       );
 
