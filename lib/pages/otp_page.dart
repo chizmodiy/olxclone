@@ -77,7 +77,7 @@ class _OtpPageState extends State<OtpPage> {
       );
       if (smth.session != null) {
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/');
+        Navigator.of(context).pushReplacementNamed('/');
         }
       } else {
         _showSnackBar('OTP verification failed.', isError: true);

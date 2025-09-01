@@ -292,13 +292,15 @@ class ViewedContentState extends State<ViewedContent> {
                         itemCount: filteredProducts.length,
                         itemBuilder: (context, index) {
                           final product = filteredProducts[index];
-                              return ViewedProductCard(
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                                child: ViewedProductCard(
                                   id: product.id,
                                   title: product.title,
                                   price: product.formattedPrice,
-                                date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
+                              date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
                                   region: product.region,
-                                images: product.images,
+                              images: product.images,
                                   isNegotiable: product.isNegotiable,
                                   onTap: () async {
                                     await Navigator.of(context).pushNamed(
@@ -306,6 +308,7 @@ class ViewedContentState extends State<ViewedContent> {
                                       arguments: {'id': product.id},
                                     );
                                   },
+                                ),
                               );
                         },
                           ),

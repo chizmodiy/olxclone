@@ -312,25 +312,25 @@ class FavoritesContentState extends State<FavoritesContent> {
                                           offset: Offset(0, 1),
                                           blurRadius: 0,
                                           spreadRadius: 5,
-                                        ),
-                                      ]
-                                    : [
-                                        BoxShadow(
+                                      ),
+                                    ]
+                                  : [
+                                      BoxShadow(
                                           color: Color(0x0D000000),
-                                          blurRadius: 2,
+                                        blurRadius: 2,
                                           offset: Offset(0, 1),
-                                        ),
-                                      ],
-                              ),
-                              child: Icon(
+                                      ),
+                                    ],
+                            ),
+                            child: Icon(
                                 _currentViewMode == ViewMode.list ? Icons.view_list : Icons.grid_view,
-                                size: 20,
-                              ),
+                              size: 20,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -484,36 +484,7 @@ class FavoritesContentState extends State<FavoritesContent> {
                                           mainAxisAlignment: MainAxisAlignment.start,
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Container(
-                                              width: 52,
-                                              height: 52,
-                                              child: Stack(
-                                                children: [
-                                                  Positioned(
-                                                    left: 0,
-                                                    top: 0,
-                                                    child: Container(
-                                                      width: 52,
-                                                      height: 52,
-                                                      decoration: const ShapeDecoration(
-                                                        color: Color(0xFFFAFAFA),
-                                                        shape: OvalBorder(),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Positioned(
-                                                    left: 14,
-                                                    top: 14,
-                                                    child: Icon(
-                                                      Icons.list,
-                                                      size: 24,
-                                                      color: Color(0xFF52525B),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
+
                                             Container(
                                               width: double.infinity,
                                               child: Column(

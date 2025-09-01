@@ -88,7 +88,7 @@ class _AddListingPageState extends State<AddListingPage> {
   double? _selectedLatitude;
   double? _selectedLongitude;
   final ProfileService _profileService = ProfileService();
-  
+
   // Inline dropdown visibility flags
   bool _isCategoryOpen = false;
   bool _isSubcategoryOpen = false;
@@ -317,13 +317,13 @@ class _AddListingPageState extends State<AddListingPage> {
 
   Widget _buildCategorySection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+          crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
           'Категорія',
-          style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
-        ),
-        const SizedBox(height: 6),
+                  style: AppTextStyles.body2Medium.copyWith(color: AppColors.color8),
+            ),
+            const SizedBox(height: 6),
         GestureDetector(
           key: _categoryButtonKey,
           onTap: () {
@@ -333,25 +333,25 @@ class _AddListingPageState extends State<AddListingPage> {
               _isRegionOpen = false;
             });
           },
-          child: Container(
+                child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.zinc50,
+                  decoration: BoxDecoration(
+                    color: AppColors.zinc50,
               borderRadius: BorderRadius.circular(200),
               border: Border.all(
                 color: _submitted && _selectedCategory == null ? Colors.red : AppColors.zinc200,
                 width: 1,
               ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(16, 24, 40, 0.05),
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(16, 24, 40, 0.05),
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
             child: Row(
-              children: [
+                    children: [
                 Expanded(
                   child: Text(
                     _selectedCategory?.name ?? 'Оберіть категорію',
@@ -365,9 +365,9 @@ class _AddListingPageState extends State<AddListingPage> {
                   width: 20,
                   height: 20,
                   colorFilter: ColorFilter.mode(AppColors.color7, BlendMode.srcIn),
-                ),
-              ],
-            ),
+                      ),
+                    ],
+                  ),
           ),
         ),
         if (_isCategoryOpen)
@@ -395,8 +395,8 @@ class _AddListingPageState extends State<AddListingPage> {
                 final category = _categories[index];
                 return _buildCategoryItem(category);
               },
-            ),
-          ),
+                ),
+              ),
       ],
     );
   }
@@ -631,8 +631,8 @@ class _AddListingPageState extends State<AddListingPage> {
                 final subcategory = _subcategories[index];
                 return _buildSubcategoryItem(subcategory);
               },
-            ),
           ),
+        ),
       ],
     );
   }
@@ -1244,8 +1244,8 @@ class _AddListingPageState extends State<AddListingPage> {
                   final region = _regions[index];
                   return _buildRegionItem(region);
                 },
-              ),
             ),
+        ),
 
       ],
     );

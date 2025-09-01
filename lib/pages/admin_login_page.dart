@@ -63,7 +63,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
 
         if (profileRes != null && profileRes['role'] == 'admin') {
           if (mounted) {
-            Navigator.of(context).pushReplacementNamed('/admin/dashboard');
+          Navigator.of(context).pushReplacementNamed('/admin/dashboard');
           }
         } else if (profileRes != null) {
           setState(() { _error = 'Немає доступу'; });
