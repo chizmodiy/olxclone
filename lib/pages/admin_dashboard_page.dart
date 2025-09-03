@@ -1219,6 +1219,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                 Expanded(flex: 2, child: Text('Номер телефону', style: TextStyle(fontWeight: FontWeight.w600))),
                                                 Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
                                                 Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
+                                                Expanded(flex: 2, child: Text('Причина блокування', style: TextStyle(fontWeight: FontWeight.w600))),
                                                 SizedBox(width: 80), // Для іконок дій
                                               ],
                                             ),
@@ -1236,7 +1237,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                             await showBlockUserDialog(
                                                               context: context,
                                                               onBlock: (String reason) async {
-                                                                await _userService.blockUser(user['id']);
+                                                                await _userService.blockUser(user['id'], reason);
                                                                 await _fetchUsers();
                                                               },
                                                             );
@@ -1947,6 +1948,27 @@ class UserTableRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: _buildUserStatusBadge(status),
           ),
+          // Причина блокування (якщо користувач заблокований)
+          if (status == 'blocked')
+            Expanded(
+              flex: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Text(
+                  user['block_reason'] ?? 'Причина не вказана',
+                  style: const TextStyle(
+                    color: Color(0xFFB42318),
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.14,
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           // Дії
           Container(
             height: 72,

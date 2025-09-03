@@ -4,9 +4,12 @@ class UserService {
   final SupabaseClient _client;
   UserService(this._client);
 
-  Future<void> blockUser(String userId) async {
+  Future<void> blockUser(String userId, String reason) async {
     try {
-      await _client.from('profiles').update({'status': 'blocked'}).eq('id', userId);
+      await _client.from('profiles').update({
+        'status': 'blocked',
+        'block_reason': reason,
+      }).eq('id', userId);
     } catch (e) {
       throw Exception('Не вдалося заблокувати користувача: $e');
     }
