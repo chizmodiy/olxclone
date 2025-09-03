@@ -2060,6 +2060,10 @@ Future<void> showComplaintDialog({
   final listingCreatedAt = listing['created_at'] != null ? DateTime.tryParse(listing['created_at']) : null;
   final listingDate = listingCreatedAt != null ? '${listingCreatedAt.day.toString().padLeft(2, '0')} ${_monthUA(listingCreatedAt.month)} ${listingCreatedAt.hour.toString().padLeft(2, '0')}:${listingCreatedAt.minute.toString().padLeft(2, '0')}' : '';
   
+  // Дата створення скарги
+  final complaintCreatedAt = complaint['created_at'] != null ? DateTime.tryParse(complaint['created_at']) : null;
+  final complaintDate = complaintCreatedAt != null ? '${complaintCreatedAt.day.toString().padLeft(2, '0')} ${_monthUA(complaintCreatedAt.month)} ${complaintCreatedAt.hour.toString().padLeft(2, '0')}:${complaintCreatedAt.minute.toString().padLeft(2, '0')}' : '';
+  
   final userName = 'Користувач ${complaint['user_id'] ?? 'Невідомий'}';
   final description = complaint['description'] ?? '';
   
@@ -2145,7 +2149,7 @@ Future<void> showComplaintDialog({
                                       ),
                                       if (listingDate.isNotEmpty)
                                         Text(
-                                          listingDate,
+                                          'Створено: $listingDate',
                                           style: const TextStyle(
                                             color: Color(0xFF838583),
                                             fontSize: 12,
@@ -2225,12 +2229,12 @@ Future<void> showComplaintDialog({
                       ],
                     ),
                     const SizedBox(height: 8),
-                    // Дата
+                    // Дата скарги
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Дата',
+                          'Дата скарги',
                           style: TextStyle(
                             color: Color(0xFF52525B),
                             fontSize: 14,
@@ -2241,7 +2245,7 @@ Future<void> showComplaintDialog({
                           ),
                         ),
                         Text(
-                          listingDate,
+                          complaintDate,
                           style: const TextStyle(
                             color: Color(0xFF101828),
                             fontSize: 16,
