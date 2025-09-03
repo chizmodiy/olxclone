@@ -15,12 +15,19 @@ class ComplaintService {
             listings!inner(
               id,
               title,
-              description
+              description,
+              photos
             )
           ''')
           .order('created_at', ascending: false);
 
       final complaints = List<Map<String, dynamic>>.from(response);
+      
+      // Temporary logging to check data structure
+      if (complaints.isNotEmpty) {
+        print('First complaint structure: ${complaints.first}');
+        print('Listings data: ${complaints.first['listings']}');
+      }
       
       // For now, let's simplify and just return the basic data without profiles
       // We can add profile data later once we confirm the basic structure works

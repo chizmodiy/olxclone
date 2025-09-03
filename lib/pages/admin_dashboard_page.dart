@@ -1382,6 +1382,11 @@ class ComplaintTableRow extends StatelessWidget {
     final listings = complaint['listings'] ?? {};
     final productName = listings['title'] ?? 'Невідоме оголошення';
     
+    // Temporary logging to debug
+    print('ComplaintTableRow - listings: $listings');
+    print('ComplaintTableRow - productName: $productName');
+    print('ComplaintTableRow - photos: ${listings['photos']}');
+    
     // For now, use complaint creator info until we fix the profile data
     final complaintCreatorId = complaint['user_id'] ?? 'Невідомий ID';
     final userName = 'Користувач $complaintCreatorId';
@@ -1438,7 +1443,7 @@ class ComplaintTableRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                // Іконка оголошення (фото тимчасово недоступне)
+                // Фото оголошення
                 Container(
                   width: 40,
                   height: 40,
@@ -1446,11 +1451,7 @@ class ComplaintTableRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.grey[200],
                   ),
-                  child: const Icon(
-                    Icons.article,
-                    size: 24,
-                    color: Colors.grey,
-                  ),
+                  child: _buildListingImage(listings['photos']),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1505,6 +1506,64 @@ class ComplaintTableRow extends StatelessWidget {
     );
   }
 
+  // Метод для відображення фото оголошення
+  Widget _buildListingImage(dynamic photos) {
+    if (photos == null || photos.isEmpty || photos is! List || photos.isEmpty) {
+      // Якщо фото немає, показуємо іконку
+      return const Icon(
+        Icons.article,
+        size: 24,
+        color: Colors.grey,
+      );
+    }
+    
+    // Беремо перше фото
+    final firstPhoto = photos.first;
+    if (firstPhoto == null || firstPhoto.toString().isEmpty) {
+      return const Icon(
+        Icons.article,
+        size: 24,
+        color: Colors.grey,
+      );
+    }
+    
+    // Показуємо фото
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        firstPhoto.toString(),
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Якщо фото не завантажилося, показуємо іконку
+          return const Icon(
+            Icons.article,
+            size: 24,
+            color: Colors.grey,
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
 }
 
