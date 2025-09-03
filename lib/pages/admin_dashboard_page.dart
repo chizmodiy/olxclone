@@ -458,6 +458,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   }
 
   Future<void> _fetchComplaints() async {
+    print('=== _fetchComplaints початок ===');
     setState(() => _isLoadingComplaints = true);
     try {
       final complaints = await _complaintService.getComplaints();
@@ -466,8 +467,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         _complaints = complaints;
         _isLoadingComplaints = false;
       });
+      print('=== _fetchComplaints завершено, знайдено ${complaints.length} скарг ===');
       
     } catch (e) {
+      print('=== _fetchComplaints помилка: $e ===');
       setState(() {
         _isLoadingComplaints = false;
       });
@@ -1055,11 +1058,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                       ComplaintTableRow(
                                                         complaint: complaint,
                                                         onViewDetails: () {
+                                                          print('=== onViewDetails викликано ===');
                                                           showComplaintDialog(
                                                             context: context,
                                                             complaint: complaint,
                                                             onComplaintProcessed: () {
-                                                              _fetchComplaints(); // Refresh complaints after processing
+                                                              print('=== onComplaintProcessed викликано ===');
+                                                              if (mounted) {
+                                                                print('=== Викликаємо _fetchComplaints ===');
+                                                                _fetchComplaints();
+                                                                print('=== _fetchComplaints завершено ===');
+                                                              }
                                                             },
                                                           );
                                                         },
@@ -1679,7 +1688,15 @@ class ComplaintTableRow extends StatelessWidget {
                 _ActionIconButton(
                   svg: _arrowUpRightSvg,
                   tooltip: 'Переглянути деталі',
-                  onTap: () => showComplaintDialog(context: context, complaint: complaint),
+                  onTap: () {
+                    print('=== ComplaintTableRow onTap ===');
+                    print('onViewDetails callback: $onViewDetails');
+                    showComplaintDialog(
+                      context: context, 
+                      complaint: complaint,
+                      onComplaintProcessed: onViewDetails,
+                    );
+                  },
                 ),
               ],
             ),
@@ -2048,7 +2065,43 @@ Future<void> showComplaintDialog({
   required Map<String, dynamic> complaint,
   VoidCallback? onComplaintProcessed, // New callback for when a complaint is processed
 }) async {
-  final listing = complaint['listings'] ?? {};
+  // Отримуємо актуальні дані про оголошення
+  final listingId = complaint['listing_id'];
+  final userId = complaint['user_id'];
+  final supabase = Supabase.instance.client;
+  
+  // Отримуємо актуальну інформацію про оголошення
+  Map<String, dynamic> listing = {};
+  try {
+    final listingResponse = await supabase
+        .from('listings')
+        .select('id, title, description, photos, price, is_free, location, created_at, status')
+        .eq('id', listingId)
+        .single();
+    
+    listing = listingResponse ?? {};
+  } catch (e) {
+    print('Error fetching fresh listing data: $e');
+    // Якщо не вдалося отримати актуальні дані, використовуємо старі
+    listing = complaint['listings'] ?? {};
+  }
+  
+  // Отримуємо дані користувача з profiles
+  Map<String, dynamic> userProfile = {};
+  try {
+    final userResponse = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url')
+        .eq('id', userId)
+        .single();
+    
+    userProfile = userResponse ?? {};
+  } catch (e) {
+    print('Error fetching user profile data: $e');
+    // Якщо не вдалося отримати дані користувача, використовуємо пустий об'єкт
+    userProfile = {};
+  }
+  
   // Get listing fields
   final productName = listing['title'] ?? 'Невідоме оголошення';
   final price = listing['price'];
@@ -2068,17 +2121,35 @@ Future<void> showComplaintDialog({
   final complaintCreatedAt = complaint['created_at'] != null ? DateTime.tryParse(complaint['created_at']) : null;
   final complaintDate = complaintCreatedAt != null ? '${complaintCreatedAt.day.toString().padLeft(2, '0')} ${_monthUA(complaintCreatedAt.month)} ${complaintCreatedAt.hour.toString().padLeft(2, '0')}:${complaintCreatedAt.minute.toString().padLeft(2, '0')}' : '';
   
-  final userName = 'Користувач ${complaint['user_id'] ?? 'Невідомий'}';
+  // Створюємо ім'я користувача
+  final firstName = userProfile['first_name'] ?? '';
+  final lastName = userProfile['last_name'] ?? '';
+  final avatarUrl = userProfile['avatar_url'];
+  
+  String userName;
+  if (firstName.isNotEmpty || lastName.isNotEmpty) {
+    userName = '${firstName.trim()} ${lastName.trim()}'.trim();
+  } else {
+    // Fallback до ID якщо немає імені
+    userName = 'Користувач ${userId ?? 'Невідомий'}';
+  }
+  
   final description = complaint['description'] ?? '';
   
   // Логування для перевірки даних
   print('=== showComplaintDialog ===');
-  print('Listing data: $listing');
+  print('Listing ID: $listingId');
+  print('User ID: $userId');
+  print('Fresh listing data: $listing');
+  print('User profile data: $userProfile');
+  print('User name: $userName');
+  print('Avatar URL: $avatarUrl');
   print('Price: $price, isFree: $isFree');
   print('Location: $location');
   print('Photos: $photos');
   print('Listing status: $listingStatus');
   print('Is listing blocked: $isListingBlocked');
+  print('onComplaintProcessed callback: $onComplaintProcessed');
 
   return showDialog(
     context: context,
@@ -2221,16 +2292,81 @@ Future<void> showComplaintDialog({
                             height: 1.4,
                           ),
                         ),
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                            color: Color(0xFF101828),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.16,
-                            height: 1.5,
-                          ),
+                        Row(
+                          children: [
+                            // Фото користувача
+                            if (avatarUrl != null && avatarUrl.isNotEmpty)
+                              Container(
+                                width: 32,
+                                height: 32,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.grey[200],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.network(
+                                    avatarUrl,
+                                    width: 32,
+                                    height: 32,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.person,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      );
+                                    },
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: const Center(
+                                          child: SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 32,
+                                height: 32,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.grey[200],
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            // Ім'я користувача
+                            Text(
+                              userName,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -2358,24 +2494,49 @@ Future<void> showComplaintDialog({
                           const SizedBox(width: 16),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () async { // Make it async
-                                // Приклад: final complaintService = ComplaintService(Supabase.instance.client);
-                                // await complaintService.blockListing(complaint['listing_id']);
-
-                                Navigator.of(context).pop(); // Close the current dialog
-                                onComplaintProcessed?.call(); // Call the callback
-
-                                showDialog( // Show success dialog
-                                  context: context,
-                                  builder: (context) => SuccessBottomSheet(
-                                    title: 'Скаргу оброблено',
-                                    message: 'Оголошення було успішно заблоковано.',
-                                    onClose: () {
-                                      Navigator.of(context).pop(); // Close success dialog
-                                    },
-                                  ),
-                                );
-                              },
+                                                          onPressed: () async {
+                              print('=== Підтвердити натиснуто ===');
+                              print('onComplaintProcessed callback: $onComplaintProcessed');
+                              
+                              try {
+                                // Блокуємо оголошення
+                                final supabase = Supabase.instance.client;
+                                print('Блокуємо оголошення ${complaint['listing_id']}');
+                                await supabase
+                                    .from('listings')
+                                    .update({'status': 'blocked'})
+                                    .eq('id', complaint['listing_id']);
+                                
+                                // Видаляємо скаргу
+                                print('Видаляємо скаргу ${complaint['id']}');
+                                await supabase
+                                    .from('complaints')
+                                    .delete()
+                                    .eq('id', complaint['id']);
+                                
+                                print('Закриваємо попап');
+                                // Закриваємо попап
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                  print('Попап закрито успішно');
+                                } else {
+                                  print('Context не mounted, не можемо закрити попап');
+                                }
+                                
+                                print('Викликаємо onComplaintProcessed callback');
+                                // Оновлюємо список скарг
+                                onComplaintProcessed?.call();
+                                
+                              } catch (e) {
+                                print('Error processing complaint: $e');
+                                // Якщо помилка, все одно закриваємо попап
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                  print('Попап закрито успішно (після помилки)');
+                                }
+                                onComplaintProcessed?.call();
+                              }
+                            },
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                                 shape: const StadiumBorder(),
