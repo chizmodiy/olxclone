@@ -20,7 +20,8 @@ class ComplaintService {
               price,
               is_free,
               location,
-              created_at
+              created_at,
+              status
             )
           ''')
           .order('created_at', ascending: false);

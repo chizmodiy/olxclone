@@ -2056,6 +2056,10 @@ Future<void> showComplaintDialog({
   final location = listing['location'] ?? '';
   final photos = listing['photos'] ?? [];
   
+  // Перевіряємо статус оголошення
+  final listingStatus = listing['status'] ?? 'active';
+  final isListingBlocked = listingStatus == 'blocked';
+  
   // Дата створення оголошення (не скарги)
   final listingCreatedAt = listing['created_at'] != null ? DateTime.tryParse(listing['created_at']) : null;
   final listingDate = listingCreatedAt != null ? '${listingCreatedAt.day.toString().padLeft(2, '0')} ${_monthUA(listingCreatedAt.month)} ${listingCreatedAt.hour.toString().padLeft(2, '0')}:${listingCreatedAt.minute.toString().padLeft(2, '0')}' : '';
@@ -2073,6 +2077,8 @@ Future<void> showComplaintDialog({
   print('Price: $price, isFree: $isFree');
   print('Location: $location');
   print('Photos: $photos');
+  print('Listing status: $listingStatus');
+  print('Is listing blocked: $isListingBlocked');
 
   return showDialog(
     context: context,
@@ -2283,11 +2289,13 @@ Future<void> showComplaintDialog({
                     ),
                     const SizedBox(height: 24),
                     // Пояснення
-                    const Text(
-                      'По підтвердженню буде блокуватися оголошення і далі ніде не показуватися',
+                    Text(
+                      isListingBlocked 
+                        ? 'Оголошення вже заблоковано'
+                        : 'По підтвердженню буде блокуватися оголошення і далі ніде не показуватися',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF52525B),
+                        color: isListingBlocked ? Color(0xFFB42318) : Color(0xFF52525B),
                         fontSize: 14,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
@@ -2297,71 +2305,98 @@ Future<void> showComplaintDialog({
                     ),
                     const SizedBox(height: 24),
                     // Кнопки
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              side: const BorderSide(color: Color(0xFFE4E4E7)),
-                              backgroundColor: Colors.white,
-                            ),
-                            child: const Text(
-                              'Скасувати',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
-                              ),
+                    if (isListingBlocked)
+                      // Якщо оголошення заблоковане - тільки кнопка "Скасувати"
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                            shape: const StadiumBorder(),
+                            side: const BorderSide(color: Color(0xFFE4E4E7)),
+                            backgroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Скасувати',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.16,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async { // Make it async
-                              // Приклад: final complaintService = ComplaintService(Supabase.instance.client);
-                              // await complaintService.blockListing(complaint['listing_id']);
-
-                              Navigator.of(context).pop(); // Close the current dialog
-                              onComplaintProcessed?.call(); // Call the callback
-
-                              showDialog( // Show success dialog
-                                context: context,
-                                builder: (context) => SuccessBottomSheet(
-                                  title: 'Скаргу оброблено',
-                                  message: 'Оголошення було успішно заблоковано.',
-                                  onClose: () {
-                                    Navigator.of(context).pop(); // Close success dialog
-                                  },
+                      )
+                    else
+                      // Якщо оголошення не заблоковане - обидві кнопки
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                                shape: const StadiumBorder(),
+                                side: const BorderSide(color: Color(0xFFE4E4E7)),
+                                backgroundColor: Colors.white,
+                              ),
+                              child: const Text(
+                                'Скасувати',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.16,
                                 ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              backgroundColor: const Color(0xFF015873),
-                              side: const BorderSide(color: Color(0xFF015873)),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Підтвердити',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async { // Make it async
+                                // Приклад: final complaintService = ComplaintService(Supabase.instance.client);
+                                // await complaintService.blockListing(complaint['listing_id']);
+
+                                Navigator.of(context).pop(); // Close the current dialog
+                                onComplaintProcessed?.call(); // Call the callback
+
+                                showDialog( // Show success dialog
+                                  context: context,
+                                  builder: (context) => SuccessBottomSheet(
+                                    title: 'Скаргу оброблено',
+                                    message: 'Оголошення було успішно заблоковано.',
+                                    onClose: () {
+                                      Navigator.of(context).pop(); // Close success dialog
+                                    },
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                                shape: const StadiumBorder(),
+                                backgroundColor: const Color(0xFF015873),
+                                side: const BorderSide(color: Color(0xFF015873)),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Підтвердити',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
