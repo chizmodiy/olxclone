@@ -434,8 +434,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       
       // Підрахунок загальної кількості сторінок з урахуванням фільтрів
       dynamic countQuery = Supabase.instance.client
-          .from('listings')
-          .select('id', const FetchOptions(count: CountOption.exact));
+        .from('listings')
+        .select('id', const FetchOptions(count: CountOption.exact));
       
       // Додаємо ті ж фільтри для підрахунку
       if (_searchQuery.isNotEmpty) {
@@ -443,7 +443,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       }
       
       final countResp = await countQuery;
-      final totalCount = countResp.count ?? products.length;
+    final totalCount = countResp.count ?? products.length;
       
     setState(() {
       _products = products;
@@ -963,7 +963,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                               ],
                                             ),
                                           ),
-                                        ],
+                                          ],
                                       ),
                                     ],
                                   ),
@@ -1595,7 +1595,7 @@ class ComplaintTableRow extends StatelessWidget {
               children: [
                 // Фото користувача
                 Container(
-                  width: 40,
+            width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
@@ -2063,8 +2063,11 @@ Future<void> showComplaintDialog({
       return Dialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(
-          width: 390,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: 390,
+            maxWidth: 600,
+          ),
           child: Stack(
             children: [
               Padding(
