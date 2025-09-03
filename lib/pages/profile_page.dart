@@ -183,10 +183,10 @@ class _ProfilePageState extends State<ProfilePage> {
         Scaffold(
           backgroundColor: Colors.white,
                 appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(128),
+        preferredSize: const Size.fromHeight(120),
         child: Container(
           width: double.infinity,
-          height: 128,
+          height: 120,
           decoration: const BoxDecoration(
             color: AppColors.primaryColor,
           ),
@@ -195,13 +195,13 @@ class _ProfilePageState extends State<ProfilePage> {
               // Верхня частина AppBar (синя)
               Container(
                 width: double.infinity,
-                height: 80,
-                padding: const EdgeInsets.fromLTRB(13, 16, 13, 0),
+                height: 120,
+                padding: const EdgeInsets.fromLTRB(13, 42, 13, 0),
                 child: Stack(
                   children: [
                     Positioned(
                       left: 13,
-                      top: 20,
+                      top: 24,
                       child: GestureDetector(
                         onTap: () => Navigator.of(context).pop(),
                         child: SvgPicture.asset(
@@ -215,12 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              // Нижня частина AppBar (біла)
-              Container(
-                width: double.infinity,
-                height: 48, // 128 - 80 = 48
-                color: Colors.white,
-              ),
+              // Нижня частина AppBar (біла) - тепер не потрібна
+              // Container(
+              //   width: double.infinity,
+              //   height: 48,
+              //   color: Colors.white,
+              // ),
             ],
           ),
         ),
@@ -309,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         // Аватар поверх усього
         Positioned(
-          top: 46, // Позиція аватара - на межі між синім та білим (80 - 34)
+          top: 70, // Позиція аватара - на межі між синім та білим (120 - 34 - 16)
           left: 0,
           right: 0,
           child: Center(
