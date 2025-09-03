@@ -1382,14 +1382,29 @@ class ComplaintTableRow extends StatelessWidget {
     final listings = complaint['listings'] ?? {};
     final productName = listings['title'] ?? 'Невідоме оголошення';
     
+    // Get user profile info
+    final userProfile = complaint['user_profile'];
+    final firstName = userProfile?['first_name'] ?? '';
+    final lastName = userProfile?['last_name'] ?? '';
+    final avatarUrl = userProfile?['avatar_url'];
+    
+    // Build user name
+    String userName;
+    if (firstName.isNotEmpty || lastName.isNotEmpty) {
+      userName = '${firstName.trim()} ${lastName.trim()}'.trim();
+    } else {
+      // Fallback to user ID if no name
+      final complaintCreatorId = complaint['user_id'] ?? 'Невідомий ID';
+      userName = 'Користувач $complaintCreatorId';
+    }
+    
     // Temporary logging to debug
     print('ComplaintTableRow - listings: $listings');
     print('ComplaintTableRow - productName: $productName');
     print('ComplaintTableRow - photos: ${listings['photos']}');
-    
-    // For now, use complaint creator info until we fix the profile data
-    final complaintCreatorId = complaint['user_id'] ?? 'Невідомий ID';
-    final userName = 'Користувач $complaintCreatorId';
+    print('ComplaintTableRow - userProfile: $userProfile');
+    print('ComplaintTableRow - userName: $userName');
+    print('ComplaintTableRow - avatarUrl: $avatarUrl');
     
     final description = complaint['description'] ?? '';
     
@@ -1406,7 +1421,7 @@ class ComplaintTableRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                // Тимчасово: іконка користувача
+                // Фото користувача
                 Container(
                   width: 40,
                   height: 40,
@@ -1414,11 +1429,7 @@ class ComplaintTableRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     color: Colors.grey[200],
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 24,
-                    color: Colors.white,
-                  ),
+                  child: _buildUserAvatar(avatarUrl),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1502,6 +1513,55 @@ class ComplaintTableRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Метод для відображення фото користувача
+  Widget _buildUserAvatar(String? avatarUrl) {
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      // Якщо фото немає, показуємо заглушку
+      return const Icon(
+        Icons.person,
+        size: 24,
+        color: Colors.grey,
+      );
+    }
+    
+    // Показуємо фото користувача
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Image.network(
+        avatarUrl,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Якщо фото не завантажилося, показуємо заглушку
+          return const Icon(
+            Icons.person,
+            size: 24,
+            color: Colors.grey,
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

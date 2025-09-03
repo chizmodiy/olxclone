@@ -29,8 +29,26 @@ class ComplaintService {
         print('Listings data: ${complaints.first['listings']}');
       }
       
-      // For now, let's simplify and just return the basic data without profiles
-      // We can add profile data later once we confirm the basic structure works
+      // Get user profiles for all complaints
+      final userIds = complaints.map((c) => c['user_id']).toSet().toList();
+      final profilesResponse = await _client
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url')
+          .in_('id', userIds);
+      
+      final profiles = Map<String, Map<String, dynamic>>.fromEntries(
+        (profilesResponse as List).map((p) => MapEntry(p['id'], p))
+      );
+      
+      // Merge profile data into complaints
+      for (final complaint in complaints) {
+        final userId = complaint['user_id'];
+        final profile = profiles[userId];
+        if (profile != null) {
+          complaint['user_profile'] = profile;
+        }
+      }
+      
       return complaints;
       
     } catch (e) {
