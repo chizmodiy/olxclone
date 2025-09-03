@@ -14,10 +14,10 @@ import 'package:collection/collection.dart'; // Import for firstWhereOrNull
 import '../models/region.dart';
 import '../services/region_service.dart';
 import '../models/city.dart';
-import '../services/city_service.dart';
+
 import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
-import 'dart:math' as math;
+
 import 'dart:async';
 import '../widgets/location_creation_block.dart';
 import '../services/profile_service.dart';
@@ -42,24 +42,24 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   final ImagePicker _picker = ImagePicker();
   final List<dynamic> _selectedImages = []; // Може містити String (URL) або XFile
   final PageController _imagePageController = PageController();
-  final int _currentImagePage = 0;
+
   final GlobalKey _categoryButtonKey = GlobalKey();
   final GlobalKey _subcategoryButtonKey = GlobalKey();
-  final GlobalKey _regionButtonKey = GlobalKey();
-  final GlobalKey _cityButtonKey = GlobalKey();
+
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   
   Category? _selectedCategory;
-  List<Category> _categories = [];
+    List<Category> _categories = [];
   bool _isLoadingCategories = true;
   Subcategory? _selectedSubcategory;
-  List<Subcategory> _subcategories = [];
+    List<Subcategory> _subcategories = [];
   bool _isLoadingSubcategories = false;
   Region? _selectedRegion;
-  List<Region> _regions = [];
+    List<Region> _regions = [];
   bool _isLoadingRegions = true;
   bool _isForSale = true;
-  String _selectedCurrency = 'UAH';
+    String _selectedCurrency = 'UAH';
   bool _isNegotiablePrice = false;
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _whatsappController = TextEditingController();
@@ -71,8 +71,8 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
   bool _isLoading = false;
   
   final TextEditingController _citySearchController = TextEditingController();
-  List<City> _cities = [];
-  bool _isSearchingCities = false;
+
+
   City? _selectedCity;
   Timer? _debounceTimer;
   String? _selectedAddress;
@@ -224,43 +224,9 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
     }
   }
 
-  bool _isValidPhoneWithPrefix(String phone) {
-    if (phone.isEmpty) return true;
-    // Якщо в полі вже є +380, то користувач вводить тільки 9 цифр
-    if (phone.startsWith('+380')) {
-      return phone.length == 13; // +380 + 9 цифр
-    }
-    // Для полів з статичним +380, перевіряємо тільки введені цифри
-    if (phone.length == 9) {
-      return true; // Користувач ввів 9 цифр після +380
-    }
-    return _isValidPhoneNumber(phone);
-  }
 
-  bool _isValidTelegram(String telegram) {
-    if (telegram.isEmpty) return true; // Поле не обов'язкове
-    return true; // Прибираємо валідацію - приймаємо будь-які значення
-  }
 
-  bool get _isFormValid {
-    // Перевіряємо, що хоча б один контактний метод заповнений
-    bool hasContactInfo = _phoneController.text.isNotEmpty ||
-                         _whatsappController.text.isNotEmpty ||
-                         _telegramController.text.isNotEmpty ||
-                         _viberController.text.isNotEmpty;
-    
-    return _titleController.text.isNotEmpty &&
-           _descriptionController.text.isNotEmpty &&
-           _selectedCategory != null &&
-           _selectedSubcategory != null &&
-           (_selectedAddress != null && _selectedAddress!.isNotEmpty) &&
-           hasContactInfo &&
-           _isValidPhoneWithPrefix(_phoneController.text) &&
-           _isValidPhoneWithPrefix(_whatsappController.text) &&
-           _isValidTelegram(_telegramController.text) &&
-           _isValidPhoneWithPrefix(_viberController.text) &&
-           (_isForSale ? (_priceController.text.isNotEmpty && double.tryParse(_priceController.text) != null) : true);
-  }
+
 
   void _validateForm() {
     // Перевіряємо, що хоча б один контактний метод заповнений
@@ -334,7 +300,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
       });
       
       // Find and select the subcategory
-      if (_selectedCategory!.name == 'Віддам безкоштовно') {
+      if (_selectedCategory?.name == 'Віддам безкоштовно') {
         _selectedSubcategory = subcategories.firstWhereOrNull((subcat) => subcat.name == 'Безкоштовно');
       } else if (widget.listing.subcategoryId != null) {
         _selectedSubcategory = subcategories.firstWhereOrNull(
@@ -477,9 +443,11 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
           longitude: _selectedLongitude,
         );
 
-        Navigator.of(context).pop(true);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
       } catch (e) {
-
+        // Помилка оновлення оголошення
       } finally {
         setState(() => _isLoading = false);
       }
@@ -856,7 +824,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -1951,7 +1919,9 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
                                   _extraFieldValues.clear();
                                 });
                                 _initializeExtraFields();
-                                Navigator.of(context).pop();
+                                if (mounted) {
+                                  Navigator.of(context).pop();
+                                }
                               },
                             );
                           },
@@ -1968,20 +1938,7 @@ class _EditListingPageNewState extends State<EditListingPageNew> {
     );
   }
 
-  String _getContactHintText() {
-    switch (_selectedMessenger) {
-      case 'phone':
-        return '(XX) XXX-XX-XX';
-      case 'whatsapp':
-        return '(XX) XXX-XX-XX';
-      case 'telegram':
-        return '@username або номер телефону';
-      case 'viber':
-        return '(XX) XXX-XX-XX';
-      default:
-        return '(XX) XXX-XX-XX';
-    }
-  }
+
 }
 
 class DashedBorderPainter extends CustomPainter {

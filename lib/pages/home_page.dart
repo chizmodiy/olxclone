@@ -21,7 +21,9 @@ enum ViewMode {
 }
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.contentKey});
+  
+  final GlobalKey<HomeContentState>? contentKey;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class HomePage extends StatelessWidget {
       appBar: const CommonHeader(),
       body: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 8),
-        child: HomeContent(key: key),
+        child: HomeContent(key: contentKey),
       ),
     );
   }

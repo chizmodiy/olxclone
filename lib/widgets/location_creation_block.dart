@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'dart:convert';
 import 'dart:async';
 import '../theme/app_colors.dart';
@@ -16,12 +16,12 @@ class LocationCreationBlock extends StatefulWidget {
   final String? initialCity;
 
   const LocationCreationBlock({
-    Key? key,
+    super.key,
     this.onLocationSelected,
     this.initialLocation,
     this.initialRegion,
     this.initialCity,
-  }) : super(key: key);
+  });
 
   @override
   State<LocationCreationBlock> createState() => _LocationCreationBlockState();
@@ -283,10 +283,10 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                             ),
                           ),
                           if (isSelected)
-                            Container(
+                            const SizedBox(
                               width: 20,
                               height: 20,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.check,
                                 color: AppColors.primaryColor,
                                 size: 20,
@@ -450,9 +450,11 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                   FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
-                      center: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
-                      zoom: _selectedLocation != null ? 12.0 : 6.0,
-                      interactiveFlags: InteractiveFlag.none, // Вимикаємо всі жести
+                      initialCenter: _selectedLocation ?? _currentLocation ?? _ukraineCenter,
+                      initialZoom: _selectedLocation != null ? 12.0 : 6.0,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none, // Вимикаємо всі жести
+                      ),
                     ),
                     children: [
                       TileLayer(
@@ -486,8 +488,8 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                           icon: Icons.add,
                           onTap: () {
                             try {
-                              final currentZoom = _mapController.zoom;
-                              _mapController.move(_mapController.center, currentZoom + 1);
+                              final currentZoom = _mapController.camera.zoom;
+                              _mapController.move(_mapController.camera.center, currentZoom + 1);
                             } catch (e) {
                               // Error zooming in
                             }
@@ -498,8 +500,8 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                           icon: Icons.remove,
                           onTap: () {
                             try {
-                              final currentZoom = _mapController.zoom;
-                              _mapController.move(_mapController.center, currentZoom - 1);
+                              final currentZoom = _mapController.camera.zoom;
+                              _mapController.move(_mapController.camera.center, currentZoom - 1);
                             } catch (e) {
                               // Error zooming out
                             }
@@ -533,7 +535,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
           border: Border.all(color: AppColors.zinc200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -575,10 +577,10 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
               )
             else
-              Container(
+              const SizedBox(
                 width: 20,
                 height: 20,
-                child: const Icon(
+                child: Icon(
                   Icons.my_location,
                   color: Colors.black,
                   size: 20,
@@ -693,12 +695,14 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Помилка пошуку міст: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка пошуку міст: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
     
     return [];
@@ -734,12 +738,14 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         widget.onLocationSelected!(_selectedLocation!, formattedAddress, _selectedRegion, _selectedCity);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Помилка вибору міста: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка вибору міста: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -1075,12 +1081,14 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Помилка отримання координат: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка отримання координат: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
     
     return null;
@@ -1099,13 +1107,7 @@ class _LocationCreationBlockState extends State<LocationCreationBlock> {
       parts.add(city);
     }
     
-    if (showRegion && region != null && region.isNotEmpty) {
-      parts.add(region);
-    }
-    
-    if (showCountry) {
-      parts.add('Україна');
-    }
+
     
     return parts.join(', ');
   }

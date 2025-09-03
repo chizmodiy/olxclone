@@ -20,11 +20,11 @@ import '../services/listing_service.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:async'; // Add this import for Timer
-import '../widgets/location_picker.dart';
+
 import '../widgets/location_creation_block.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
-import 'package:dotted_border/dotted_border.dart';
+
 import 'package:geolocator/geolocator.dart';
 
 
@@ -49,20 +49,20 @@ class _AddListingPageState extends State<AddListingPage> {
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _selectedImages = [];
   final PageController _imagePageController = PageController();
-  final int _currentImagePage = 0;
+
   final GlobalKey _categoryButtonKey = GlobalKey();
   final GlobalKey _subcategoryButtonKey = GlobalKey();
   final GlobalKey _regionButtonKey = GlobalKey();
-  final GlobalKey _cityButtonKey = GlobalKey(); // Add new GlobalKey for city button
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Added _formKey
+
+
   Category? _selectedCategory;
-  List<Category> _categories = [];
+    List<Category> _categories = [];
   bool _isLoadingCategories = true;
   Subcategory? _selectedSubcategory;
-  List<Subcategory> _subcategories = [];
+    List<Subcategory> _subcategories = [];
   bool _isLoadingSubcategories = false;
   Region? _selectedRegion;
-  List<Region> _regions = [];
+    List<Region> _regions = [];
   bool _isLoadingRegions = true;
   bool _isForSale = true; // true for "Продати", false for "Безкоштовно"
   String _selectedCurrency = 'UAH'; // 'UAH', 'EUR', or 'USD'
@@ -401,57 +401,7 @@ class _AddListingPageState extends State<AddListingPage> {
     );
   }
 
-  void _showCategoryPicker({required Offset position, required Size size}) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-                    return Stack(
-                      children: [
-            Positioned(
-              top: position.dy + size.height + 4, // Position 4 pixels below the button
-              left: position.dx,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: size.width,
-                  constraints: const BoxConstraints(maxHeight: 320),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.03),
-                        offset: Offset(0, 4),
-                        blurRadius: 6,
-                        spreadRadius: -2,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          itemCount: _categories.length,
-                          itemBuilder: (context, index) {
-                            final category = _categories[index];
-                            return _buildCategoryItem(category);
-                          },
-                        ),
-                      ),
-                    ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-    );
-  }
+
 
   Widget _buildCategoryItem(Category category) {
     final isSelected = _selectedCategory?.id == category.id;
@@ -637,60 +587,7 @@ class _AddListingPageState extends State<AddListingPage> {
     );
   }
 
-  void _showSubcategoryPicker({required Offset position, required Size size}) {
-    // Calculate the height of one item (padding + container height)
-    const double itemHeight = 44.0; // 10 vertical padding * 2 + container height
-    const double verticalPadding = 8.0; // 4 padding top + 4 padding bottom
-    
-    // Calculate total content height
-    final double contentHeight = (_subcategories.length * itemHeight) + verticalPadding;
-    // Use the smaller of contentHeight or maxHeight
-    final double finalHeight = contentHeight.clamp(0.0, 320.0);
 
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Stack(
-          children: [
-            Positioned(
-              top: position.dy + size.height + 4, // Position 4 pixels below the button
-              left: position.dx,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: size.width,
-                  height: finalHeight,
-              decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200, width: 1),
-                boxShadow: const [
-                  BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.03),
-                        offset: Offset(0, 4),
-                        blurRadius: 6,
-                        spreadRadius: -2,
-                  ),
-                ],
-              ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _subcategories.map((subcategory) => _buildSubcategoryItem(subcategory)).toList(),
-                ),
-              ),
-            ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _buildSubcategoryItem(Subcategory subcategory) {
     final isSelected = _selectedSubcategory?.id == subcategory.id;
@@ -1251,60 +1148,7 @@ class _AddListingPageState extends State<AddListingPage> {
     );
   }
 
-  void _showRegionPicker({required Offset position, required Size size}) {
-    // Calculate the height of one item (padding + container height)
-    const double itemHeight = 44.0; // 10 vertical padding * 2 + container height
-    const double verticalPadding = 8.0; // 4 padding top + 4 padding bottom
-    
-    // Calculate total content height
-    final double contentHeight = (_regions.length * itemHeight) + verticalPadding;
-    // Use the smaller of contentHeight or maxHeight
-    final double finalHeight = contentHeight.clamp(0.0, 320.0);
 
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Stack(
-                children: [
-                  Positioned(
-              top: position.dy + size.height + 4,
-              left: position.dx,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: size.width,
-                  height: finalHeight,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.zinc200, width: 1),
-                            boxShadow: const [
-                              BoxShadow(
-                        color: Color.fromRGBO(16, 24, 40, 0.03),
-                        offset: Offset(0, 4),
-                        blurRadius: 6,
-                        spreadRadius: -2,
-                              ),
-                            ],
-                          ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _regions.map((region) => _buildRegionItem(region)).toList(),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _buildRegionItem(Region region) {
     final isSelected = _selectedRegion?.id == region.id;
@@ -2584,7 +2428,7 @@ class _AddListingPageState extends State<AddListingPage> {
 
         
         
-        final listingId = await listingService.createListing(
+        await listingService.createListing(
           title: _titleController.text,
           description: _descriptionController.text,
           categoryId: _selectedCategory!.id,
@@ -2608,15 +2452,19 @@ class _AddListingPageState extends State<AddListingPage> {
         
 
 
-        Navigator.of(context).pop(true);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
       } catch (error) {
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Помилка створення оголошення: ${error.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Помилка створення оголошення: ${error.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
     } finally {
       setState(() {
         _isLoading = false;

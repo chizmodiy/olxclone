@@ -325,12 +325,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     setState(() => _isLoadingComplaints = true);
     try {
       final complaints = await _complaintService.getComplaints();
+      
       setState(() {
         _complaints = complaints;
         _isLoadingComplaints = false;
       });
+      
     } catch (e) {
-      setState(() => _isLoadingComplaints = false);
+      setState(() {
+        _isLoadingComplaints = false;
+      });
       if (mounted) {
         // Error loading complaints
       }
@@ -746,6 +750,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                       ),
                                       Row(
                                         children: [
+                                          // Кнопка оновлення скарг
+                                          ElevatedButton(
+                                            onPressed: _fetchComplaints,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            child: const Text('Оновити скарги'),
+                                          ),
+                                          const SizedBox(width: 24),
                                           // Поле пошуку
                                           Container(
                                             width: 320,
@@ -811,7 +825,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                               ],
                                             ),
                                           ),
-                                          ],
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -848,11 +862,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                         child: Row(
                                           children: const [
-                                            Expanded(flex: 2, child: Text('Назва', style: TextStyle(fontWeight: FontWeight.w600))),
-                                            Expanded(flex: 2, child: Text('Email', style: TextStyle(fontWeight: FontWeight.w600))),
-                                            Expanded(flex: 2, child: Text('Номер телефону', style: TextStyle(fontWeight: FontWeight.w600))),
-                                            Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
-                                            Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
+                                            SizedBox(width: 280, child: Text('Автор скарги', style: TextStyle(fontWeight: FontWeight.w600))),
+                                            SizedBox(width: 280, child: Text('Оголошення', style: TextStyle(fontWeight: FontWeight.w600))),
+                                            Expanded(child: Text('Короткий опис', style: TextStyle(fontWeight: FontWeight.w600))),
                                             SizedBox(width: 80), // Для іконок дій
                                           ],
                                         ),
@@ -867,6 +879,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                   // Реальні дані з бази
                                                   if (_isLoadingComplaints)
                                                     const Expanded(child: Center(child: CircularProgressIndicator()))
+                                                  else if (_complaints.isEmpty)
+                                                    Expanded(
+                                                      child: Center(
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            Icon(
+                                                              Icons.inbox_outlined,
+                                                              size: 64,
+                                                              color: Colors.grey[400],
+                                                            ),
+                                                            const SizedBox(height: 16),
+                                                            Text(
+                                                              'Скарг поки немає',
+                                                              style: TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight: FontWeight.w500,
+                                                                color: Colors.grey[600],
+                                                              ),
+                                                            ),
+                                                            const SizedBox(height: 8),
+                                                            Text(
+                                                              'Коли користувачі створюють скарги,\nвони з\'являться тут',
+                                                              textAlign: TextAlign.center,
+                                                              style: TextStyle(
+                                                                fontSize: 14,
+                                                                color: Colors.grey[500],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    )
                                                   else
                                                     for (final complaint in _complaints.take(8))
                                                       ComplaintTableRow(
@@ -1333,8 +1378,14 @@ class ComplaintTableRow extends StatelessWidget {
 
     @override
   Widget build(BuildContext context) {
-    final userName = complaint['profiles']?['full_name'] ?? 'Невідомий користувач';
-    final productName = complaint['listings']?['title'] ?? 'Невідоме оголошення';
+    // Get listing info with fallbacks
+    final listings = complaint['listings'] ?? {};
+    final productName = listings['title'] ?? 'Невідоме оголошення';
+    
+    // For now, use complaint creator info until we fix the profile data
+    final complaintCreatorId = complaint['user_id'] ?? 'Невідомий ID';
+    final userName = 'Користувач $complaintCreatorId';
+    
     final description = complaint['description'] ?? '';
     
     return Container(
@@ -1344,16 +1395,25 @@ class ComplaintTableRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Користувач
+          // Автор скарги
           Container(
             width: 280,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                SvgPicture.string(
-                  _userIconSvg,
-            width: 40,
+                // Тимчасово: іконка користувача
+                Container(
+                  width: 40,
                   height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.grey[200],
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 24,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1378,10 +1438,19 @@ class ComplaintTableRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                SvgPicture.string(
-                  _productIconSvg,
+                // Іконка оголошення (фото тимчасово недоступне)
+                Container(
                   width: 40,
                   height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[200],
+                  ),
+                  child: const Icon(
+                    Icons.article,
+                    size: 24,
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1435,6 +1504,8 @@ class ComplaintTableRow extends StatelessWidget {
       ),
     );
   }
+
+
 }
 
 // Віджет для рядка користувача
@@ -1687,13 +1758,10 @@ Future<void> showComplaintDialog({
   VoidCallback? onComplaintProcessed, // New callback for when a complaint is processed
 }) async {
   final listing = complaint['listings'] ?? {};
-  final user = complaint['profiles'] ?? {};
-  final imageUrl = listing['image_url'] as String?;
+  // Remove fields that don't exist in the database
   final productName = listing['title'] ?? 'Невідоме оголошення';
   final createdAt = complaint['created_at'] != null ? DateTime.tryParse(complaint['created_at']) : null;
-  final price = listing['price'] != null ? '₴${listing['price']}' : '';
-  final location = listing['location'] ?? '';
-  final userName = user['full_name'] ?? 'Невідомий користувач';
+  final userName = 'Користувач ${complaint['user_id'] ?? 'Невідомий'}';
   final complaintDate = createdAt != null ? '${createdAt.day.toString().padLeft(2, '0')} ${_monthUA(createdAt.month)} ${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')}' : '';
   final description = complaint['description'] ?? '';
 
@@ -1744,12 +1812,7 @@ Future<void> showComplaintDialog({
                               borderRadius: BorderRadius.circular(8),
                               color: Colors.grey[200],
                             ),
-                            child: imageUrl != null && imageUrl.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 32, color: Colors.grey)),
-                                  )
-                                : const Icon(Icons.image, size: 32, color: Colors.grey),
+                            child: const Icon(Icons.image, size: 32, color: Colors.grey),
                           ),
                           Expanded(
                             child: Padding(
@@ -1787,35 +1850,7 @@ Future<void> showComplaintDialog({
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      if (price.isNotEmpty)
-                                        Text(
-                                          price,
-                                          style: const TextStyle(
-                                            color: Color(0xFF52525B),
-                                            fontSize: 12,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w500,
-                                            letterSpacing: 0.24,
-                                            height: 1.3,
-                                          ),
-                                        ),
-                                      const SizedBox(width: 16),
-                                      if (location.isNotEmpty)
-                                        Text(
-                                          location,
-                                          style: const TextStyle(
-                                            color: Color(0xFFA1A1AA),
-                                            fontSize: 12,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w500,
-                                            letterSpacing: 0.24,
-                                            height: 1.3,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                  // Price and location fields removed as they don't exist in the database
                                 ],
                               ),
                             ),

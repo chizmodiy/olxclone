@@ -7,6 +7,7 @@ class ComplaintService {
 
   Future<List<Map<String, dynamic>>> getComplaints() async {
     try {
+      // Get complaints with listings join
       final response = await _client
           .from('complaints')
           .select('''
@@ -15,36 +16,22 @@ class ComplaintService {
               id,
               title,
               description
-            ),
-            user_id
+            )
           ''')
           .order('created_at', ascending: false);
 
-      // Отримуємо дані користувачів окремо
       final complaints = List<Map<String, dynamic>>.from(response);
-      final userIds = complaints.map((c) => c['user_id'] as String).toSet();
       
-      final usersResponse = await _client
-          .from('profiles')
-          .select('id, full_name, email')
-          .in_('id', userIds.toList());
-
-      final usersMap = <String, Map<String, dynamic>>{};
-      for (final user in usersResponse) {
-        usersMap[user['id'] as String] = user;
-      }
-
-      // Додаємо дані користувачів до скарг
-      for (final complaint in complaints) {
-        final userId = complaint['user_id'] as String;
-        complaint['user'] = usersMap[userId];
-      }
-
+      // For now, let's simplify and just return the basic data without profiles
+      // We can add profile data later once we confirm the basic structure works
       return complaints;
+      
     } catch (e) {
       throw Exception('Не вдалося отримати скарги: $e');
     }
   }
+
+
 
   Future<void> createComplaint({
     required String listingId,

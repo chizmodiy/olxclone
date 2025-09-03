@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:withoutname/pages/auth_page.dart';
 import 'package:withoutname/pages/general_page.dart';
-import 'package:withoutname/pages/home_page.dart';
+
 import 'package:withoutname/pages/product_detail_page.dart';
 import 'package:withoutname/pages/admin_login_page.dart';
 import 'package:withoutname/pages/admin_dashboard_page.dart';

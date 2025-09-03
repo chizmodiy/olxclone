@@ -30,17 +30,17 @@ class _GeneralPageState extends State<GeneralPage> {
   Timer? _timer;
   
   // Додаємо GlobalKey для HomePage
-  final GlobalKey<HomeContentState> _homePageKey = GlobalKey<HomeContentState>();
+  final GlobalKey<HomeContentState> _homePageKey = GlobalKey<HomeContentState>(debugLabel: 'homePageKey');
   // Додаємо GlobalKeys для інших вкладок з контентом
-  final GlobalKey<FavoritesContentState> _favoritesKey = GlobalKey<FavoritesContentState>();
-  final GlobalKey<ViewedContentState> _viewedKey = GlobalKey<ViewedContentState>();
+  final GlobalKey<FavoritesContentState> _favoritesKey = GlobalKey<FavoritesContentState>(debugLabel: 'favoritesKey');
+  final GlobalKey<ViewedContentState> _viewedKey = GlobalKey<ViewedContentState>(debugLabel: 'viewedKey');
 
   // Додаємо MapPage як другу вкладку
   late final List<Widget> _pages = [
-    HomePage(key: _homePageKey),
-    FavoritesPage(contentKey: _favoritesKey),
-    ViewedPage(contentKey: _viewedKey),
-    const ChatPage(),
+    HomePage(key: const Key('homePage'), contentKey: _homePageKey),
+    FavoritesPage(key: const Key('favoritesPage'), contentKey: _favoritesKey),
+    ViewedPage(key: const Key('viewedPage'), contentKey: _viewedKey),
+    const ChatPage(key: Key('chatPage')),
   ];
 
   @override

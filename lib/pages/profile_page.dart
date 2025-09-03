@@ -6,7 +6,7 @@ import './active_listings_page.dart';
 import './inactive_listings_page.dart';
 import './favorite_listings_page.dart';
 import './personal_data_page.dart';
-import './test_demo_page.dart';
+
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/logout_confirmation_bottom_sheet.dart';
@@ -249,14 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     _showDeleteAccountConfirmationBottomSheet();
                   },
                 ),
-                _profileButton(
-                  text: 'Тест Демонстрація',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const TestDemoPage()),
-                    );
-                  },
-                ),
+
                 const SizedBox(height: 20),
                 // (Аватар між блоками видалено)
                 // Мої оголошення

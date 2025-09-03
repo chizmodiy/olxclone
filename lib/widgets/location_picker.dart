@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -390,12 +390,7 @@ class _LocationPickerState extends State<LocationPicker> {
     return null;
   }
 
-  void _showAutocompleteOverlay(BuildContext context) {
-    // Overlay видалено - використовуємо тільки вбудований список
-  }
 
-  // Removed: unused overlay method
-  // void _hideAutocompleteOverlay() {}
 
 
   void _showRegionDropdown(BuildContext context) {
@@ -867,7 +862,9 @@ class _LocationPickerState extends State<LocationPicker> {
                                 _citySearchController.text = _formatAddress(city);
                                 _citySelected = true;
                               });
-                              FocusScope.of(context).unfocus();
+                              if (mounted) {
+                                FocusScope.of(context).unfocus();
+                              }
                               final zoom = city.contains(',') ? 15.0 : 11.0;
                               _mapController.move(latLng!, zoom);
                               if (widget.onLocationSelected != null) {
@@ -944,7 +941,7 @@ class _LocationPickerState extends State<LocationPicker> {
                           border: Border.all(color: AppColors.zinc200),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -953,7 +950,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         child: IconButton(
                           icon: const Icon(Icons.add, size: 20),
                           onPressed: () {
-                            _mapController.move(_mapController.center, _mapController.zoom + 1);
+                            _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1);
                           },
                           padding: EdgeInsets.zero,
                         ),
@@ -969,7 +966,7 @@ class _LocationPickerState extends State<LocationPicker> {
                           border: Border.all(color: AppColors.zinc200),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -978,7 +975,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         child: IconButton(
                           icon: const Icon(Icons.remove, size: 20),
                           onPressed: () {
-                            _mapController.move(_mapController.center, _mapController.zoom - 1);
+                            _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1);
                           },
                           padding: EdgeInsets.zero,
                         ),
@@ -995,7 +992,7 @@ class _LocationPickerState extends State<LocationPicker> {
                             border: Border.all(color: AppColors.zinc200),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -1004,7 +1001,7 @@ class _LocationPickerState extends State<LocationPicker> {
                           child: IconButton(
                             icon: const Icon(Icons.my_location, size: 20),
                             onPressed: () {
-                              _mapController.move(_selectedLatLng!, _mapController.zoom);
+                              _mapController.move(_selectedLatLng!, _mapController.camera.zoom);
                             },
                             padding: EdgeInsets.zero,
                           ),
