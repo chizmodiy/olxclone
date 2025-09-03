@@ -829,7 +829,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                       ],
                                     ),
                                   ),
-                                  const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                   // Рядки з реальними даними (без скролу)
                                   _isLoadingProducts
                                       ? const Expanded(child: Center(child: CircularProgressIndicator()))
@@ -848,7 +847,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                   onStatusChanged: () => _fetchProducts(),
                                                   ),
                                                 ),
-                                              const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                             ],
                                           ),
                                   ),
@@ -1010,7 +1008,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                           ],
                                         ),
                                       ),
-                                      const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                       // Рядки з реальними даними (без скролу)
                                       _isLoadingProducts
                                           ? const Expanded(child: Center(child: CircularProgressIndicator()))
@@ -1073,7 +1070,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                           );
                                                         },
                                                       ),
-                                                  const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                                 ],
                                               ),
                                       ),
@@ -1227,7 +1223,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                               ],
                                             ),
                                           ),
-                                          const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                           // Рядки з реальними даними (без скролу)
                                           _isLoadingUsers
                                               ? const Expanded(child: Center(child: CircularProgressIndicator()))
@@ -1240,7 +1235,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                           onBlock: () async {
                                                             await showBlockUserDialog(
                                                               context: context,
-                                                              onBlock: () async {
+                                                              onBlock: (String reason) async {
                                                                 await _userService.blockUser(user['id']);
                                                                 await _fetchUsers();
                                                               },
@@ -1256,7 +1251,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                             );
                                                           },
                                                         ),
-                                                      const Divider(height: 1, thickness: 1, color: Color(0xFFE4E4E7)),
                                                     ],
                                                   ),
                                           ),
@@ -2630,93 +2624,152 @@ Widget _buildListingImageInDialog(List<dynamic> photos) {
 
 Future<void> showBlockUserDialog({
   required BuildContext context,
-  required VoidCallback onBlock,
+  required Function(String reason) onBlock,
 }) async {
   return showDialog(
     context: context,
     barrierDismissible: false,
     builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(
-          width: 390,
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Заблокувати користувача',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Lato',
-                        color: Colors.black,
-                        height: 1.2,
-                      ),
-                      textAlign: TextAlign.center,
+      return BlockUserDialog(onBlock: onBlock);
+    },
+  );
+}
+
+class BlockUserDialog extends StatefulWidget {
+  final Function(String reason) onBlock;
+  
+  const BlockUserDialog({Key? key, required this.onBlock}) : super(key: key);
+  
+  @override
+  _BlockUserDialogState createState() => _BlockUserDialogState();
+}
+
+class _BlockUserDialogState extends State<BlockUserDialog> {
+  final TextEditingController reasonController = TextEditingController();
+  bool isReasonFilled = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    reasonController.addListener(() {
+      setState(() {
+        isReasonFilled = reasonController.text.trim().isNotEmpty;
+      });
+    });
+  }
+  
+  @override
+  void dispose() {
+    reasonController.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SizedBox(
+        width: 390,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Заблокувати користувача',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Lato',
+                      color: Colors.black,
+                      height: 1.2,
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Ви впевнені що бажаєте заблокувати цього користувача?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Inter',
-                        color: Color(0xFF667085),
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.16,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Ви впевнені що бажаєте заблокувати цього користувача?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      color: Color(0xFF667085),
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.16,
+                      height: 1.4,
                     ),
-                    const SizedBox(height: 24),
-                    Row(
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  // Поле для введення причини блокування
+                  Container(
+                    width: double.infinity,
+                    height: 160,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          'Причина',
+                          style: TextStyle(
+                            color: const Color(0xFF52525B),
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            height: 1.40,
+                            letterSpacing: 0.14,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              side: const BorderSide(color: Color(0xFFE4E4E7)),
-                              backgroundColor: Colors.white,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            clipBehavior: Clip.antiAlias,
+                            decoration: ShapeDecoration(
+                              color: const Color(0xFFFAFAFA),
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  width: 1,
+                                  color: const Color(0xFFE4E4E7),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              shadows: [
+                                BoxShadow(
+                                  color: Color(0x0C101828),
+                                  blurRadius: 2,
+                                  offset: Offset(0, 1),
+                                  spreadRadius: 0,
+                                )
+                              ],
                             ),
-                            child: const Text(
-                              'Скасувати',
+                            child: TextField(
+                              controller: reasonController,
+                              maxLines: null,
+                              expands: true,
+                              decoration: InputDecoration(
+                                hintText: 'Вкажіть причину блокування користувача',
+                                hintStyle: TextStyle(
+                                  color: const Color(0xFFA1A1AA),
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.50,
+                                  letterSpacing: 0.16,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
                                 fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              onBlock();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              shape: const StadiumBorder(),
-                              backgroundColor: const Color(0xFFB42318),
-                              side: const BorderSide(color: Color(0xFFB42318)),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Заблокувати',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w400,
+                                height: 1.50,
                                 letterSpacing: 0.16,
                               ),
                             ),
@@ -2724,30 +2777,82 @@ Future<void> showBlockUserDialog({
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(200),
-                      color: Colors.transparent,
-                    ),
-                    child: const Icon(Icons.close, color: Color(0xFF27272A), size: 20),
                   ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            shape: const StadiumBorder(),
+                            side: const BorderSide(color: Color(0xFFE4E4E7)),
+                            backgroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Скасувати',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isReasonFilled ? () {
+                            Navigator.of(context).pop();
+                            widget.onBlock(reasonController.text.trim());
+                          } : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            shape: const StadiumBorder(),
+                            backgroundColor: isReasonFilled ? const Color(0xFFB42318) : const Color(0xFFD1D5DB),
+                            side: BorderSide(color: isReasonFilled ? const Color(0xFFB42318) : const Color(0xFFD1D5DB)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Заблокувати',
+                            style: TextStyle(
+                              color: isReasonFilled ? Colors.white : const Color(0xFF9CA3AF),
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(200),
+                    color: Colors.transparent,
+                  ),
+                  child: const Icon(Icons.close, color: Color(0xFF27272A), size: 20),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    },
-  );
+      ),
+    );
+  }
 }
 
 Future<void> showDeleteUserDialog({
