@@ -369,15 +369,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     });
   }
 
-  void _showBlockedUserBottomSheet() {
+  void _showBlockedUserBottomSheet() async {
+    // Отримуємо профіль користувача з причиною блокування
+    final userProfile = await _profileService.getCurrentUserProfile();
+    final blockReason = userProfile?['block_reason'];
+    
+    if (mounted) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: false, // Неможливо закрити
       enableDrag: false, // Неможливо перетягувати
-      builder: (context) => const BlockedUserBottomSheet(),
+        builder: (context) => BlockedUserBottomSheet(blockReason: blockReason),
     );
+    }
   }
 
   void _showLogoutConfirmationBottomSheet() {
@@ -1216,10 +1222,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                               children: const [
                                                 Expanded(flex: 2, child: Text('Назва', style: TextStyle(fontWeight: FontWeight.w600))),
                                                 Expanded(flex: 2, child: Text('Email', style: TextStyle(fontWeight: FontWeight.w600))),
-                                                Expanded(flex: 2, child: Text('Номер телефону', style: TextStyle(fontWeight: FontWeight.w600))),
-                                                Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.w600))),
+                                                Expanded(flex: 2, child: Text('Телефон', style: TextStyle(fontWeight: FontWeight.w600))),
+                                                Expanded(flex: 2, child: Text('Дата створення', style: TextStyle(fontWeight: FontWeight.w600))),
                                                 Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600))),
-                                                Expanded(flex: 2, child: Text('Причина блокування', style: TextStyle(fontWeight: FontWeight.w600))),
+
                                                 SizedBox(width: 80), // Для іконок дій
                                               ],
                                             ),
@@ -1924,14 +1930,14 @@ class UserTableRow extends StatelessWidget {
               ),
             ),
           ),
-          // Дата (поки що пуста, бо немає created_at)
+          // Дата створення акаунту
           Expanded(
             flex: 2,
             child: Container(
               width: 160,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Text(
-                '-',
+                _formatUserDate(user['created_at']),
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 16,
@@ -1948,27 +1954,7 @@ class UserTableRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: _buildUserStatusBadge(status),
           ),
-          // Причина блокування (якщо користувач заблокований)
-          if (status == 'blocked')
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Text(
-                  user['block_reason'] ?? 'Причина не вказана',
-                  style: const TextStyle(
-                    color: Color(0xFFB42318),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.14,
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
+
           // Дії
           Container(
             height: 72,
@@ -2072,6 +2058,19 @@ class UserTableRow extends StatelessWidget {
             ),
           ),
         );
+    }
+  }
+
+  String _formatUserDate(dynamic date) {
+    if (date == null) return 'Невідомо';
+    
+    try {
+      final dateTime = DateTime.tryParse(date.toString());
+      if (dateTime == null) return 'Невідомо';
+      
+      return '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')} ${dateTime.year}';
+    } catch (e) {
+      return 'Невідомо';
     }
   }
 } 
@@ -2257,8 +2256,8 @@ Future<void> showComplaintDialog({
                                   const SizedBox(height: 8),
                                   // Ціна
                                   if (price != null || isFree)
-                                    Row(
-                                      children: [
+                                  Row(
+                                    children: [
                                         Text(
                                           isFree ? 'Безкоштовно' : '₴${price.toStringAsFixed(2)}',
                                           style: const TextStyle(
@@ -2271,20 +2270,20 @@ Future<void> showComplaintDialog({
                                           ),
                                         ),
                                         const Spacer(),
-                                        if (location.isNotEmpty)
-                                          Text(
-                                            location,
-                                            style: const TextStyle(
+                                      if (location.isNotEmpty)
+                                        Text(
+                                          location,
+                                          style: const TextStyle(
                                               color: Color(0xFF838583),
-                                              fontSize: 12,
-                                              fontFamily: 'Inter',
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
                                               fontWeight: FontWeight.w400,
-                                              letterSpacing: 0.24,
-                                              height: 1.3,
-                                            ),
+                                            letterSpacing: 0.24,
+                                            height: 1.3,
                                           ),
-                                      ],
-                                    ),
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -2371,16 +2370,16 @@ Future<void> showComplaintDialog({
                                 ),
                               ),
                             // Ім'я користувача
-                            Text(
-                              userName,
-                              style: const TextStyle(
-                                color: Color(0xFF101828),
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.16,
-                                height: 1.5,
-                              ),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Color(0xFF101828),
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.16,
+                            height: 1.5,
+                          ),
                             ),
                           ],
                         ),
@@ -2484,32 +2483,32 @@ Future<void> showComplaintDialog({
                       )
                     else
                       // Якщо оголошення не заблоковане - обидві кнопки
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: OutlinedButton.styleFrom(
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                                shape: const StadiumBorder(),
-                                side: const BorderSide(color: Color(0xFFE4E4E7)),
-                                backgroundColor: Colors.white,
-                              ),
-                              child: const Text(
-                                'Скасувати',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.16,
-                                ),
+                              shape: const StadiumBorder(),
+                              side: const BorderSide(color: Color(0xFFE4E4E7)),
+                              backgroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                              'Скасувати',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
                                                           onPressed: () async {
                               print('=== Підтвердити натиснуто ===');
                               print('onComplaintProcessed callback: $onComplaintProcessed');
@@ -2553,27 +2552,27 @@ Future<void> showComplaintDialog({
                                 onComplaintProcessed?.call();
                               }
                             },
-                              style: ElevatedButton.styleFrom(
+                            style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                                shape: const StadiumBorder(),
-                                backgroundColor: const Color(0xFF015873),
-                                side: const BorderSide(color: Color(0xFF015873)),
-                                elevation: 0,
-                              ),
-                              child: const Text(
-                                'Підтвердити',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.16,
-                                ),
+                              shape: const StadiumBorder(),
+                              backgroundColor: const Color(0xFF015873),
+                              side: const BorderSide(color: Color(0xFF015873)),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Підтвердити',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -2688,42 +2687,42 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
   
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: SizedBox(
-        width: 390,
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Заблокувати користувача',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Lato',
-                      color: Colors.black,
-                      height: 1.2,
+      return Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 390,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Заблокувати користувача',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Lato',
+                        color: Colors.black,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Ви впевнені що бажаєте заблокувати цього користувача?',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      color: Color(0xFF667085),
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.16,
-                      height: 1.4,
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Ви впевнені що бажаєте заблокувати цього користувача?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.16,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
                   const SizedBox(height: 24),
                   // Поле для введення причини блокування
                   Container(
@@ -2800,80 +2799,80 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            shape: const StadiumBorder(),
-                            side: const BorderSide(color: Color(0xFFE4E4E7)),
-                            backgroundColor: Colors.white,
-                          ),
-                          child: const Text(
-                            'Скасувати',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.16,
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
+                              side: const BorderSide(color: Color(0xFFE4E4E7)),
+                              backgroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                              'Скасувати',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
                           onPressed: isReasonFilled ? () {
-                            Navigator.of(context).pop();
+                              Navigator.of(context).pop();
                             widget.onBlock(reasonController.text.trim());
                           } : null,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            shape: const StadiumBorder(),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
                             backgroundColor: isReasonFilled ? const Color(0xFFB42318) : const Color(0xFFD1D5DB),
                             side: BorderSide(color: isReasonFilled ? const Color(0xFFB42318) : const Color(0xFFD1D5DB)),
-                            elevation: 0,
-                          ),
+                              elevation: 0,
+                            ),
                           child: Text(
-                            'Заблокувати',
-                            style: TextStyle(
+                              'Заблокувати',
+                              style: TextStyle(
                               color: isReasonFilled ? Colors.white : const Color(0xFF9CA3AF),
-                              fontSize: 16,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.16,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(200),
-                    color: Colors.transparent,
-                  ),
-                  child: const Icon(Icons.close, color: Color(0xFF27272A), size: 20),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                right: 8,
+                top: 8,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(200),
+                      color: Colors.transparent,
+                    ),
+                    child: const Icon(Icons.close, color: Color(0xFF27272A), size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+  );
   }
 }
 

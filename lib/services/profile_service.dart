@@ -160,4 +160,21 @@ class ProfileService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getCurrentUserProfile() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final response = await _client
+          .from('profiles')
+          .select('status, block_reason')
+          .eq('id', userId)
+          .single();
+      
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
 } 

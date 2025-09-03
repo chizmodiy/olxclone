@@ -46,15 +46,21 @@ class _ActiveListingsPageState extends State<ActiveListingsPage> {
     });
   }
 
-  void _showBlockedUserBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: false, // Неможливо закрити
-      enableDrag: false, // Неможливо перетягувати
-      builder: (context) => const BlockedUserBottomSheet(),
-    );
+  void _showBlockedUserBottomSheet() async {
+    // Отримуємо профіль користувача з причиною блокування
+    final userProfile = await _profileService.getCurrentUserProfile();
+    final blockReason = userProfile?['block_reason'];
+    
+    if (mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        isDismissible: false, // Неможливо закрити
+        enableDrag: false, // Неможливо перетягувати
+        builder: (context) => BlockedUserBottomSheet(blockReason: blockReason),
+      );
+    }
   }
 
   @override

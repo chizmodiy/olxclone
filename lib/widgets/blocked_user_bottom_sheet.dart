@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 
-class BlockedUserBottomSheet extends StatelessWidget {
-  const BlockedUserBottomSheet({super.key});
+class BlockedUserBottomSheet extends StatefulWidget {
+  final String? blockReason;
+  
+  const BlockedUserBottomSheet({
+    super.key,
+    this.blockReason,
+  });
+
+  @override
+  State<BlockedUserBottomSheet> createState() => _BlockedUserBottomSheetState();
+}
+
+class _BlockedUserBottomSheetState extends State<BlockedUserBottomSheet> {
+  bool _showDetails = false;
 
   @override
   Widget build(BuildContext context) {
@@ -79,44 +91,98 @@ class BlockedUserBottomSheet extends StatelessWidget {
               ),
             ],
           ),
+          
+          // Причина блокування (показується після натискання "Детальніше")
+          if (_showDetails && widget.blockReason != null) ...[
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF5F5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFFFCDC2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Причина:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFB42318),
+                      letterSpacing: 0.14,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.blockReason!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF52525B),
+                      letterSpacing: 0.16,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          
           const SizedBox(height: 40),
           // Buttons
           Column(
             children: [
-              // Primary button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Детальніше - можна додати логіку
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-                    backgroundColor: const Color(0xFF015873),
-                    side: const BorderSide(color: Color(0xFF015873)),
-                    shape: const StadiumBorder(),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Детальніше',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.16,
-                      height: 24 / 16,
+              // Кнопка "Детальніше" (показується тільки якщо не розкрито деталі)
+              if (!_showDetails && widget.blockReason != null)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _showDetails = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                      backgroundColor: const Color(0xFF015873),
+                      side: const BorderSide(color: Color(0xFF015873)),
+                      shape: const StadiumBorder(),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Детальніше',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.16,
+                        height: 24 / 16,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              // Secondary button
+              
+              // Відстань між кнопками (показується тільки якщо є кнопка "Детальніше")
+              if (!_showDetails && widget.blockReason != null)
+                const SizedBox(height: 12),
+              
+              // Кнопка "Скасувати" (показується завжди)
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
                     // Скасувати - можна додати логіку
+                    // Попап не закривається для заблокованих користувачів
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
