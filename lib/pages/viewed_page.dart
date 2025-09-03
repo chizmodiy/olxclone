@@ -68,6 +68,14 @@ class ViewedContentState extends State<ViewedContent> {
 
   Future<void> _loadViewedProducts() async {
     if (_isLoading) return; // Removed _hasMore check here as we'll get all IDs at once
+    
+    // Не завантажуємо товари для неавторизованих користувачів
+    if (_currentUserId == null) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -113,6 +121,8 @@ class ViewedContentState extends State<ViewedContent> {
 
   // Метод для оновлення списку проглянутих оголошень
   void refreshProducts() {
+    if (_currentUserId == null) return; // Не оновлюємо для неавторизованих користувачів
+    
     setState(() {
       _products.clear();
       _errorMessage = null;
@@ -133,9 +143,11 @@ class ViewedContentState extends State<ViewedContent> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = _searchQuery.isEmpty
-        ? _products
-        : _products.where((p) => p.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    final filteredProducts = _currentUserId == null 
+        ? <Product>[] // Пустий список для неавторизованих користувачів
+        : (_searchQuery.isEmpty
+            ? _products
+            : _products.where((p) => p.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList());
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 13),
       child: Column(
@@ -206,15 +218,150 @@ class ViewedContentState extends State<ViewedContent> {
                 ? Center(
                     child: Text('Помилка завантаження товарів: $_errorMessage'),
                   )
-                : RefreshIndicator(
+                : _currentUserId == null
+                    ? Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Content
+                                Column(
+                                  children: [
+                                    // Featured icon with message
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF4F4F5),
+                                        borderRadius: BorderRadius.circular(28),
+                                        border: Border.all(
+                                          color: const Color(0xFFFAFAFA),
+                                          width: 8,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.visibility,
+                                          size: 24,
+                                          color: const Color(0xFF015873),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // Text content
+                                    Column(
+                                      children: [
+                                        const Text(
+                                          'Переглядайте оголошення',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 24,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                            height: 28.8 / 24,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          'Увійдіть або створіть профіль для перегляду тастери історії переглянутих оголошень.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Color(0xFF727278),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                            height: 22.4 / 16,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 40),
+                                // Buttons
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed('/auth');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF015873),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                          elevation: 0,
+                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                                        ),
+                                        child: const Text(
+                                          'Увійти',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w500,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed('/auth');
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: const Color(0xFF015873),
+                                          side: const BorderSide(color: Color(0xFF015873), width: 1),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(200),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                        ),
+                                        child: const Text(
+                                          'Створити профіль',
+                                          style: TextStyle(
+                                            color: Color(0xFF015873),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w500,
+                                            letterSpacing: 0.16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                      )
+                    : RefreshIndicator(
                     onRefresh: () async {
-                      setState(() {
-                        _products = [];
-                        _errorMessage = null;
-                      });
-                      await _loadViewedProducts();
+                      if (_currentUserId != null) { // Тільки для авторизованих користувачів
+                        setState(() {
+                          _products = [];
+                          _errorMessage = null;
+                        });
+                        await _loadViewedProducts();
+                      }
                     },
-                    child: filteredProducts.isEmpty && !_isLoading
+                    child: filteredProducts.isEmpty && !_isLoading && _currentUserId != null
                         ? Column(
                             children: [
                               Container(
@@ -285,6 +432,33 @@ class ViewedContentState extends State<ViewedContent> {
                               ),
                               const Spacer(),
                             ],
+                          )
+                    : _currentUserId != null && filteredProducts.isNotEmpty
+                        ? ListView.builder(
+                        controller: _scrollController,
+                            padding: const EdgeInsets.only(top: 0),
+                        itemCount: filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = filteredProducts[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                                child: ViewedProductCard(
+                                  id: product.id,
+                                  title: product.title,
+                                  price: product.formattedPrice,
+                              date: DateFormat('dd MMMM HH:mm').format(product.createdAt),
+                                  region: product.region,
+                              images: product.images,
+                                  isNegotiable: product.isNegotiable,
+                                  onTap: () async {
+                                    await Navigator.of(context).pushNamed(
+                                      '/product-detail',
+                                      arguments: {'id': product.id},
+                                    );
+                                  },
+                                ),
+                              );
+                        },
                           )
                     : ListView.builder(
                         controller: _scrollController,
