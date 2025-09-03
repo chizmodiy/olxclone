@@ -162,47 +162,22 @@ class HomeContentState extends State<HomeContent> {
   }
 
   void _showAuthBottomSheet() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.zero,
-        child: Stack(
-          children: [
-            // Затемнення фону з блюром
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Bottom sheet
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: AuthBottomSheet(
-                title: 'Тут будуть ваші оголошення',
-                subtitle: 'Увійдіть у профіль, щоб переглядати, створювати або зберігати оголошення.',
-                onLoginPressed: () {
-                  Navigator.of(context).pop(); // Закриваємо bottom sheet
-                  Navigator.of(context).pushNamed('/auth');
-                },
-                onCancelPressed: () {
-                  Navigator.of(context).pop(); // Закриваємо bottom sheet
-                },
-              ),
-            ),
-          ],
-        ),
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => AuthBottomSheet(
+        title: 'Тут будуть ваші оголошення',
+        subtitle: 'Увійдіть у профіль, щоб переглядати, створювати або зберігати оголошення.',
+        onLoginPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+          Navigator.of(context).pushNamed('/auth');
+        },
+        onCancelPressed: () {
+          Navigator.of(context).pop(); // Закриваємо bottom sheet
+        },
       ),
     );
   }
