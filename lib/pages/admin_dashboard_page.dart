@@ -2165,12 +2165,12 @@ Future<void> showComplaintDialog({
                                         Text(
                                           isFree ? 'Безкоштовно' : '₴${price.toStringAsFixed(2)}',
                                           style: const TextStyle(
-                                            color: Color(0xFF015873),
-                                            fontSize: 16,
+                                            color: Color(0xFF838583),
+                                            fontSize: 12,
                                             fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.16,
-                                            height: 1.4,
+                                            fontWeight: FontWeight.w400,
+                                            letterSpacing: 0.24,
+                                            height: 1.3,
                                           ),
                                         ),
                                         const Spacer(),
@@ -2299,7 +2299,7 @@ Future<void> showComplaintDialog({
                           child: OutlinedButton(
                             onPressed: () => Navigator.of(context).pop(),
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                               shape: const StadiumBorder(),
                               side: const BorderSide(color: Color(0xFFE4E4E7)),
                               backgroundColor: Colors.white,
@@ -2338,7 +2338,7 @@ Future<void> showComplaintDialog({
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                               shape: const StadiumBorder(),
                               backgroundColor: const Color(0xFF015873),
                               side: const BorderSide(color: Color(0xFF015873)),
