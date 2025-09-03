@@ -432,11 +432,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       final response = await query;
       final products = (response as List).map((json) => Product.fromJson(json)).toList();
       
-      // Підрахунок загальної кількості сторінок
-    final countResp = await Supabase.instance.client
-        .from('listings')
-        .select('id', const FetchOptions(count: CountOption.exact));
-    final totalCount = countResp.count ?? products.length;
+      // Підрахунок загальної кількості сторінок з урахуванням фільтрів
+      dynamic countQuery = Supabase.instance.client
+          .from('listings')
+          .select('id', const FetchOptions(count: CountOption.exact));
+      
+      // Додаємо ті ж фільтри для підрахунку
+      if (_searchQuery.isNotEmpty) {
+        countQuery = countQuery.ilike('title', '%$_searchQuery%');
+      }
+      
+      final countResp = await countQuery;
+      final totalCount = countResp.count ?? products.length;
       
     setState(() {
       _products = products;
@@ -747,6 +754,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                         ),
                                       ),
                                       const SizedBox(width: 12),
+
                                       // Кнопка фільтра
                                       OutlinedButton.icon(
                                         onPressed: () {},
@@ -771,6 +779,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                       ),
                                     ],
                                   ),
+
                                 ],
                               ),
                             ),
