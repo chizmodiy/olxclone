@@ -188,6 +188,135 @@ Future<void> showDeleteListingDialog({
   );
 }
 
+// Функція для показу діалогу блокування оголошення
+Future<void> showBlockListingDialog({
+  required BuildContext context,
+  required String listingTitle,
+  required VoidCallback onBlock,
+}) async {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 390,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Заголовок
+                    Text(
+                      'Заблокувати оголошення',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Lato',
+                        color: Colors.black,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    // Пояснення
+                    Text(
+                      'Ви впевнені що бажаєте заблокувати оголошення "$listingTitle"?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.16,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
+                              side: const BorderSide(color: Color(0xFFE4E4E7)),
+                              backgroundColor: Colors.white,
+                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
+                              elevation: 1,
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text(
+                              'Скасувати',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: const StadiumBorder(),
+                              backgroundColor: Color(0xFFF04438),
+                              side: const BorderSide(color: Color(0xFFF04438)),
+                              shadowColor: Color.fromRGBO(16, 24, 40, 0.05),
+                              elevation: 1,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              onBlock();
+                            },
+                            child: const Text(
+                              'Заблокувати',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Кнопка закриття (іконка)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(200),
+                      color: Colors.transparent,
+                    ),
+                    child: const Icon(Icons.close, color: Color(0xFF27272A), size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({Key? key}) : super(key: key);
@@ -1222,10 +1351,31 @@ class AdminAdTableRow extends StatelessWidget {
             children: [
               _ActionIconButton(
                 svg: _slashCircleSvg,
-                tooltip: 'Заблокувати',
+                tooltip: (ad.status == 'blocked') ? 'Розблокувати' : 'Заблокувати',
                 onTap: () {
-                  // Поки що без дії
+                  if (ad.status == 'blocked') {
+                    // Розблокувати оголошення
+                    _unblockListing(context);
+                  } else {
+                    // Заблокувати оголошення
+                    showBlockListingDialog(
+                      context: context,
+                      listingTitle: ad.title,
+                      onBlock: () async {
+                        try {
+                          await listingService.updateListingStatus(ad.id, 'blocked');
+                          // Оновлюємо список продуктів для відображення змін
+                          onStatusChanged?.call();
+                        } catch (e) {
+                          if (context.mounted) {
+                            // Error occurred
+                          }
+                        }
+                      },
+                    );
+                  }
                 },
+                color: (ad.status == 'blocked') ? Colors.green : null,
               ),
               const SizedBox(width: 8),
               _ActionIconButton(
@@ -1255,6 +1405,19 @@ class AdminAdTableRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Метод для розблокування оголошення
+  Future<void> _unblockListing(BuildContext context) async {
+    try {
+      await listingService.updateListingStatus(ad.id, 'active');
+      // Оновлюємо список продуктів для відображення змін
+      onStatusChanged?.call();
+    } catch (e) {
+      if (context.mounted) {
+        // Error occurred
+      }
+    }
   }
 
   Widget _buildStatusBadge(String status) {
