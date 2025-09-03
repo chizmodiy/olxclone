@@ -16,7 +16,11 @@ class ComplaintService {
               id,
               title,
               description,
-              photos
+              photos,
+              price,
+              is_free,
+              location,
+              created_at
             )
           ''')
           .order('created_at', ascending: false);

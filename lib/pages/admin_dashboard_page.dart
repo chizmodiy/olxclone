@@ -2049,12 +2049,26 @@ Future<void> showComplaintDialog({
   VoidCallback? onComplaintProcessed, // New callback for when a complaint is processed
 }) async {
   final listing = complaint['listings'] ?? {};
-  // Remove fields that don't exist in the database
+  // Get listing fields
   final productName = listing['title'] ?? 'Невідоме оголошення';
-  final createdAt = complaint['created_at'] != null ? DateTime.tryParse(complaint['created_at']) : null;
+  final price = listing['price'];
+  final isFree = listing['is_free'] ?? false;
+  final location = listing['location'] ?? '';
+  final photos = listing['photos'] ?? [];
+  
+  // Дата створення оголошення (не скарги)
+  final listingCreatedAt = listing['created_at'] != null ? DateTime.tryParse(listing['created_at']) : null;
+  final listingDate = listingCreatedAt != null ? '${listingCreatedAt.day.toString().padLeft(2, '0')} ${_monthUA(listingCreatedAt.month)} ${listingCreatedAt.hour.toString().padLeft(2, '0')}:${listingCreatedAt.minute.toString().padLeft(2, '0')}' : '';
+  
   final userName = 'Користувач ${complaint['user_id'] ?? 'Невідомий'}';
-  final complaintDate = createdAt != null ? '${createdAt.day.toString().padLeft(2, '0')} ${_monthUA(createdAt.month)} ${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')}' : '';
   final description = complaint['description'] ?? '';
+  
+  // Логування для перевірки даних
+  print('=== showComplaintDialog ===');
+  print('Listing data: $listing');
+  print('Price: $price, isFree: $isFree');
+  print('Location: $location');
+  print('Photos: $photos');
 
   return showDialog(
     context: context,
@@ -2106,7 +2120,7 @@ Future<void> showComplaintDialog({
                               borderRadius: BorderRadius.circular(8),
                               color: Colors.grey[200],
                             ),
-                            child: const Icon(Icons.image, size: 32, color: Colors.grey),
+                            child: _buildListingImageInDialog(photos),
                           ),
                           Expanded(
                             child: Padding(
@@ -2129,9 +2143,9 @@ Future<void> showComplaintDialog({
                                           ),
                                         ),
                                       ),
-                                      if (complaintDate.isNotEmpty)
+                                      if (listingDate.isNotEmpty)
                                         Text(
-                                          complaintDate,
+                                          listingDate,
                                           style: const TextStyle(
                                             color: Color(0xFF838583),
                                             fontSize: 12,
@@ -2144,7 +2158,36 @@ Future<void> showComplaintDialog({
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  // Price and location fields removed as they don't exist in the database
+                                  // Ціна
+                                  if (price != null || isFree)
+                                    Row(
+                                      children: [
+                                        Text(
+                                          isFree ? 'Безкоштовно' : '₴${price.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF015873),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.16,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        if (location.isNotEmpty)
+                                          Text(
+                                            location,
+                                            style: const TextStyle(
+                                              color: Color(0xFF838583),
+                                              fontSize: 12,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w400,
+                                              letterSpacing: 0.24,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             ),
@@ -2198,7 +2241,7 @@ Future<void> showComplaintDialog({
                           ),
                         ),
                         Text(
-                          complaintDate,
+                          listingDate,
                           style: const TextStyle(
                             color: Color(0xFF101828),
                             fontSize: 16,
@@ -2339,6 +2382,49 @@ Future<void> showComplaintDialog({
         ),
       );
     },
+  );
+}
+
+// Функція для відображення фото оголошення в діалозі
+Widget _buildListingImageInDialog(List<dynamic> photos) {
+  if (photos.isEmpty) {
+    return const Icon(Icons.image, size: 32, color: Colors.grey);
+  }
+  
+  final firstPhoto = photos.first;
+  if (firstPhoto == null || firstPhoto.toString().isEmpty) {
+    return const Icon(Icons.image, size: 32, color: Colors.grey);
+  }
+  
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: Image.network(
+      firstPhoto.toString(),
+      width: 64,
+      height: 64,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.image, size: 32, color: Colors.grey);
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+      },
+    ),
   );
 }
 
