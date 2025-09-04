@@ -320,14 +320,50 @@ class _FilterPageState extends State<FilterPage> {
     filterManager.clearFilters();
     
     setState(() {
+      // Скидаємо всі вибрані значення
       _selectedCategory = null;
       _selectedSubcategory = null;
-      _selectedRegion = null; // Очищаємо область
-      _selectedCurrency = 'UAH'; // Reset currency
-      _subcategories = []; // Clear subcategories on reset
-      _isPriceModePrice = true; // Reset price mode to price
+      _selectedRegion = null;
+      _selectedBrand = null;
+      _selectedSize = null;
+      _selectedCondition = null;
+      _subcategories = [];
       
-      // Also reset available prices to defaults or reload them if needed
+      // Скидаємо помилки валідації
+      _minPriceError = null;
+      _maxPriceError = null;
+      _minAgeError = null;
+      _maxAgeError = null;
+      _minAreaError = null;
+      _maxAreaError = null;
+      _minYearError = null;
+      _maxYearError = null;
+      _minEngineHpError = null;
+      _maxEngineHpError = null;
+      
+      // Скидаємо значення цін та інших числових фільтрів
+      _minPrice = 0.0;
+      _maxPrice = 100000.0;
+      _currentMinPrice = _minPrice;
+      _currentMaxPrice = _maxPrice;
+      _minPriceController.text = '';
+      _maxPriceController.text = '';
+      
+      // Скидаємо інші контролери
+      _minAreaController.text = '';
+      _maxAreaController.text = '';
+      _minYearController.text = '';
+      _maxYearController.text = '';
+      _minEngineHpController.text = '';
+      _maxEngineHpController.text = '';
+      _minAgeController.text = '';
+      _maxAgeController.text = '';
+      
+      // Скидаємо режим ціни та валюту без встановлення значень за замовчуванням
+      _isPriceModePrice = true;
+      _selectedCurrency = 'UAH';
+      
+      // Скидаємо доступні діапазони
       _minAvailablePrice = 0.0;
       _maxAvailablePrice = 100.0;
       _minAvailableArea = 0.0;
@@ -336,36 +372,16 @@ class _FilterPageState extends State<FilterPage> {
       _maxAvailableYear = 2024.0;
       _minAvailableEngineHp = 50.0;
       _maxAvailableEngineHp = 500.0;
-      _currentMinPrice = _minPrice; // Встановлюємо поточні значення слайдера
-      _currentMaxPrice = _maxPrice; // Встановлюємо максимальне значення з бази
-      
-      // Оновлюємо текстові поля з новими значеннями
-      _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
-      _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
-      
-      _selectedBrand = null; // Reset brand selection
-      _selectedSize = null; // Reset size selection
-      _selectedCondition = null; // Reset condition selection
-      _minPriceError = null; // Clear price validation errors
-      _maxPriceError = null; // Clear price validation errors
-      _minAgeError = null; // Clear age validation errors
-      _maxAgeError = null; // Clear age validation errors
-      _minAreaError = null; // Clear area validation errors
-      _maxAreaError = null; // Clear area validation errors
-      _minYearError = null; // Clear year validation errors
-      _maxYearError = null; // Clear year validation errors
-      _minEngineHpError = null; // Clear engine HP validation errors
-      _maxEngineHpError = null; // Clear engine HP validation errors
-      ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Hide any error SnackBar
     });
     
-    // Завантажуємо максимальні та мінімальні значення та встановлюємо поля цін
+    // Оновлюємо діапазон цін
     _loadMinMaxPrices(_selectedCurrency);
+    
+    // Ховаємо будь-які поточні повідомлення про помилки
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
   void _applyFilters() {
-
-    
     // Перевіряємо наявність помилок валідації перед застосуванням фільтрів
     if (_minPriceError != null || _maxPriceError != null ||
         _minAgeError != null || _maxAgeError != null ||
@@ -373,159 +389,77 @@ class _FilterPageState extends State<FilterPage> {
         _minYearError != null || _maxYearError != null ||
         _minEngineHpError != null || _maxEngineHpError != null) {
       _showErrorSnackBar('Будь ласка, виправте помилки у полях фільтрів.');
-      return; // Не застосовуємо фільтри, якщо є помилки
+      return;
     }
     
     final FilterManager filterManager = FilterManager();
-    final Map<String, dynamic> filters = {
-      'category': _selectedCategory?.id, // Передаємо id, а не name
-      'subcategory': _selectedSubcategory?.id, // Передаємо id, а не name
-      'region': _selectedRegion?.name, // Передаємо назву області
-    };
+    final Map<String, dynamic> filters = {};
 
-    if (_selectedCategory?.name == 'Віддам безкоштовно') {
-      filters['isFree'] = true;
-      filters['minPrice'] = null;
-      filters['maxPrice'] = null;
-      filters['currency'] = null;
-      
-    } else if (_isPriceModePrice) {
-      filters['minPrice'] = double.tryParse(_minPriceController.text);
-      filters['maxPrice'] = double.tryParse(_maxPriceController.text);
-      filters['currency'] = _selectedCurrency;
-      filters['isFree'] = null; // Явно очищаємо isFree фільтр у режимі ціни
-      
-    } else {
-      filters['isFree'] = true;
-      filters['minPrice'] = null;
-      filters['maxPrice'] = null;
-      filters['currency'] = null;
-      
+    // Додаємо тільки вибрані фільтри (не null і не порожні)
+    if (_selectedCategory != null) {
+      filters['category'] = _selectedCategory?.id;
     }
-
-    // Add extra fields filters
     if (_selectedSubcategory != null) {
-      // Add area filter for real estate
-      if (_selectedCategory?.name == 'Нерухомість' || 
-          _selectedSubcategory!.name.contains('Квартири') ||
-          _selectedSubcategory!.name.contains('Кімнати') ||
-          _selectedSubcategory!.name.contains('Будинки') ||
-          _selectedSubcategory!.name.contains('Земля') ||
-          _selectedSubcategory!.name.contains('Комерційна нерухомість') ||
-          _selectedSubcategory!.name.contains('Гаражі') ||
-          _selectedSubcategory!.name.contains('парковки') ||
-          _selectedSubcategory!.name.contains('Нерухомість за кордоном') ||
-          _selectedSubcategory!.id == 'apartments' ||
-          _selectedSubcategory!.id == 'rooms' ||
-          _selectedSubcategory!.id == 'houses' ||
-          _selectedSubcategory!.id == 'commercial' ||
-          _selectedSubcategory!.id == 'garages' ||
-          _selectedSubcategory!.id == 'foreign' ||
-          _selectedSubcategory!.id == 'houses_daily' ||
-          _selectedSubcategory!.id == 'apartments_daily' ||
-          _selectedSubcategory!.id == 'rooms_daily') {
-        filters['minArea'] = double.tryParse(_minAreaController.text);
-        filters['maxArea'] = double.tryParse(_maxAreaController.text);
-      }
-      
-      // Add area filter for daily accommodation
-      if (_selectedCategory?.name == 'Житло подобово' || 
-          _selectedSubcategory!.name.contains('Будинки подобово') ||
-          _selectedSubcategory!.name.contains('Квартири подобово') ||
-          _selectedSubcategory!.name.contains('Кімнати подобово') ||
-          _selectedSubcategory!.name.contains('Готелі') ||
-          _selectedSubcategory!.name.contains('бази відпочинку') ||
-          _selectedSubcategory!.name.contains('Хостели') ||
-          _selectedSubcategory!.name.contains('койко-місця') ||
-          _selectedSubcategory!.name.contains('Пропозиції Туроператорів') ||
-          _selectedSubcategory!.id == 'houses_daily' ||
-          _selectedSubcategory!.id == 'apartments_daily' ||
-          _selectedSubcategory!.id == 'rooms_daily') {
-        filters['minArea'] = double.tryParse(_minAreaController.text);
-        filters['maxArea'] = double.tryParse(_maxAreaController.text);
-      }
-      
-      // Add car filters for vehicles
-      if (_selectedCategory?.name == 'Авто' || 
-          _selectedSubcategory!.name.contains('Легкові автомобілі') ||
-          _selectedSubcategory!.name.contains('Вантажні автомобілі') ||
-          _selectedSubcategory!.name.contains('Автобуси') ||
-          _selectedSubcategory!.name.contains('Мото') ||
-          _selectedSubcategory!.name.contains('Спецтехніка') ||
-          _selectedSubcategory!.name.contains('Сільгосптехніка') ||
-          _selectedSubcategory!.name.contains('Водний транспорт') ||
-          _selectedSubcategory!.name.contains('Автомобілі з Польщі') ||
-          _selectedSubcategory!.name.contains('Причепи') ||
-          _selectedSubcategory!.name.contains('будинки на колесах') ||
-          _selectedSubcategory!.name.contains('Вантажівки та спецтехніка з Польщі') ||
-          _selectedSubcategory!.name.contains('Інший транспорт') ||
-          _selectedSubcategory!.id == 'cars' ||
-          _selectedSubcategory!.id == 'trucks' ||
-          _selectedSubcategory!.id == 'buses' ||
-          _selectedSubcategory!.id == 'moto' ||
-          _selectedSubcategory!.id == 'special_equipment' ||
-          _selectedSubcategory!.id == 'agricultural' ||
-          _selectedSubcategory!.id == 'water_transport' ||
-          _selectedSubcategory!.id == 'cars_poland' ||
-          _selectedSubcategory!.id == 'trailers' ||
-          _selectedSubcategory!.id == 'trucks_poland' ||
-          _selectedSubcategory!.id == 'other_transport') {
-        filters['minYear'] = double.tryParse(_minCarYearController.text);
-        filters['maxYear'] = double.tryParse(_maxCarYearController.text);
-        filters['minEnginePowerHp'] = double.tryParse(_minEngineHpController.text);
-        filters['maxEnginePowerHp'] = double.tryParse(_maxEngineHpController.text);
-        
-        // Марка авто тільки для легкових авто та авто з Польщі
-        bool isCarOrCarPoland = _selectedSubcategory?.id == 'cars' || 
-                                _selectedSubcategory?.id == 'cars_poland' ||
-                                _selectedSubcategory!.name.contains('Легкові автомобілі') ||
-                                _selectedSubcategory!.name.contains('Автомобілі з Польщі');
-        if (isCarOrCarPoland) {
-          filters['car_brand'] = _selectedCarBrand;
-        }
-      }
-      
-      // Add fashion filters
-      if (_selectedCategory?.name == 'Мода і стиль' || 
-          _selectedSubcategory!.name.contains('Жіночий одяг') ||
-          _selectedSubcategory!.name.contains('Чоловічий одяг') ||
-          _selectedSubcategory!.name.contains('Жіноче взуття') ||
-          _selectedSubcategory!.name.contains('Чоловіче взуття') ||
-          _selectedSubcategory!.name.contains('Жіноча білизна') ||
-          _selectedSubcategory!.name.contains('купальники') ||
-          _selectedSubcategory!.name.contains('Чоловіча білизна') ||
-          _selectedSubcategory!.name.contains('плавки') ||
-          _selectedSubcategory!.name.contains('Одяг для вагітних') ||
-          _selectedSubcategory!.name.contains('Спецодяг') ||
-          _selectedSubcategory!.name.contains('Спецвзуття') ||
-          _selectedSubcategory!.id == 'women_clothes' ||
-          _selectedSubcategory!.id == 'men_clothes' ||
-          _selectedSubcategory!.id == 'women_shoes' ||
-          _selectedSubcategory!.id == 'men_shoes' ||
-          _selectedSubcategory!.id == 'women_underwear' ||
-          _selectedSubcategory!.id == 'men_underwear' ||
-          _selectedSubcategory!.id == 'maternity_clothes' ||
-          _selectedSubcategory!.id == 'work_clothes' ||
-          _selectedSubcategory!.id == 'work_shoes') {
-        filters['size'] = _selectedSize;
-      }
-      
-      // Add dating filters
-      if (_selectedCategory?.name == 'Знайомства' || 
-          _selectedSubcategory!.name.contains('Чоловіки, які шукають знайомства') ||
-          _selectedSubcategory!.name.contains('Жінки, які шукають знайомства') ||
-          _selectedSubcategory!.id == 'women_dating' ||
-          _selectedSubcategory!.id == 'men_dating') {
-        filters['minAge'] = double.tryParse(_minAgeController.text);
-        filters['maxAge'] = double.tryParse(_maxAgeController.text);
-      }
+      filters['subcategory'] = _selectedSubcategory?.id;
+    }
+    if (_selectedRegion != null) {
+      filters['region'] = _selectedRegion?.name;
+    }
+    
+    // Додаємо фільтри цін тільки якщо вони відрізняються від значень за замовчуванням
+    if (_minPriceController.text.isNotEmpty && double.parse(_minPriceController.text) > 0) {
+      filters['minPrice'] = double.parse(_minPriceController.text);
+    }
+    if (_maxPriceController.text.isNotEmpty && double.parse(_maxPriceController.text) < _maxAvailablePrice) {
+      filters['maxPrice'] = double.parse(_maxPriceController.text);
     }
 
+    // Додаємо інші фільтри тільки якщо вони встановлені
+    if (_selectedBrand != null) {
+      filters['car_brand'] = _selectedBrand;
+    }
+    if (_selectedSize != null) {
+      filters['size'] = _selectedSize;
+    }
+    if (_selectedCondition != null) {
+      filters['condition'] = _selectedCondition;
+    }
 
-    
-    // Зберігаємо фільтри в FilterManager
+    // Додаємо числові фільтри тільки якщо вони встановлені
+    if (_minAreaController.text.isNotEmpty) {
+      filters['minArea'] = double.parse(_minAreaController.text);
+    }
+    if (_maxAreaController.text.isNotEmpty) {
+      filters['maxArea'] = double.parse(_maxAreaController.text);
+    }
+    if (_minYearController.text.isNotEmpty) {
+      filters['minYear'] = int.parse(_minYearController.text);
+    }
+    if (_maxYearController.text.isNotEmpty) {
+      filters['maxYear'] = int.parse(_maxYearController.text);
+    }
+    if (_minEngineHpController.text.isNotEmpty) {
+      filters['minEnginePowerHp'] = int.parse(_minEngineHpController.text);
+    }
+    if (_maxEngineHpController.text.isNotEmpty) {
+      filters['maxEnginePowerHp'] = int.parse(_maxEngineHpController.text);
+    }
+    if (_minAgeController.text.isNotEmpty) {
+      filters['minAge'] = int.parse(_minAgeController.text);
+    }
+    if (_maxAgeController.text.isNotEmpty) {
+      filters['maxAge'] = int.parse(_maxAgeController.text);
+    }
+
+    // Додаємо режим ціни та валюту тільки якщо вони відрізняються від значень за замовчуванням
+    if (!_isPriceModePrice) {
+      filters['isFree'] = true;
+    }
+    if (_selectedCurrency != 'UAH') {
+      filters['currency'] = _selectedCurrency;
+    }
+
     filterManager.setFilters(filters);
-    
     Navigator.of(context).pop(filters);
   }
 
