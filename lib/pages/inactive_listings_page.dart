@@ -129,10 +129,6 @@ class _InactiveListingsPageState extends State<InactiveListingsPage> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.black, size: 20),
-                    onPressed: () => _loadProducts(),
-                  ),
                 ],
               ),
               const SizedBox(height: 24),
