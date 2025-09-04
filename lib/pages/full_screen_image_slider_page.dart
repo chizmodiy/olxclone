@@ -63,7 +63,7 @@ class _FullScreenImageSliderPageState extends State<FullScreenImageSliderPage> {
           ),
 
           // Close button
-          Positioned(top: 40, right: 20, child: _buildCloseButton(context)),
+          Positioned(top: 48, right: 20, child: _buildCloseButton(context)),
 
           // Left arrow button - показуємо тільки якщо showNavigation = true і є більше одного зображення
           if (widget.showNavigation && widget.imageUrls.length > 1)

@@ -15,6 +15,17 @@ class UserService {
     }
   }
 
+  Future<void> unblockUser(String userId) async {
+    try {
+      await _client.from('profiles').update({
+        'status': 'active',
+        'block_reason': null,
+      }).eq('id', userId);
+    } catch (e) {
+      throw Exception('Не вдалося розблокувати користувача: $e');
+    }
+  }
+
   Future<void> deleteUser(String userId) async {
     try {
       // Видаляємо скарги користувача

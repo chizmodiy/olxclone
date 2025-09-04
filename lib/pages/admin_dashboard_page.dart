@@ -1239,15 +1239,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                                       for (final user in _users.take(8))
                                                         UserTableRow(
                                                           user: user,
-                                                          onBlock: () async {
-                                                            await showBlockUserDialog(
-                                                              context: context,
-                                                              onBlock: (String reason) async {
-                                                                await _userService.blockUser(user['id'], reason);
-                                                                await _fetchUsers();
-                                                              },
-                                                            );
-                                                          },
+                                                          userService: _userService,
+                                                          onStatusChanged: () => _fetchUsers(),
                                                           onDelete: () async {
                                                             await showDeleteUserDialog(
                                                               context: context,
@@ -1822,10 +1815,14 @@ class UserTableRow extends StatelessWidget {
   final Map<String, dynamic> user;
   final VoidCallback? onBlock;
   final VoidCallback? onDelete;
+  final UserService userService;
+  final VoidCallback onStatusChanged;
   
   const UserTableRow({
     Key? key, 
     required this.user, 
+    required this.userService,
+    required this.onStatusChanged,
     this.onBlock,
     this.onDelete
   }) : super(key: key);
@@ -1839,8 +1836,6 @@ class UserTableRow extends StatelessWidget {
     final phone = user['phone'] ?? '';
     final status = user['status'] ?? 'active';
     final avatarUrl = user['avatar_url'] as String?;
-    
-    
     
     return Container(
       height: 72,
@@ -1963,8 +1958,24 @@ class UserTableRow extends StatelessWidget {
               children: [
                 _ActionIconButton(
                   svg: _slashCircleSvg,
-                  tooltip: 'Заблокувати користувача',
-                  onTap: onBlock,
+                  tooltip: status == 'blocked' ? 'Розблокувати користувача' : 'Заблокувати користувача',
+                  onTap: () async {
+                    if (status == 'blocked') {
+                      // Розблокувати користувача
+                      await userService.unblockUser(user['id']);
+                      onStatusChanged();
+                    } else {
+                      // Заблокувати користувача
+                      await showBlockUserDialog(
+                        context: context,
+                        onBlock: (String reason) async {
+                          await userService.blockUser(user['id'], reason);
+                          onStatusChanged();
+                        },
+                      );
+                    }
+                  },
+                  color: status == 'blocked' ? Colors.green : null,
                 ),
                 const SizedBox(width: 8),
                 _ActionIconButton(
