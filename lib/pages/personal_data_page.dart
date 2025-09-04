@@ -315,14 +315,15 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
       // Застосовуємо зміни імені
       if (_tempName != _originalName) {
         final nameParts = _tempName?.trim().split(' ') ?? [];
-    final firstName = nameParts.isNotEmpty ? nameParts.first : '';
-    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-    print('Name parts: firstName=$firstName, lastName=$lastName');
-    
-    await _profileService.updateUserProfile(
-      userId: user.id,
-      firstName: firstName,
-      lastName: lastName,
+        final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        print('Name parts: firstName=$firstName, lastName=$lastName');
+        
+        await _profileService.updateUserProfile(
+          userId: user.id,
+          firstName: firstName,
+          lastName: lastName,
+          avatarUrl: _avatarUrl, // Зберігаємо поточний URL аватара
         );
       }
       
