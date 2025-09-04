@@ -30,7 +30,7 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   Category? _selectedCategory;
   Subcategory? _selectedSubcategory;
-  Category? _selectedRegion; // Додаємо змінну для області
+  Category? _selectedRegion;
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   final TextEditingController _minAreaController = TextEditingController();
@@ -39,165 +39,168 @@ class _FilterPageState extends State<FilterPage> {
   final TextEditingController _maxYearController = TextEditingController();
   final TextEditingController _minEngineHpController = TextEditingController();
   final TextEditingController _maxEngineHpController = TextEditingController();
-  String _selectedCurrency = 'UAH'; // Default to UAH
-  bool _isPriceModePrice = true; // New state for price mode
-
-
-  double _minAvailablePrice = 0.0; // New: Min price available in DB for selected currency
-  double _maxAvailablePrice = 100.0; // New: Max price available in DB for selected currency
-  double _minAvailableArea = 0.0; // Min area available in DB
-  double _maxAvailableArea = 200.0; // Max area available in DB
-  double _minAvailableYear = 1990.0; // Min year available in DB
-  double _maxAvailableYear = 2024.0; // Max year available in DB
-  double _minAvailableEngineHp = 50.0; // Min engine HP available in DB
-  double _maxAvailableEngineHp = 500.0; // Max engine HP available in DB
-  bool _isLoadingPrices = true; // New: Loading state for prices
-  final bool _isLoadingAreas = true; // Loading state for areas
-  final bool _isLoadingYears = true; // Loading state for years
-  final bool _isLoadingEngineHp = true; // Loading state for engine HP
-  String? _selectedBrand; // Selected car brand
-  String? _selectedSize; // Selected size for fashion items
-  String? _selectedCondition; // Selected condition for fashion items
-  String? _selectedCarBrand; // Selected car brand for vehicle filters
   final TextEditingController _minCarYearController = TextEditingController();
   final TextEditingController _maxCarYearController = TextEditingController();
   final TextEditingController _minAgeController = TextEditingController();
   final TextEditingController _maxAgeController = TextEditingController();
-  
-  // Валідація полів ціни
+
+  String _selectedCurrency = 'UAH';
+  bool _isPriceModePrice = true;
+  String? _selectedBrand;
+  String? _selectedSize;
+  String? _selectedCondition;
+  String? _selectedCarBrand;
+
+  // Змінні для цін
+  double _minPrice = 0.0;
+  double _maxPrice = 0.0;
+  double _currentMinPrice = 0.0;
+  double _currentMaxPrice = 0.0;
+  double _minAvailablePrice = 0.0;
+  double _maxAvailablePrice = 0.0;
+  double _sliderMinValue = 0.0;
+  double _sliderMaxValue = 0.0;
+
+  // Змінні для інших діапазонів
+  double _minAvailableArea = 0.0;
+  double _maxAvailableArea = 200.0;
+  double _minAvailableYear = 1990.0;
+  double _maxAvailableYear = 2024.0;
+  double _minAvailableEngineHp = 50.0;
+  double _maxAvailableEngineHp = 500.0;
+
+  // Змінні для помилок валідації
   String? _minPriceError;
   String? _maxPriceError;
-  String? _minAgeError; // New: Error for min age
-  String? _maxAgeError; // New: Error for max age
-  String? _minAreaError; // New: Error for min area
-  String? _maxAreaError; // New: Error for max area
-  String? _minYearError; // New: Error for min year
-  String? _maxYearError; // New: Error for max year
-  String? _minEngineHpError; // New: Error for min engine HP
-  String? _maxEngineHpError; // New: Error for max engine HP
+  String? _minAgeError;
+  String? _maxAgeError;
+  String? _minAreaError;
+  String? _maxAreaError;
+  String? _minYearError;
+  String? _maxYearError;
+  String? _minEngineHpError;
+  String? _maxEngineHpError;
 
-  List<Category> _categories = [];
+  // Змінні для завантаження
+  bool _isLoadingPrices = true;
   bool _isLoadingCategories = true;
-  List<Subcategory> _subcategories = [];
   bool _isLoadingSubcategories = false;
+  List<Category> _categories = [];
+  List<Subcategory> _subcategories = [];
 
-  late final ListingService _listingService; // New: ListingService instance
+  late final ListingService _listingService;
   final ProfileService _profileService = ProfileService();
-
-  // Додаємо змінні для слайдера
-  double _minPrice = 0.0;
-  double _maxPrice = 100000.0; // Буде оновлено з бази
-  double _currentMinPrice = 0.0;
-  double _currentMaxPrice = 100000.0;
-  double _sliderMinValue = 0.0;
-  double _sliderMaxValue = 100000.0;
 
   @override
   void initState() {
     super.initState();
-    _initializeFilters();
-    _loadPriceRange();
+    // Спочатку завантажуємо ціни з бази
+    _loadPriceRange().then((_) {
+      // Після завантаження цін ініціалізуємо фільтри
+      _initializeFilters();
+    });
     _loadCategories();
   }
-    
+
   void _initializeFilters() {
-    // Встановлюємо базові значення
+    // Ініціалізуємо фільтри тільки якщо вони були раніше збережені
+    if (widget.initialFilters.isNotEmpty) {
     _selectedCurrency = widget.initialFilters['currency'] ?? 'UAH';
     _isPriceModePrice = widget.initialFilters['isFree'] != true;
     
-    // Ініціалізуємо фільтри тільки якщо вони є в initialFilters
     if (widget.initialFilters['minPrice'] != null) {
       _minPriceController.text = widget.initialFilters['minPrice'].toString();
-      _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? _minPrice;
+        _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? 0.0;
     }
+      
     if (widget.initialFilters['maxPrice'] != null) {
-      _maxPriceController.text = widget.initialFilters['maxPrice'].toString();
-      _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _maxPrice;
-    }
-    
-    // Перевіряємо, що мінімальна ціна не більша за максимальну
-    if (_currentMinPrice > _currentMaxPrice) {
-      final temp = _currentMinPrice;
-      _currentMinPrice = _currentMaxPrice;
-      _currentMaxPrice = temp;
-    }
-    
-    // Ініціалізуємо інші фільтри тільки якщо вони є
-    if (widget.initialFilters['minArea'] != null) {
-      _minAreaController.text = widget.initialFilters['minArea'].toString();
-    }
-    if (widget.initialFilters['maxArea'] != null) {
-      _maxAreaController.text = widget.initialFilters['maxArea'].toString();
-    }
-    if (widget.initialFilters['minYear'] != null) {
-      _minYearController.text = widget.initialFilters['minYear'].toString();
-      _minCarYearController.text = widget.initialFilters['minYear'].toString();
-    }
-    if (widget.initialFilters['maxYear'] != null) {
-      _maxYearController.text = widget.initialFilters['maxYear'].toString();
-      _maxCarYearController.text = widget.initialFilters['maxYear'].toString();
-    }
-    if (widget.initialFilters['minEnginePowerHp'] != null) {
-      _minEngineHpController.text = widget.initialFilters['minEnginePowerHp'].toString();
-    }
-    if (widget.initialFilters['maxEnginePowerHp'] != null) {
-      _maxEngineHpController.text = widget.initialFilters['maxEnginePowerHp'].toString();
-    }
-    if (widget.initialFilters['minAge'] != null) {
-      _minAgeController.text = widget.initialFilters['minAge'].toString();
-    }
-    if (widget.initialFilters['maxAge'] != null) {
-      _maxAgeController.text = widget.initialFilters['maxAge'].toString();
-    }
-    
-    // Ініціалізуємо вибрані значення
-    _selectedBrand = widget.initialFilters['car_brand'];
-    _selectedSize = widget.initialFilters['size'];
-    _selectedCondition = widget.initialFilters['condition'];
-    
-    // Ініціалізуємо регіон якщо він є
-    if (widget.initialFilters['region_id'] != null && widget.initialFilters['region_name'] != null) {
-      _selectedRegion = Category(
-        id: widget.initialFilters['region_id'],
-        name: widget.initialFilters['region_name']
-      );
+        final maxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _maxAvailablePrice;
+        if (maxPrice <= _maxAvailablePrice) {
+          _maxPriceController.text = maxPrice.toString();
+          _currentMaxPrice = maxPrice;
+        }
+      }
+      
+      if (widget.initialFilters['minArea'] != null) {
+        _minAreaController.text = widget.initialFilters['minArea'].toString();
+      }
+      
+      if (widget.initialFilters['maxArea'] != null) {
+        _maxAreaController.text = widget.initialFilters['maxArea'].toString();
+      }
+      
+      if (widget.initialFilters['minYear'] != null) {
+        _minYearController.text = widget.initialFilters['minYear'].toString();
+        _minCarYearController.text = widget.initialFilters['minYear'].toString();
+      }
+      
+      if (widget.initialFilters['maxYear'] != null) {
+        _maxYearController.text = widget.initialFilters['maxYear'].toString();
+        _maxCarYearController.text = widget.initialFilters['maxYear'].toString();
+      }
+      
+      if (widget.initialFilters['minEnginePowerHp'] != null) {
+        _minEngineHpController.text = widget.initialFilters['minEnginePowerHp'].toString();
+      }
+      
+      if (widget.initialFilters['maxEnginePowerHp'] != null) {
+        _maxEngineHpController.text = widget.initialFilters['maxEnginePowerHp'].toString();
+      }
+      
+      if (widget.initialFilters['minAge'] != null) {
+        _minAgeController.text = widget.initialFilters['minAge'].toString();
+      }
+      
+      if (widget.initialFilters['maxAge'] != null) {
+        _maxAgeController.text = widget.initialFilters['maxAge'].toString();
+      }
+      
+      _selectedBrand = widget.initialFilters['car_brand'];
+      _selectedSize = widget.initialFilters['size'];
+      _selectedCondition = widget.initialFilters['condition'];
+      
+      if (widget.initialFilters['region_id'] != null && widget.initialFilters['region_name'] != null) {
+        _selectedRegion = Category(
+          id: widget.initialFilters['region_id'],
+          name: widget.initialFilters['region_name']
+        );
+      }
     }
   }
 
   Future<void> _loadPriceRange() async {
     try {
-      // Отримуємо мінімальну та максимальну ціни з бази
       final priceRange = await _getPriceRangeFromDatabase();
       
       setState(() {
-        _minPrice = priceRange['min'] ?? 0.0;
-        _maxPrice = priceRange['max'] ?? 100000.0;
-
-        // Встановлюємо важлі в крайні положення після завантаження діапазону з бази
-        // Але тільки якщо користувач не встановив власні значення
-        if (widget.initialFilters['minPrice'] == null) {
-          _currentMinPrice = _minPrice;
-        }
-        if (widget.initialFilters['maxPrice'] == null) {
-          _currentMaxPrice = _maxPrice;
+        // Зберігаємо актуальні значення з бази
+        _minAvailablePrice = priceRange['min'] ?? 0.0;
+        _maxAvailablePrice = priceRange['max'] ?? 100000.0;
+        
+        // Встановлюємо значення для слайдера
+        _sliderMinValue = _minAvailablePrice;
+        _sliderMaxValue = _maxAvailablePrice;
+        
+        // Встановлюємо поточні значення, якщо вони ще не встановлені
+        if (_minPriceController.text.isEmpty) {
+          _minPrice = _minAvailablePrice;
+          _currentMinPrice = _minAvailablePrice;
+          _minPriceController.text = _convertFromUAH(_minAvailablePrice, _selectedCurrency).toStringAsFixed(2);
         }
         
-        _sliderMinValue = _minPrice;
-        _sliderMaxValue = _maxPrice;
-        
-        // Оновлюємо текстові поля з новими значеннями після завантаження діапазону
-        // Але тільки якщо користувач не встановив власні значення
-        if (widget.initialFilters['minPrice'] == null) {
-          _minPriceController.text = _convertFromUAH(_minPrice, _selectedCurrency).toStringAsFixed(2);
-        }
-        if (widget.initialFilters['maxPrice'] == null) {
-          _maxPriceController.text = _convertFromUAH(_maxPrice, _selectedCurrency).toStringAsFixed(2);
+        if (_maxPriceController.text.isEmpty) {
+          _maxPrice = _maxAvailablePrice;
+          _currentMaxPrice = _maxAvailablePrice;
+          _maxPriceController.text = _convertFromUAH(_maxAvailablePrice, _selectedCurrency).toStringAsFixed(2);
         }
         
-
+        _isLoadingPrices = false;
       });
     } catch (e) {
-      // Ігноруємо помилки завантаження
+      print('Error loading price range: $e');
+      setState(() {
+        _isLoadingPrices = false;
+      });
     }
   }
 
@@ -272,6 +275,10 @@ class _FilterPageState extends State<FilterPage> {
     _maxYearController.dispose();
     _minEngineHpController.dispose();
     _maxEngineHpController.dispose();
+    _minCarYearController.dispose();
+    _maxCarYearController.dispose();
+    _minAgeController.dispose();
+    _maxAgeController.dispose();
     super.dispose();
   }
 
@@ -320,7 +327,6 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   void _resetFilters() {
-    // Очищаємо фільтри в FilterManager
     final FilterManager filterManager = FilterManager();
     filterManager.clearFilters();
     
@@ -334,6 +340,20 @@ class _FilterPageState extends State<FilterPage> {
       _selectedCondition = null;
       _subcategories = [];
       
+      // Очищаємо всі текстові поля
+      _minPriceController.clear();
+      _maxPriceController.clear();
+      _minAreaController.clear();
+      _maxAreaController.clear();
+      _minYearController.clear();
+      _maxYearController.clear();
+      _minEngineHpController.clear();
+      _maxEngineHpController.clear();
+      _minAgeController.clear();
+      _maxAgeController.clear();
+      _minCarYearController.clear();
+      _maxCarYearController.clear();
+      
       // Скидаємо помилки валідації
       _minPriceError = null;
       _maxPriceError = null;
@@ -346,48 +366,24 @@ class _FilterPageState extends State<FilterPage> {
       _minEngineHpError = null;
       _maxEngineHpError = null;
       
-      // Скидаємо значення цін та інших числових фільтрів
-      _minPrice = 0.0;
-      _maxPrice = 100000.0;
-      _currentMinPrice = _minPrice;
-      _currentMaxPrice = _maxPrice;
-      _minPriceController.text = '';
-      _maxPriceController.text = '';
+      // Встановлюємо актуальні значення з бази
+      _currentMinPrice = _minAvailablePrice;
+      _currentMaxPrice = _maxAvailablePrice;
+      _minPrice = _minAvailablePrice;
+      _maxPrice = _maxAvailablePrice;
       
-      // Скидаємо інші контролери
-      _minAreaController.text = '';
-      _maxAreaController.text = '';
-      _minYearController.text = '';
-      _maxYearController.text = '';
-      _minEngineHpController.text = '';
-      _maxEngineHpController.text = '';
-      _minAgeController.text = '';
-      _maxAgeController.text = '';
+      // Встановлюємо текстові поля з актуальними значеннями
+      _minPriceController.text = _convertFromUAH(_minAvailablePrice, _selectedCurrency).toStringAsFixed(2);
+      _maxPriceController.text = _convertFromUAH(_maxAvailablePrice, _selectedCurrency).toStringAsFixed(2);
       
-      // Скидаємо режим ціни та валюту без встановлення значень за замовчуванням
-      _isPriceModePrice = true;
+      // Встановлюємо базові значення
       _selectedCurrency = 'UAH';
-      
-      // Скидаємо доступні діапазони
-      _minAvailablePrice = 0.0;
-      _maxAvailablePrice = 100.0;
-      _minAvailableArea = 0.0;
-      _maxAvailableArea = 200.0;
-      _minAvailableYear = 1990.0;
-      _maxAvailableYear = 2024.0;
-      _minAvailableEngineHp = 50.0;
-      _maxAvailableEngineHp = 500.0;
+      _isPriceModePrice = true;
     });
-    
-    // Оновлюємо діапазон цін
-    _loadMinMaxPrices(_selectedCurrency);
-    
-    // Ховаємо будь-які поточні повідомлення про помилки
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
   void _applyFilters() {
-    // Перевіряємо наявність помилок валідації перед застосуванням фільтрів
+    // Перевіряємо наявність помилок валідації
     if (_minPriceError != null || _maxPriceError != null ||
         _minAgeError != null || _maxAgeError != null ||
         _minAreaError != null || _maxAreaError != null ||
@@ -397,82 +393,119 @@ class _FilterPageState extends State<FilterPage> {
       return;
     }
     
-    final FilterManager filterManager = FilterManager();
     final Map<String, dynamic> filters = {};
+    bool hasChanges = false;
 
-    // Додаємо тільки вибрані фільтри (не null і не порожні)
+    // Перевіряємо кожен фільтр на зміни від початкового стану
     if (_selectedCategory != null) {
       filters['category'] = _selectedCategory?.id;
+      hasChanges = true;
     }
+    
     if (_selectedSubcategory != null) {
       filters['subcategory'] = _selectedSubcategory?.id;
+      hasChanges = true;
     }
+    
     if (_selectedRegion != null) {
       filters['region'] = _selectedRegion?.name;
       filters['region_id'] = _selectedRegion?.id;
       filters['region_name'] = _selectedRegion?.name;
+      hasChanges = true;
     }
     
-    // Додаємо фільтри цін тільки якщо вони відрізняються від значень за замовчуванням
-    if (_minPriceController.text.isNotEmpty && double.parse(_minPriceController.text) > 0) {
-      filters['minPrice'] = double.parse(_minPriceController.text);
+    // Перевіряємо ціни
+    if (_minPriceController.text.isNotEmpty) {
+      final minPrice = double.parse(_minPriceController.text);
+      if (minPrice > 0) {
+        filters['minPrice'] = minPrice;
+        hasChanges = true;
+      }
     }
-    if (_maxPriceController.text.isNotEmpty && double.parse(_maxPriceController.text) < _maxAvailablePrice) {
-      filters['maxPrice'] = double.parse(_maxPriceController.text);
+    
+    if (_maxPriceController.text.isNotEmpty) {
+      final maxPrice = double.parse(_maxPriceController.text);
+      if (maxPrice < _maxAvailablePrice) {
+        filters['maxPrice'] = maxPrice;
+        hasChanges = true;
+      }
     }
-
-    // Додаємо інші фільтри тільки якщо вони встановлені
+    
+    // Перевіряємо інші фільтри
     if (_selectedBrand != null) {
       filters['car_brand'] = _selectedBrand;
+      hasChanges = true;
     }
+    
     if (_selectedSize != null) {
       filters['size'] = _selectedSize;
+      hasChanges = true;
     }
+    
     if (_selectedCondition != null) {
       filters['condition'] = _selectedCondition;
+      hasChanges = true;
     }
-
-    // Додаємо числові фільтри тільки якщо вони встановлені і не є значеннями за замовчуванням
+    
+    // Перевіряємо числові фільтри
     if (_minAreaController.text.isNotEmpty && double.parse(_minAreaController.text) > 0) {
       filters['minArea'] = double.parse(_minAreaController.text);
+      hasChanges = true;
     }
+    
     if (_maxAreaController.text.isNotEmpty && double.parse(_maxAreaController.text) < _maxAvailableArea) {
       filters['maxArea'] = double.parse(_maxAreaController.text);
+      hasChanges = true;
     }
+    
     if (_minYearController.text.isNotEmpty && int.parse(_minYearController.text) > _minAvailableYear) {
       filters['minYear'] = int.parse(_minYearController.text);
+      hasChanges = true;
     }
+    
     if (_maxYearController.text.isNotEmpty && int.parse(_maxYearController.text) < _maxAvailableYear) {
       filters['maxYear'] = int.parse(_maxYearController.text);
+      hasChanges = true;
     }
+    
     if (_minEngineHpController.text.isNotEmpty && int.parse(_minEngineHpController.text) > _minAvailableEngineHp) {
       filters['minEnginePowerHp'] = int.parse(_minEngineHpController.text);
+      hasChanges = true;
     }
+    
     if (_maxEngineHpController.text.isNotEmpty && int.parse(_maxEngineHpController.text) < _maxAvailableEngineHp) {
       filters['maxEnginePowerHp'] = int.parse(_maxEngineHpController.text);
+      hasChanges = true;
     }
+    
     if (_minAgeController.text.isNotEmpty && int.parse(_minAgeController.text) > 0) {
       filters['minAge'] = int.parse(_minAgeController.text);
+      hasChanges = true;
     }
+    
     if (_maxAgeController.text.isNotEmpty && int.parse(_maxAgeController.text) < 100) {
       filters['maxAge'] = int.parse(_maxAgeController.text);
+      hasChanges = true;
     }
 
-    // Додаємо режим ціни та валюту тільки якщо вони відрізняються від значень за замовчуванням
+    // Перевіряємо режим ціни
     if (!_isPriceModePrice) {
       filters['isFree'] = true;
+      hasChanges = true;
     }
+    
     if (_selectedCurrency != 'UAH') {
       filters['currency'] = _selectedCurrency;
+      hasChanges = true;
     }
 
-    // Застосовуємо фільтри тільки якщо вони не порожні
-    if (filters.isNotEmpty) {
+    // Якщо були зміни, зберігаємо фільтри
+    if (hasChanges) {
+      final FilterManager filterManager = FilterManager();
       filterManager.setFilters(filters);
-      Navigator.of(context).pop(filters);
+    Navigator.of(context).pop(filters);
     } else {
-      // Якщо фільтри порожні, очищаємо їх і закриваємо сторінку
-      filterManager.clearFilters();
+      // Якщо змін не було, повертаємо порожній об'єкт
       Navigator.of(context).pop({});
     }
   }
