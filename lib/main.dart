@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:withoutname/pages/auth_page.dart';
-import 'package:withoutname/pages/general_page.dart';
+import 'package:olxclone/pages/auth_page.dart';
+import 'package:olxclone/pages/general_page.dart';
 
-import 'package:withoutname/pages/product_detail_page.dart';
-import 'package:withoutname/pages/admin_login_page.dart';
-import 'package:withoutname/pages/admin_dashboard_page.dart';
+import 'package:olxclone/pages/product_detail_page.dart';
+import 'package:olxclone/pages/admin_login_page.dart';
+import 'package:olxclone/pages/admin_dashboard_page.dart';
 import 'pages/profile_page.dart';
 
 Future<void> main() async {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:withoutname/theme/app_colors.dart';
-import 'package:withoutname/theme/app_text_styles.dart';
+import 'package:olxclone/theme/app_colors.dart';
+import 'package:olxclone/theme/app_text_styles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:withoutname/pages/otp_page.dart';
+import 'package:olxclone/pages/otp_page.dart';
 import 'package:flutter/services.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';

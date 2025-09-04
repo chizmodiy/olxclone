@@ -1,6 +1,6 @@
 {
-    "name": "withoutname",
-    "short_name": "withoutname",
+    "name": "olxclone",
+    "short_name": "olxclone",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",

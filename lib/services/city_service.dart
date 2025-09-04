@@ -52,7 +52,7 @@ class CityService {
       final response = await http.get(
         uri,
         headers: {
-          'User-Agent': 'WithoutNameApp/1.0 (https://yourwebsite.com/contact)', // Replace with your app contact info
+          'User-Agent': 'olxcloneApp/1.0 (https://yourwebsite.com/contact)', // Replace with your app contact info
         },
       );
 
