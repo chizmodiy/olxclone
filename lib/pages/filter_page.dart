@@ -101,10 +101,11 @@ class _FilterPageState extends State<FilterPage> {
   }
     
   void _initializeFilters() {
+    // Встановлюємо базові значення
     _selectedCurrency = widget.initialFilters['currency'] ?? 'UAH';
     _isPriceModePrice = widget.initialFilters['isFree'] != true;
     
-    // Initialize price filters if they exist
+    // Ініціалізуємо фільтри тільки якщо вони є в initialFilters
     if (widget.initialFilters['minPrice'] != null) {
       _minPriceController.text = widget.initialFilters['minPrice'].toString();
       _currentMinPrice = double.tryParse(widget.initialFilters['minPrice'].toString()) ?? _minPrice;
@@ -114,49 +115,56 @@ class _FilterPageState extends State<FilterPage> {
       _currentMaxPrice = double.tryParse(widget.initialFilters['maxPrice'].toString()) ?? _maxPrice;
     }
     
-    // Ensure min <= max after initialization
+    // Перевіряємо, що мінімальна ціна не більша за максимальну
     if (_currentMinPrice > _currentMaxPrice) {
       final temp = _currentMinPrice;
       _currentMinPrice = _currentMaxPrice;
       _currentMaxPrice = temp;
     }
     
-    // Initialize other filters
-    _minAreaController.text = (widget.initialFilters['minArea'] ?? 0).toString();
-    _maxAreaController.text = (widget.initialFilters['maxArea'] ?? 1000).toString();
-    _minYearController.text = (widget.initialFilters['minYear'] ?? 1900).toString();
-    _maxYearController.text = (widget.initialFilters['maxYear'] ?? 2024).toString();
-    _minEngineHpController.text = (widget.initialFilters['minEnginePowerHp'] ?? 0).toString();
-    _maxEngineHpController.text = (widget.initialFilters['maxEnginePowerHp'] ?? 1000).toString();
+    // Ініціалізуємо інші фільтри тільки якщо вони є
+    if (widget.initialFilters['minArea'] != null) {
+      _minAreaController.text = widget.initialFilters['minArea'].toString();
+    }
+    if (widget.initialFilters['maxArea'] != null) {
+      _maxAreaController.text = widget.initialFilters['maxArea'].toString();
+    }
+    if (widget.initialFilters['minYear'] != null) {
+      _minYearController.text = widget.initialFilters['minYear'].toString();
+      _minCarYearController.text = widget.initialFilters['minYear'].toString();
+    }
+    if (widget.initialFilters['maxYear'] != null) {
+      _maxYearController.text = widget.initialFilters['maxYear'].toString();
+      _maxCarYearController.text = widget.initialFilters['maxYear'].toString();
+    }
+    if (widget.initialFilters['minEnginePowerHp'] != null) {
+      _minEngineHpController.text = widget.initialFilters['minEnginePowerHp'].toString();
+    }
+    if (widget.initialFilters['maxEnginePowerHp'] != null) {
+      _maxEngineHpController.text = widget.initialFilters['maxEnginePowerHp'].toString();
+    }
+    if (widget.initialFilters['minAge'] != null) {
+      _minAgeController.text = widget.initialFilters['minAge'].toString();
+    }
+    if (widget.initialFilters['maxAge'] != null) {
+      _maxAgeController.text = widget.initialFilters['maxAge'].toString();
+    }
+    
+    // Ініціалізуємо вибрані значення
     _selectedBrand = widget.initialFilters['car_brand'];
     _selectedSize = widget.initialFilters['size'];
     _selectedCondition = widget.initialFilters['condition'];
     
-    // Initialize car-specific filters
-    _minCarYearController.text = (widget.initialFilters['minYear'] ?? 1999).toString();
-    _maxCarYearController.text = (widget.initialFilters['maxYear'] ?? 2022).toString();
-    _selectedCarBrand = widget.initialFilters['car_brand'];
-    
-    // Initialize age filters for dating
-    _minAgeController.text = (widget.initialFilters['minAge'] ?? 18).toString();
-    _maxAgeController.text = (widget.initialFilters['maxAge'] ?? 65).toString();
-    
-    // --- Додаємо ініціалізацію області (регіону) ---
+    // Ініціалізуємо регіон якщо він є
     if (widget.initialFilters['region'] != null && widget.initialFilters['region'] is String) {
       try {
-        // Якщо у вас є список _regions, розкоментуйте і використайте:
-        // _selectedRegion = _regions.firstWhere((r) => r.id == widget.initialFilters['region']);
-        // Якщо список _regions не використовується, а CategorySelectionPage повертає Category, можна зберігати id та name напряму
         if (widget.initialFilters['region_name'] != null) {
           _selectedRegion = Category(id: widget.initialFilters['region'], name: widget.initialFilters['region_name']);
         } else {
-          _selectedRegion = Category(id: widget.initialFilters['region'], name: ''); // name оновиться при виборі
+          _selectedRegion = Category(id: widget.initialFilters['region'], name: '');
         }
       } catch (_) {}
     }
-    // --- Кінець блоку ініціалізації області ---
-    
-
   }
 
   Future<void> _loadPriceRange() async {
@@ -425,29 +433,29 @@ class _FilterPageState extends State<FilterPage> {
       filters['condition'] = _selectedCondition;
     }
 
-    // Додаємо числові фільтри тільки якщо вони встановлені
-    if (_minAreaController.text.isNotEmpty) {
+    // Додаємо числові фільтри тільки якщо вони встановлені і не є значеннями за замовчуванням
+    if (_minAreaController.text.isNotEmpty && double.parse(_minAreaController.text) > 0) {
       filters['minArea'] = double.parse(_minAreaController.text);
     }
-    if (_maxAreaController.text.isNotEmpty) {
+    if (_maxAreaController.text.isNotEmpty && double.parse(_maxAreaController.text) < _maxAvailableArea) {
       filters['maxArea'] = double.parse(_maxAreaController.text);
     }
-    if (_minYearController.text.isNotEmpty) {
+    if (_minYearController.text.isNotEmpty && int.parse(_minYearController.text) > _minAvailableYear) {
       filters['minYear'] = int.parse(_minYearController.text);
     }
-    if (_maxYearController.text.isNotEmpty) {
+    if (_maxYearController.text.isNotEmpty && int.parse(_maxYearController.text) < _maxAvailableYear) {
       filters['maxYear'] = int.parse(_maxYearController.text);
     }
-    if (_minEngineHpController.text.isNotEmpty) {
+    if (_minEngineHpController.text.isNotEmpty && int.parse(_minEngineHpController.text) > _minAvailableEngineHp) {
       filters['minEnginePowerHp'] = int.parse(_minEngineHpController.text);
     }
-    if (_maxEngineHpController.text.isNotEmpty) {
+    if (_maxEngineHpController.text.isNotEmpty && int.parse(_maxEngineHpController.text) < _maxAvailableEngineHp) {
       filters['maxEnginePowerHp'] = int.parse(_maxEngineHpController.text);
     }
-    if (_minAgeController.text.isNotEmpty) {
+    if (_minAgeController.text.isNotEmpty && int.parse(_minAgeController.text) > 0) {
       filters['minAge'] = int.parse(_minAgeController.text);
     }
-    if (_maxAgeController.text.isNotEmpty) {
+    if (_maxAgeController.text.isNotEmpty && int.parse(_maxAgeController.text) < 100) {
       filters['maxAge'] = int.parse(_maxAgeController.text);
     }
 
@@ -459,8 +467,15 @@ class _FilterPageState extends State<FilterPage> {
       filters['currency'] = _selectedCurrency;
     }
 
-    filterManager.setFilters(filters);
-    Navigator.of(context).pop(filters);
+    // Застосовуємо фільтри тільки якщо вони не порожні
+    if (filters.isNotEmpty) {
+      filterManager.setFilters(filters);
+      Navigator.of(context).pop(filters);
+    } else {
+      // Якщо фільтри порожні, очищаємо їх і закриваємо сторінку
+      filterManager.clearFilters();
+      Navigator.of(context).pop({});
+    }
   }
 
   void _navigateToCategorySelection() async {
