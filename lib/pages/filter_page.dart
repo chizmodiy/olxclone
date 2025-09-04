@@ -156,14 +156,11 @@ class _FilterPageState extends State<FilterPage> {
     _selectedCondition = widget.initialFilters['condition'];
     
     // Ініціалізуємо регіон якщо він є
-    if (widget.initialFilters['region'] != null && widget.initialFilters['region'] is String) {
-      try {
-        if (widget.initialFilters['region_name'] != null) {
-          _selectedRegion = Category(id: widget.initialFilters['region'], name: widget.initialFilters['region_name']);
-        } else {
-          _selectedRegion = Category(id: widget.initialFilters['region'], name: '');
-        }
-      } catch (_) {}
+    if (widget.initialFilters['region_id'] != null && widget.initialFilters['region_name'] != null) {
+      _selectedRegion = Category(
+        id: widget.initialFilters['region_id'],
+        name: widget.initialFilters['region_name']
+      );
     }
   }
 
@@ -412,6 +409,8 @@ class _FilterPageState extends State<FilterPage> {
     }
     if (_selectedRegion != null) {
       filters['region'] = _selectedRegion?.name;
+      filters['region_id'] = _selectedRegion?.id;
+      filters['region_name'] = _selectedRegion?.name;
     }
     
     // Додаємо фільтри цін тільки якщо вони відрізняються від значень за замовчуванням
