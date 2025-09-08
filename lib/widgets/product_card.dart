@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../services/profile_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final String id;
   final String title;
   final String price;
@@ -36,11 +36,31 @@ class ProductCard extends StatelessWidget {
   });
 
   @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  late final PageController _pageController;
+  int _currentImageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        ProfileService().addToViewedList(id);
-        if (onTap != null) onTap!();
+        ProfileService().addToViewedList(widget.id);
+        if (widget.onTap != null) widget.onTap!();
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
@@ -60,18 +80,34 @@ class ProductCard extends StatelessWidget {
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: images.isNotEmpty
-                        ? Hero(
-                            tag: 'product-photo-$id',
-                            child: CachedNetworkImage(
-                              imageUrl: images.first,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Container(
-                                color: AppColors.zinc200,
-                                child: Icon(Icons.broken_image, color: AppColors.color5),
-                              ),
-                              placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                            ),
+                    child: widget.images.isNotEmpty
+                        ? PageView.builder(
+                            controller: _pageController,
+                            itemCount: widget.images.length,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentImageIndex = index;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              final imageUrl = widget.images[index];
+                              final image = CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => Container(
+                                  color: AppColors.zinc200,
+                                  child: Icon(Icons.broken_image, color: AppColors.color5),
+                                ),
+                                placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                              );
+                              if (index == 0) {
+                                return Hero(
+                                  tag: 'product-photo-${widget.id}',
+                                  child: image,
+                                );
+                              }
+                              return image;
+                            },
                           )
                         : Container(
                             color: AppColors.zinc200, // Placeholder color
@@ -82,7 +118,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
                 // Pagination dots - показуємо тільки якщо є більше 1 зображення
-                if (images.length > 1)
+                if (widget.images.length > 1)
                   Positioned(
                     bottom: 14,
                     left: 0,
@@ -95,28 +131,49 @@ class ProductCard extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.2),
                           backgroundBlendMode: BlendMode.overlay,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            // Максимум 3 крапки
-                            images.length > 3 ? 3 : images.length,
-                            (index) => Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: index == 0
-                                    ? AppColors.primaryColor
-                                    : Colors.white.withValues(alpha: 0.25),
+                        child: Builder(
+                          builder: (context) {
+                            final total = widget.images.length;
+                            // Вікно до 3 крапок навколо поточної
+                            int start = 0;
+                            int count = total;
+                            if (total > 3) {
+                              if (_currentImageIndex <= 0) {
+                                start = 0;
+                              } else if (_currentImageIndex >= total - 1) {
+                                start = total - 3;
+                              } else {
+                                start = _currentImageIndex - 1;
+                              }
+                              count = 3;
+                            }
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(
+                                count,
+                                (i) {
+                                  final dotIndex = start + i;
+                                  final isActive = dotIndex == _currentImageIndex;
+                                  return Container(
+                                    width: 8,
+                                    height: 8,
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isActive
+                                          ? AppColors.primaryColor
+                                          : Colors.white.withValues(alpha: 0.25),
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
-                if (showLabel && labelText != null)
+                if (widget.showLabel && widget.labelText != null)
                   Positioned(
                     top: 6,
                     left: 6,
@@ -130,7 +187,7 @@ class ProductCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        labelText!,
+                        widget.labelText!,
                         style: const TextStyle(
                           color: Color(0xFF52525B),
                           fontSize: 12,
@@ -141,7 +198,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (isFree)
+                if (widget.isFree)
                   Positioned(
                     top: 6,
                     left: 6,
@@ -166,7 +223,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (isNegotiable)
+                if (widget.isNegotiable)
                   Positioned(
                     top: 6,
                     left: 6,
@@ -199,12 +256,12 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (isFree)
+                  if (widget.isFree)
                     Row(
                       children: [
                         Expanded(
                           child: Text(
-                            title,
+                            widget.title,
                             style: const TextStyle(
                               color: Colors.black,
                               fontSize: 14,
@@ -218,18 +275,18 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: onFavoriteToggle,
-                          child: SizedBox(width: 20, height: 20, child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                          onTap: widget.onFavoriteToggle,
+                          child: Icon(
+                            widget.isFavorite ? Icons.favorite : Icons.favorite_border,
                             size: 16,
-                            color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
-                          )),
+                            color: widget.isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                          ),
                         ),
                       ],
                     )
-                  else ...[
+                  else
                     Text(
-                      title,
+                      widget.title,
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 14,
@@ -238,41 +295,52 @@ class ProductCard extends StatelessWidget {
                         height: 1.4,
                         letterSpacing: 0.14,
                       ),
-                      maxLines: 2, // Limit title to 2 lines
-                      overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                  const SizedBox(height: 2),
+                  if (widget.isFree)
+                    const Text(
+                      'Безкоштовно',
+                      style: TextStyle(
+                        color: Color(0xFF15803D),
+                        fontSize: 20,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                    )
+                  else
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          price,
+                          widget.price,
                           style: const TextStyle(
                             color: Colors.black,
-                            fontSize: 16,
+                            fontSize: 20,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w600,
-                            height: 1.5,
-                            letterSpacing: 0.16,
+                            height: 1.3,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: onFavoriteToggle,
-                          child: SizedBox(width: 20, height: 20, child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            size: 16,
-                            color: isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
-                          )),
-                        ),
+                        if (widget.onFavoriteToggle != null)
+                          GestureDetector(
+                            onTap: widget.onFavoriteToggle,
+                            child: Icon(
+                              widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                              size: 16,
+                              color: widget.isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                            ),
+                          ),
                       ],
                     ),
-                  ],
-                  const SizedBox(height: 12), // Changed from 8 to 12
-                  // Дата та область в одному рядку
+                  const SizedBox(height: 8),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        date,
+                        widget.date,
                         style: const TextStyle(
                           color: Color(0xFF838583),
                           fontSize: 12,
@@ -282,23 +350,21 @@ class ProductCard extends StatelessWidget {
                           letterSpacing: 0.24,
                         ),
                       ),
-                      if (region != null) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            region!,
-                            style: const TextStyle(
-                              color: Color(0xFF838583),
-                              fontSize: 12,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
-                              height: 1.3,
-                              letterSpacing: 0.24,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: Text(
+                          widget.region ?? '',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            color: Color(0xFF838583),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
+                            letterSpacing: 0.24,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ],
