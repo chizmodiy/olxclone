@@ -443,6 +443,9 @@ class _MapPageState extends State<MapPage> {
                     zoom: 6,
                     minZoom: 5,
                     maxZoom: 16,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                    ),
                   ),
                   children: [
                     TileLayer(
