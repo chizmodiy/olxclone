@@ -875,39 +875,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ...List.generate(_product!.photos.length > 3 ? 3 : _product!.photos.length, (index) {
-                              return Container(
-                                width: 8,
-                                height: 8,
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
-                                decoration: ShapeDecoration(
-                                  color: _currentPage == index 
-                                    ? const Color(0xFF015873) 
-                                    : Colors.white.withOpacity(0.25),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4)
+                        child: Builder(
+                          builder: (context) {
+                            final total = _product!.photos.length;
+                            int start = 0;
+                            int count = total;
+                            if (total > 3) {
+                              if (_currentPage <= 0) {
+                                start = 0;
+                              } else if (_currentPage >= total - 1) {
+                                start = total - 3;
+                              } else {
+                                start = _currentPage - 1;
+                              }
+                              count = 3;
+                            }
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: List.generate(count, (i) {
+                                final dotIndex = start + i;
+                                final isActive = dotIndex == _currentPage;
+                                return Container(
+                                  width: 8,
+                                  height: 8,
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isActive
+                                        ? const Color(0xFF015873)
+                                        : Colors.white.withOpacity(0.25),
                                   ),
-                                ),
-                              );
-                            }),
-                            if (_product!.photos.length > 3)
-                              Container(
-                                margin: const EdgeInsets.only(left: 4),
-                                child: Text(
-                                  "...",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 12,
-                                    height: 0.8,
-                                  ),
-                                ),
-                              ),
-                          ],
+                                );
+                              }),
+                            );
+                          },
                         ),
                       ),
                     ),
