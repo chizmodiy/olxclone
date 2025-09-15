@@ -876,16 +876,11 @@ class HomeContentState extends State<HomeContent> {
                                     isFavorite: _favoriteProductIds.contains(product.id),
                                     onFavoriteToggle: () => _toggleFavorite(product),
                                     onTap: () async {
-                                      if (_currentUserId == null) {
-                                        _showAuthBottomSheet();
-                                      } else {
-                                        await Navigator.of(context).pushNamed(
-                                          '/product-detail',
-                                          arguments: {'id': product.id},
-                                        );
-                                        // Оновлюємо улюблені при поверненні
-                                        _loadFavorites();
-                                      }
+                                      await Navigator.of(context).pushNamed(
+                                        '/product-detail',
+                                        arguments: {'id': product.id},
+                                      );
+                                      _loadFavorites();
                                     },
                                   ),
                                 );
@@ -918,16 +913,11 @@ class HomeContentState extends State<HomeContent> {
                                   isFree: product.isFree,
                                   onFavoriteToggle: () => _toggleFavorite(product),
                                   onTap: () async {
-                                    if (_currentUserId == null) {
-                                      _showAuthBottomSheet();
-                                    } else {
-                                      await Navigator.of(context).pushNamed(
-                                        '/product-detail',
-                                        arguments: {'id': product.id},
-                                      );
-                                      // Оновлюємо улюблені при поверненні
-                                      _loadFavorites();
-                                    }
+                                    await Navigator.of(context).pushNamed(
+                                      '/product-detail',
+                                      arguments: {'id': product.id},
+                                    );
+                                    _loadFavorites();
                                   },
                                 );
                               },

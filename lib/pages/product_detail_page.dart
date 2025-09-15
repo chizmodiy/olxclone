@@ -1393,8 +1393,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          // Показуємо кнопку "Написати" тільки якщо це не наше оголошення
-          if (_currentUserId != null && _product != null && _currentUserId != _product!.userId) ...[
+          // Показуємо кнопку "Написати" якщо це не наше оголошення (у т.ч. для неавторизованих),
+          // але блокуємо її для неавторизованих користувачів
+          if (_product != null && (_currentUserId == null || _currentUserId != _product!.userId)) ...[
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -1402,7 +1403,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 width: double.infinity,
                 height: 44,
                 child: ElevatedButton(
-                  onPressed: _startChatWithOwner,
+                  onPressed: _currentUserId == null ? null : _startChatWithOwner,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF015873),
                     shape: RoundedRectangleBorder(

@@ -333,28 +333,33 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                       child: SizedBox(
                         width: double.infinity,
                         height: 44,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF015873),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(22),
-                              side: const BorderSide(color: Color(0xFF015873), width: 1),
-                            ),
-                            elevation: 4,
-                            shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                          ),
-                          child: const Text(
-                            'Написати',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Inter',
-                              height: 1.4,
-                              letterSpacing: 0.14,
-                            ),
-                          ),
+                        child: Builder(
+                          builder: (context) {
+                            final currentUser = Supabase.instance.client.auth.currentUser;
+                            return ElevatedButton(
+                              onPressed: currentUser == null ? null : () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF015873),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                  side: const BorderSide(color: Color(0xFF015873), width: 1),
+                                ),
+                                elevation: 4,
+                                shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
+                              ),
+                              child: const Text(
+                                'Написати',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Inter',
+                                  height: 1.4,
+                                  letterSpacing: 0.14,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
