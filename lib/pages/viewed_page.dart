@@ -7,6 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/viewed_product_card.dart'; // Import ProductCardListItem
 import 'dart:async'; // Import Timer
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class ViewedPage extends StatelessWidget {
   const ViewedPage({super.key, this.contentKey});
@@ -268,14 +270,11 @@ class ViewedContentState extends State<ViewedContent> {
                                           ),
                                         ),
                                         const SizedBox(height: 12),
-                                        const Text(
-                                          'Увійдіть або створіть профіль для перегляду тастери історії переглянутих оголошень.',
+                                        Text(
+                                          'Увійдіть або створіть профіль, щоб переглядати історію переглянутих оголошень.',
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Color(0xFF727278),
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w400,
+                                          style: AppTextStyles.body1Regular.copyWith(
+                                            color: AppColors.color7,
                                             height: 22.4 / 16,
                                             letterSpacing: 0.16,
                                           ),
@@ -304,13 +303,10 @@ class ViewedContentState extends State<ViewedContent> {
                                           elevation: 0,
                                           shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'Увійти',
-                                          style: TextStyle(
+                                          style: AppTextStyles.body1Medium.copyWith(
                                             color: Colors.white,
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w500,
                                             letterSpacing: 0.16,
                                           ),
                                         ),
@@ -324,20 +320,20 @@ class ViewedContentState extends State<ViewedContent> {
                                           Navigator.of(context).pushNamed('/auth');
                                         },
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: const Color(0xFF015873),
-                                          side: const BorderSide(color: Color(0xFF015873), width: 1),
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Colors.black,
+                                          side: const BorderSide(color: AppColors.zinc200, width: 1),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(200),
                                           ),
                                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                          elevation: 0,
+                                          shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
                                         ),
-                                        child: const Text(
-                                          'Створити профіль',
-                                          style: TextStyle(
-                                            color: Color(0xFF015873),
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w500,
+                                        child: Text(
+                                          'Створити акаунт',
+                                          style: AppTextStyles.body1Medium.copyWith(
+                                            color: Colors.black,
                                             letterSpacing: 0.16,
                                           ),
                                         ),
