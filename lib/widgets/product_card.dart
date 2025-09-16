@@ -64,7 +64,7 @@ class _ProductCardState extends State<ProductCard> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        constraints: BoxConstraints(minHeight: 250, maxHeight: 250), // Set fixed height for the card
+        constraints: BoxConstraints(minHeight: 256, maxHeight: 256), // Tuned height to reduce bottom whitespace
         decoration: BoxDecoration(
           color: const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(12),
@@ -76,7 +76,7 @@ class _ProductCardState extends State<ProductCard> {
             Stack(
               children: [
                 SizedBox(
-                  height: 100, // Changed from 120 to 100
+                  height: 140, // Increased photo height
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -259,46 +259,53 @@ class _ProductCardState extends State<ProductCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (widget.isFree)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
-                              letterSpacing: 0.14,
+                    SizedBox(
+                      height: 40,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.title,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                                letterSpacing: 0.14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: widget.onFavoriteToggle,
-                          child: Icon(
-                            widget.isFavorite ? Icons.favorite : Icons.favorite_border,
-                            size: 16,
-                            color: widget.isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                          GestureDetector(
+                            onTap: widget.onFavoriteToggle,
+                            child: Icon(
+                              widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                              size: 16,
+                              color: widget.isFavorite ? const Color(0xFF015873) : const Color(0xFF27272A),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     )
                   else
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                        letterSpacing: 0.14,
+                    SizedBox(
+                      height: 40,
+                      child: Text(
+                        widget.title,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                          letterSpacing: 0.14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   const SizedBox(height: 2),
                   if (widget.isFree)

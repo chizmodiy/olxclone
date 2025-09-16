@@ -893,7 +893,7 @@ class HomeContentState extends State<HomeContent> {
                                 crossAxisCount: _currentViewMode == ViewMode.grid8 ? 4 : 2,
                                 crossAxisSpacing: 10,
                                 mainAxisSpacing: 10,
-                                mainAxisExtent: 250,
+                                mainAxisExtent: 256,
                               ),
                               itemCount: _products.length + (_hasMore ? 1 : 0),
                               itemBuilder: (context, index) {
