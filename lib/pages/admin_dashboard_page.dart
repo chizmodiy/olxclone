@@ -598,13 +598,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 // Логотип
                 Row(
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF015873),
-                      ),
+                    SvgPicture.asset(
+                      'assets/icons/zeno-green.svg',
+                      width: 136,
+                      height: 32,
                     ),
                     const SizedBox(width: 40),
                     // Навігація
@@ -627,45 +624,36 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   ],
                 ),
                 // Аватар і меню
-                Stack(
-                  children: [
-                    GestureDetector(
-                      onTap: () => setState(() => _showMenu = !_showMenu),
-                      child: avatarUrl != null && avatarUrl.isNotEmpty
-                        ? CircleAvatar(radius: 18, backgroundImage: NetworkImage(avatarUrl))
-                        : CircleAvatar(radius: 18, backgroundColor: const Color(0xFFE2E8F0), child: Text(initials, style: const TextStyle(color: Color(0xFF475569), fontSize: 14, fontWeight: FontWeight.w500))),
-                    ),
-                    if (_showMenu)
-                      Positioned(
-                        right: 0,
-                        top: 44,
-                        child: Material(
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            width: 140,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFE4E4E7)),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ListTile(
-                                  leading: const Icon(Icons.logout, size: 20),
-                                  title: const Text('Вийти', style: TextStyle(fontSize: 16)),
-                                  onTap: () {
-                                    _showLogoutConfirmationBottomSheet();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                PopupMenuButton<int>(
+                  tooltip: '',
+                  offset: const Offset(0, 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  onSelected: (value) async {
+                    if (value == 1) {
+                      await Supabase.instance.client.auth.signOut();
+                      if (mounted) {
+                        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                      }
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<int>(
+                      value: 1,
+                      child: Row(
+                        children: const [
+                          Icon(Icons.logout, size: 20),
+                          SizedBox(width: 8),
+                          Text('Вийти', style: TextStyle(fontSize: 16)),
+                        ],
                       ),
+                    ),
                   ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: avatarUrl != null && avatarUrl.isNotEmpty
+                      ? CircleAvatar(radius: 22, backgroundImage: NetworkImage(avatarUrl))
+                      : CircleAvatar(radius: 22, backgroundColor: const Color(0xFFE2E8F0), child: Text(initials, style: const TextStyle(color: Color(0xFF475569), fontSize: 14, fontWeight: FontWeight.w500))),
+                  ),
                 ),
               ],
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -120,15 +121,12 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFF015873),
-                            ),
+                          SvgPicture.asset(
+                            'assets/icons/zeno-green.svg',
+                            width: 136,
+                            height: 32,
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           const Text(
                             'Увійдіть в акаунт',
                             textAlign: TextAlign.center,
