@@ -264,9 +264,9 @@ class _AuthPageState extends State<AuthPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(
-          'assets/icons/ellipse_1520.svg',
-          width: 52,
-          height: 52,
+          'assets/icons/zeno-green.svg',
+          width: 136,
+          height: 32,
         ),
         const SizedBox(height: 20),
         Text(
@@ -351,9 +351,9 @@ class _AuthPageState extends State<AuthPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(
-          'assets/icons/ellipse_1520.svg',
-          width: 52,
-          height: 52,
+          'assets/icons/zeno-green.svg',
+          width: 136,
+          height: 32,
         ),
         const SizedBox(height: 20),
         Text(
