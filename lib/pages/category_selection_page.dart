@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:olxclone/theme/app_colors.dart';
-import 'package:olxclone/theme/app_text_styles.dart';
-import 'package:olxclone/models/category.dart'; // New import
-import 'package:olxclone/services/category_service.dart'; // New import
-import 'package:olxclone/models/subcategory.dart'; // New import
-import 'package:olxclone/services/subcategory_service.dart'; // New import
+import 'package:ZENO/theme/app_colors.dart';
+import 'package:ZENO/theme/app_text_styles.dart';
+import 'package:ZENO/models/category.dart'; // New import
+import 'package:ZENO/services/category_service.dart'; // New import
+import 'package:ZENO/models/subcategory.dart'; // New import
+import 'package:ZENO/services/subcategory_service.dart'; // New import
 import 'package:supabase_flutter/supabase_flutter.dart'; // New import for Supabase client
 import 'package:collection/collection.dart'; // Import for firstWhereOrNull
 import '../services/profile_service.dart';

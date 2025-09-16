@@ -79,7 +79,7 @@ class RegionService {
           final response = await http.get(
             uri,
             headers: {
-              'User-Agent': 'olxcloneApp/1.0 (https://yourwebsite.com/contact)',
+              'User-Agent': 'ZENOApp/1.0 (https://yourwebsite.com/contact)',
             },
           );
 

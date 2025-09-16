@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:olxclone/theme/app_colors.dart';
-import 'package:olxclone/theme/app_text_styles.dart';
-import 'package:olxclone/models/category.dart';
-import 'package:olxclone/services/category_service.dart';
-import 'package:olxclone/models/subcategory.dart';
-import 'package:olxclone/services/subcategory_service.dart';
-import 'package:olxclone/pages/category_selection_page.dart';
-import 'package:olxclone/pages/subcategory_selection_page.dart';
-// import 'package:olxclone/pages/currency_selection_page.dart'; // Removed import
+import 'package:ZENO/theme/app_colors.dart';
+import 'package:ZENO/theme/app_text_styles.dart';
+import 'package:ZENO/models/category.dart';
+import 'package:ZENO/services/category_service.dart';
+import 'package:ZENO/models/subcategory.dart';
+import 'package:ZENO/services/subcategory_service.dart';
+import 'package:ZENO/pages/category_selection_page.dart';
+import 'package:ZENO/pages/subcategory_selection_page.dart';
+// import 'package:ZENO/pages/currency_selection_page.dart'; // Removed import
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:olxclone/services/listing_service.dart'; // Import ListingService
-import 'package:olxclone/data/subcategories_data.dart'; // Import for getExtraFieldsForSubcategory
+import 'package:ZENO/services/listing_service.dart'; // Import ListingService
+import 'package:ZENO/data/subcategories_data.dart'; // Import for getExtraFieldsForSubcategory
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/error_banner.dart';
