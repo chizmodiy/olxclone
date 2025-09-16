@@ -93,11 +93,13 @@ class _ProductCardListItemState extends State<ProductCardListItem> {
                             return CachedNetworkImage(
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
+                              fadeInDuration: Duration(milliseconds: 0),
+                              fadeOutDuration: Duration(milliseconds: 0),
                               errorWidget: (context, url, error) => Container(
                                 color: AppColors.zinc200,
                                 child: const Icon(Icons.broken_image, color: AppColors.color5),
                               ),
-                              placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                              placeholder: (context, url) => Container(color: AppColors.zinc200),
                             );
                           },
                         )
