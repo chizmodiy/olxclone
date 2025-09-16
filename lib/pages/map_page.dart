@@ -546,13 +546,10 @@ class _MapPageState extends State<MapPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   // Лого
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
+                  SvgPicture.asset(
+                    'assets/icons/zeno-white.svg',
+                    width: 101,
+                    height: 24,
                   ),
                   // Аватар користувача
                   Builder(

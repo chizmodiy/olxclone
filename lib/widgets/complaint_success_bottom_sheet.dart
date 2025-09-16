@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ComplaintSuccessBottomSheet extends StatelessWidget {
   const ComplaintSuccessBottomSheet({super.key});
@@ -16,18 +17,11 @@ class ComplaintSuccessBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Іконка успіху
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.check_rounded,
-              color: Colors.white,
-              size: 48,
-            ),
+          // Логотип
+          SvgPicture.asset(
+            'assets/icons/zeno-green.svg',
+            width: 136,
+            height: 32,
           ),
           const SizedBox(height: 24),
           // Заголовок

@@ -5,6 +5,7 @@ import 'auth_bottom_sheet.dart';
 import '../services/profile_service.dart'; // Import ProfileService
 import '../services/profile_notifier.dart'; // Import ProfileNotifier
 import '../utils/avatar_utils.dart'; // Import AvatarUtils
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CommonHeader extends StatefulWidget implements PreferredSizeWidget {
   const CommonHeader({super.key});
@@ -77,13 +78,10 @@ class _CommonHeaderState extends State<CommonHeader> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Лого
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
+          SvgPicture.asset(
+            'assets/icons/zeno-white.svg',
+            width: 101,
+            height: 24,
           ),
           // Аватар користувача
           GestureDetector(

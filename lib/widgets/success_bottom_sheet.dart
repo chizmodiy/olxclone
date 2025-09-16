@@ -25,21 +25,10 @@ class SuccessBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.successColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'assets/icons/check-circle.svg', // Assuming you have a success icon
-                colorFilter: ColorFilter.mode(AppColors.successColor, BlendMode.srcIn),
-                width: 32,
-                height: 32,
-              ),
-            ),
+          SvgPicture.asset(
+            'assets/icons/zeno-green.svg',
+            width: 136,
+            height: 32,
           ),
           const SizedBox(height: 16),
           Text(

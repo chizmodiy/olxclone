@@ -64,14 +64,11 @@ class AuthBottomSheet extends StatelessWidget {
           // Header
           Column(
             children: [
-              // Circle with primary color
-              Container(
-                width: 52,
-                height: 52,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryColor,
-                  shape: BoxShape.circle,
-                ),
+              // Логотип
+              SvgPicture.asset(
+                'assets/icons/zeno-green.svg',
+                width: 136,
+                height: 32,
               ),
               const SizedBox(height: 20),
               // Text content
