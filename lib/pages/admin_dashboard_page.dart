@@ -750,28 +750,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      // const SizedBox(width: 12),
 
                                       // Кнопка фільтра
-                                      OutlinedButton.icon(
-                                        onPressed: () {},
-                                        icon: const Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
-                                        label: const Text(
-                                          'Фільтр',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'Inter',
-                                            letterSpacing: 0.16,
-                                          ),
+                                      Container(
+                                        height: 44, // Explicitly set height to match search input container
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(200),
+                                          border: Border.all(color: const Color(0xFFE4E4E7)),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color.fromRGBO(16, 24, 40, 0.05),
+                                              blurRadius: 2,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
                                         ),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          side: const BorderSide(color: Color(0xFFE4E4E7)),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(200)),
-                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {},
+                                            borderRadius: BorderRadius.circular(200),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10), // Padding adjusted for visual consistency
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(Icons.filter_alt_outlined, color: Colors.black, size: 20),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    'Фільтр',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w500,
+                                                      fontFamily: 'Inter',
+                                                      letterSpacing: 0.16,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
