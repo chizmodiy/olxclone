@@ -18,10 +18,15 @@ class ComplaintSuccessBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Логотип
-          SvgPicture.asset(
-            'assets/icons/zeno-green.svg',
-            width: 136,
-            height: 32,
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            },
+            child: SvgPicture.asset(
+              'assets/icons/zeno-green.svg',
+              width: 136,
+              height: 32,
+            ),
           ),
           const SizedBox(height: 24),
           // Заголовок

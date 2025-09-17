@@ -705,10 +705,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 // Логотип
                 Row(
                   children: [
-                    SvgPicture.asset(
-                      'assets/icons/zeno-green.svg',
-                      width: 136,
-                      height: 32,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                      },
+                      child: SvgPicture.asset(
+                        'assets/icons/zeno-green.svg',
+                        width: 136,
+                        height: 32,
+                      ),
                     ),
                     const SizedBox(width: 40),
                     // Навігація
