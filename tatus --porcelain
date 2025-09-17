@@ -1,0 +1,8 @@
+[33mcommit 00deb5df9f2dfec190aa50b46201554793d68f72[m[33m ([m[1;36mHEAD[m[33m)[m
+Author: Чіжмодій Іван <71609765+chizmodiy@users.noreply.github.com>
+Date:   Wed Sep 17 13:12:45 2025 +0300
+
+    refactor: update logo integration to enhance navigation across multiple pages
+    
+    - Replaced static logo assets with GestureDetector for improved user interaction, allowing users to navigate back to the home page when tapping the logo.
+    - Updated logo dimensions and positioning for consistency across admin dashboard, login, auth, map, and various bottom sheet components.

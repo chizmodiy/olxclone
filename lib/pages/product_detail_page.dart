@@ -1160,6 +1160,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               options: MapOptions(
                                 center: LatLng(_product!.latitude!, _product!.longitude!),
                                 zoom: 14,
+                                minZoom: 4, // Мінімальний масштаб
+                                maxZoom: 18, // Максимальний масштаб
                                 interactionOptions: const InteractionOptions(
                                   flags: InteractiveFlag.pinchZoom,
                                 ),
@@ -1184,17 +1186,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             // Кнопки керування картою
                             Positioned(
                               right: 16,
-                              top: 16,
+                              bottom: 16,
                               child: Column(
                                 children: [
-                                  // Кнопка збільшення
                                   Container(
-                                    width: 40,
-                                    height: 40,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFE4E4E7)),
+                                      borderRadius: BorderRadius.circular(4),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withOpacity(0.1),
@@ -1203,37 +1201,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         ),
                                       ],
                                     ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.add, size: 20),
-                                      onPressed: () {
-                                        _mapController.move(_mapController.center, _mapController.zoom + 1);
-                                      },
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Кнопка зменшення
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFE4E4E7)),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
+                                    child: Column(
+                                      children: [
+                                        // Кнопка збільшення масштабу
+                                        IconButton(
+                                          icon: const Icon(Icons.add),
+                                          onPressed: () {
+                                            final currentZoom = _mapController.zoom;
+                                            if (currentZoom < 18) { // Перевірка максимального масштабу
+                                              _mapController.move(
+                                                LatLng(_product!.latitude!, _product!.longitude!),
+                                                currentZoom + 1,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        Container(
+                                          height: 1,
+                                          color: Colors.grey[300],
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.remove),
+                                          onPressed: () {
+                                            final currentZoom = _mapController.zoom;
+                                            if (currentZoom > 4) { // Перевірка мінімального масштабу
+                                              _mapController.move(
+                                                LatLng(_product!.latitude!, _product!.longitude!),
+                                                currentZoom - 1,
+                                              );
+                                            }
+                                          },
                                         ),
                                       ],
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.remove, size: 20),
-                                      onPressed: () {
-                                        _mapController.move(_mapController.center, _mapController.zoom - 1);
-                                      },
-                                      padding: EdgeInsets.zero,
                                     ),
                                   ),
                                 ],
