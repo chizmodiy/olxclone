@@ -55,6 +55,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final TextEditingController _messageController = TextEditingController();
   bool _sendingMessage = false;
   final MapController _mapController = MapController();
+  // Floating chat button positioning (adjust as needed)
+  double _chatButtonBottomOffset = 56;
+  double _chatButtonHorizontalOffset = 25;
+  bool _chatButtonAlignRight = true;
 
   // Мапа категорій
   final Map<String, String> _categories = {
@@ -715,7 +719,75 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _buildMainContent(imageHeight),
+      body: Stack(
+        children: [
+          _buildMainContent(imageHeight),
+          if (_product != null && (_currentUserId == null || _currentUserId != _product!.userId))
+            Positioned(
+              left: _chatButtonAlignRight ? null : _chatButtonHorizontalOffset,
+              right: _chatButtonAlignRight ? _chatButtonHorizontalOffset : null,
+              bottom: _chatButtonBottomOffset + MediaQuery.of(context).padding.bottom,
+              child: GestureDetector(
+                onTap: _currentUserId == null ? null : _startChatWithOwner,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFF015873),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFF015873),
+                          ),
+                          borderRadius: BorderRadius.circular(200),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x0C101828),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                            spreadRadius: 0,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: SvgPicture.asset(
+                              'assets/icons/message-circle-01.svg',
+                              width: 24,
+                              height: 24,
+                              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Чат',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              height: 1.50,
+                              letterSpacing: 0.16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -1397,41 +1469,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          // Показуємо кнопку "Написати" якщо це не наше оголошення (у т.ч. для неавторизованих),
-          // але блокуємо її для неавторизованих користувачів
-          if (_product != null && (_currentUserId == null || _currentUserId != _product!.userId)) ...[
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: _currentUserId == null ? null : _startChatWithOwner,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF015873),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      side: const BorderSide(color: Color(0xFF015873), width: 1),
-                    ),
-                    elevation: 4,
-                    shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                  ),
-                  child: const Text(
-                    'Написати',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
-                      height: 1.4,
-                      letterSpacing: 0.14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+
         ],
       ),
     );

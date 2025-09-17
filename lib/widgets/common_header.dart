@@ -78,10 +78,15 @@ class _CommonHeaderState extends State<CommonHeader> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Лого
-          SvgPicture.asset(
-            'assets/icons/zeno-white.svg',
-            width: 101,
-            height: 24,
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            },
+            child: SvgPicture.asset(
+              'assets/icons/zeno-white.svg',
+              width: 101,
+              height: 24,
+            ),
           ),
           // Аватар користувача
           GestureDetector(
