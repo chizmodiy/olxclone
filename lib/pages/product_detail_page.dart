@@ -715,6 +715,67 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: _product != null && (_currentUserId == null || _currentUserId != _product!.userId)
+          ? Container(
+              margin: const EdgeInsets.only(bottom: 56, right: 24),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFF015873),
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(
+                        width: 1,
+                        color: Color(0xFF015873),
+                      ),
+                      borderRadius: BorderRadius.circular(200),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: Color(0x0C101828),
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: _currentUserId == null ? null : _startChatWithOwner,
+                    borderRadius: BorderRadius.circular(200),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SvgPicture.string(
+                          '''<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M20.9996 11.5C20.9996 16.1944 17.194 20 12.4996 20C11.4228 20 10.3928 19.7998 9.44478 19.4345C9.27145 19.3678 9.18478 19.3344 9.11586 19.3185C9.04807 19.3029 8.999 19.2963 8.92949 19.2937C8.85881 19.291 8.78127 19.299 8.62619 19.315L3.50517 19.8444C3.01692 19.8948 2.7728 19.9201 2.6288 19.8322C2.50337 19.7557 2.41794 19.6279 2.3952 19.4828C2.36909 19.3161 2.48575 19.1002 2.71906 18.6684L4.35472 15.6408C4.48942 15.3915 4.55677 15.2668 4.58728 15.1469C4.6174 15.0286 4.62469 14.9432 4.61505 14.8214C4.60529 14.6981 4.55119 14.5376 4.443 14.2166C4.15547 13.3636 3.99962 12.45 3.99962 11.5C3.99962 6.80558 7.8052 3 12.4996 3C17.194 3 20.9996 6.80558 20.9996 11.5Z" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>''',
+                          width: 24,
+                          height: 24,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Чат',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            height: 1.50,
+                            letterSpacing: 0.16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: _buildMainContent(imageHeight),
     );
   }
@@ -1396,41 +1457,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
             ),
           ),
-          // Показуємо кнопку "Написати" якщо це не наше оголошення (у т.ч. для неавторизованих),
-          // але блокуємо її для неавторизованих користувачів
-          if (_product != null && (_currentUserId == null || _currentUserId != _product!.userId)) ...[
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: _currentUserId == null ? null : _startChatWithOwner,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF015873),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      side: const BorderSide(color: Color(0xFF015873), width: 1),
-                    ),
-                    elevation: 4,
-                    shadowColor: const Color.fromRGBO(16, 24, 40, 0.05),
-                  ),
-                  child: const Text(
-                    'Написати',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
-                      height: 1.4,
-                      letterSpacing: 0.14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
