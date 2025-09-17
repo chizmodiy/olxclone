@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ZENO/theme/app_colors.dart';
-import 'package:ZENO/theme/app_text_styles.dart';
+import 'package:olxclone/theme/app_colors.dart';
+import 'package:olxclone/theme/app_text_styles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ZENO/pages/otp_page.dart';
+import 'package:olxclone/pages/otp_page.dart';
 import 'package:flutter/services.dart';
 import '../services/profile_service.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
@@ -268,7 +268,7 @@ class _AuthPageState extends State<AuthPage> {
             Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
           },
           child: SvgPicture.asset(
-            'assets/icons/zeno-green.svg',
+            'assets/icons/olxclone-green.svg',
             width: 136,
             height: 32,
           ),
@@ -360,7 +360,7 @@ class _AuthPageState extends State<AuthPage> {
             Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
           },
           child: SvgPicture.asset(
-            'assets/icons/zeno-green.svg',
+            'assets/icons/olxclone-green.svg',
             width: 136,
             height: 32,
           ),

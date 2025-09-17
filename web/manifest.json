@@ -1,6 +1,6 @@
 {
-    "name": "ZENO",
-    "short_name": "ZENO",
+    "name": "olxclone",
+    "short_name": "olxclone",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",

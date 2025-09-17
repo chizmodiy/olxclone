@@ -83,7 +83,7 @@ class _CommonHeaderState extends State<CommonHeader> {
               Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
             },
             child: SvgPicture.asset(
-              'assets/icons/zeno-white.svg',
+              'assets/icons/olxclone-white.svg',
               width: 101,
               height: 24,
             ),

@@ -70,7 +70,7 @@ class AuthBottomSheet extends StatelessWidget {
                   Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
                 },
                 child: SvgPicture.asset(
-                  'assets/icons/zeno-green.svg',
+                  'assets/icons/olxclone-green.svg',
                   width: 136,
                   height: 32,
                 ),
