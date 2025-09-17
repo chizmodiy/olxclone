@@ -789,7 +789,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         Row( // Group share and edit buttons
                           children: [
                             _buildNavigationButton(
-                              iconPath: 'assets\icons\upload-01.svg',
+                              iconPath: "assets/icons/upload-01.svg",
                               onTap: () async {
                                 if (_product != null) {
                                   try {
