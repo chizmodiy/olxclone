@@ -789,7 +789,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         Row( // Group share and edit buttons
                           children: [
                             _buildNavigationButton(
-                              iconPath: 'assets/icons/share-07.svg',
+                              iconPath: 'assets\icons\upload-01.svg',
                               onTap: () async {
                                 if (_product != null) {
                                   try {
@@ -1155,30 +1155,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         onTap: () => _launchMapsUrl(_product!.latitude, _product!.longitude),
                         child: Stack(
                           children: [
-                            IgnorePointer(
-                              child: FlutterMap(
-                                mapController: _mapController,
-                                options: MapOptions(
-                                  center: LatLng(_product!.latitude!, _product!.longitude!),
-                                  zoom: 14,
+                            FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                center: LatLng(_product!.latitude!, _product!.longitude!),
+                                zoom: 14,
+                                interactionOptions: const InteractionOptions(
+                                  flags: InteractiveFlag.pinchZoom,
                                 ),
-                                children: [
-                                  TileLayer(
-                                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    subdomains: ['a', 'b', 'c'],
-                                  ),
-                                  MarkerLayer(
-                                    markers: [
-                                      Marker(
-                                        width: 40,
-                                        height: 40,
-                                        point: LatLng(_product!.latitude!, _product!.longitude!),
-                                        child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                                      ),
-                                    ],
-                                  ),
-                                ],
                               ),
+                              children: [
+                                TileLayer(
+                                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  subdomains: ['a', 'b', 'c'],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 40,
+                                      height: 40,
+                                      point: LatLng(_product!.latitude!, _product!.longitude!),
+                                      child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                             // Кнопки керування картою
                             Positioned(
