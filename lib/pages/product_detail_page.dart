@@ -18,6 +18,7 @@ import '../pages/edit_listing_page_new.dart';
 import '../widgets/blocked_user_bottom_sheet.dart';
 import '../widgets/success_bottom_sheet.dart'; // Import the new success bottom sheet
 import 'full_screen_image_slider_page.dart'; // Import the new full screen image slider page
+import '../widgets/auth_bottom_sheet.dart'; // Import the new auth bottom sheet
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -255,6 +256,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _toggleFavorite() async {
     if (_currentUserId == null) {
+      // Показуємо вікно авторизації
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => AuthBottomSheet(
+          title: 'Додавання в обране',
+          subtitle: 'Увійдіть у свій профіль, щоб додавати оголошення в обране та мати до них швидкий доступ.',
+          onLoginPressed: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, '/auth');
+          },
+          onCancelPressed: () => Navigator.pop(context),
+        ),
+      );
       return;
     }
 
@@ -719,9 +735,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: _product != null && (_currentUserId == null || _currentUserId != _product!.userId)
+      floatingActionButton: _product != null && _currentUserId != null && _currentUserId != _product!.userId
           ? Container(
-              margin: const EdgeInsets.only(bottom: 56, right: 0),
+              margin: const EdgeInsets.only(bottom: 56, right: 8),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
