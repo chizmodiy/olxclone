@@ -57,7 +57,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final MapController _mapController = MapController();
   // Floating chat button positioning (adjust as needed)
   double _chatButtonBottomOffset = 56;
-  double _chatButtonHorizontalOffset = 25;
+  double _chatButtonHorizontalOffset = 8;
   bool _chatButtonAlignRight = true;
 
   // Мапа категорій
