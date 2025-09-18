@@ -721,7 +721,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       backgroundColor: Colors.white,
       floatingActionButton: _product != null && (_currentUserId == null || _currentUserId != _product!.userId)
           ? Container(
-              margin: const EdgeInsets.only(bottom: 56, right: 24),
+              margin: const EdgeInsets.only(bottom: 56, right: 0),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
