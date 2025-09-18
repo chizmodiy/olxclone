@@ -1036,10 +1036,33 @@ class _FilterPageState extends State<FilterPage> {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isPriceModePrice = true;
-                });
+              onTap: () async {
+                // Спочатку отримуємо актуальні ціни з бази
+                if (!_isPriceModePrice) {  // якщо вмикаємо ціновий режим
+                  final priceRange = await _getPriceRangeFromDatabase();
+                  setState(() {
+                    _minAvailablePrice = priceRange['min']!;
+                    _maxAvailablePrice = priceRange['max']!;
+                    _currentMinPrice = _minAvailablePrice;
+                    _currentMaxPrice = _maxAvailablePrice;
+                    _minPrice = _minAvailablePrice;
+                    _maxPrice = _maxAvailablePrice;
+                    _minPriceController.text = _convertFromUAH(_minAvailablePrice, _selectedCurrency).toStringAsFixed(2);
+                    _maxPriceController.text = _convertFromUAH(_maxAvailablePrice, _selectedCurrency).toStringAsFixed(2);
+                    _isPriceModePrice = true;  // змінюємо режим після встановлення цін
+                  });
+                } else {
+                  // При вимкненні цінового режиму
+                  setState(() {
+                    _isPriceModePrice = false;
+                    _minPriceController.clear();
+                    _maxPriceController.clear();
+                    _currentMinPrice = 0;
+                    _currentMaxPrice = 0;
+                    _minAvailablePrice = 0;
+                    _maxAvailablePrice = 0;
+                  });
+                }
               },
               child: Container(
                 width: 40,
@@ -1237,21 +1260,22 @@ class _FilterPageState extends State<FilterPage> {
             height: 48, // Зменшено висоту до 48 пікселів (тільки для слайдера)
             child: RangeSlider(
               values: RangeValues(
-                _currentMinPrice.clamp(_minPrice, _maxPrice),
-                _currentMaxPrice.clamp(_currentMinPrice, _maxPrice)
+                _currentMinPrice.clamp(_minAvailablePrice, _maxAvailablePrice),
+                _currentMaxPrice.clamp(_currentMinPrice, _maxAvailablePrice)
               ),
-              min: _minPrice,
-              max: _maxPrice,
+              min: _minAvailablePrice,
+              max: _maxAvailablePrice,
               onChanged: (RangeValues values) {
-                setState(() {
-                  // Переконуємося, що значення в межах дозволеного діапазону
-                  _currentMinPrice = values.start.clamp(_minPrice, _maxPrice);
-                  _currentMaxPrice = values.end.clamp(_currentMinPrice, _maxPrice);
-                  _updateSliderValues(_currentMinPrice, _currentMaxPrice);
-                });
+                if (values.start <= values.end) {
+                  setState(() {
+                    _currentMinPrice = values.start;
+                    _currentMaxPrice = values.end;
+                    _updateSliderValues(_currentMinPrice, _currentMaxPrice);
+                  });
+                }
               },
-              activeColor: const Color(0xFF015873) /* Primary */, // Колір активної частини
-              inactiveColor: const Color(0xFFE4E4E7) /* Zinc-200 */, // Колір неактивної частини
+              activeColor: const Color(0xFF015873),
+              inactiveColor: const Color(0xFFE4E4E7),
             ),
           ),
         ],
@@ -1276,6 +1300,12 @@ class _FilterPageState extends State<FilterPage> {
               onTap: () {
                 setState(() {
                   _isPriceModePrice = false;
+                  _minPriceController.clear();
+                  _maxPriceController.clear();
+                  _currentMinPrice = 0;
+                  _currentMaxPrice = 0;
+                  _minAvailablePrice = 0;
+                  _maxAvailablePrice = 0;
                 });
               },
               child: Container(
