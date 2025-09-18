@@ -551,7 +551,7 @@ class _MapPageState extends State<MapPage> {
                       Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
                     },
                     child: SvgPicture.asset(
-                      'assets/icons/olxclone-white.svg',
+                      'assets/icons/zeno-white.svg',
                       width: 101,
                       height: 24,
                     ),
